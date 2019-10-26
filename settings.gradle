@@ -1,2 +1,3 @@
 rootProject.name = 'acromantula'
 
+include 'acromantula_backend'

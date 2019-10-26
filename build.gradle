@@ -9,29 +9,35 @@ buildscript {
 
 apply plugin: 'kotlin'
 
-group 'net.cydhra'
-version '0.1.0'
+allprojects {
+    apply plugin: 'kotlin'
 
-repositories {
-    jcenter()
-    maven { url 'https://dl.bintray.com/kotlin/exposed/' }
+    group 'net.cydhra'
+    version '0.1.0'
+
+    repositories {
+        jcenter()
+        maven { url 'https://dl.bintray.com/kotlin/exposed/' }
+    }
+
+    compileKotlin {
+        kotlinOptions.jvmTarget = jvm_target
+    }
+
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = jvm_target
+    }
 }
 
-dependencies {
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
+project("acromantula_backend") {
+    dependencies {
+        implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
 
-    implementation group: 'org.jetbrains.exposed', name: 'exposed', version: exposed_version
+        implementation group: 'org.jetbrains.exposed', name: 'exposed', version: exposed_version
 
-    testCompile group: 'org.assertj', name: 'assertj-core', version: assertj_version
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junit_version
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junit_version
-    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit_version
-}
-
-compileKotlin {
-    kotlinOptions.jvmTarget = jvm_target
-}
-
-compileTestKotlin {
-    kotlinOptions.jvmTarget = jvm_target
+        testCompile group: 'org.assertj', name: 'assertj-core', version: assertj_version
+        testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junit_version
+        testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junit_version
+        testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit_version
+    }
 }
