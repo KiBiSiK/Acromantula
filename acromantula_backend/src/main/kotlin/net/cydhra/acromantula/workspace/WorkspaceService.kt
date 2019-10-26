@@ -10,7 +10,7 @@ object WorkspaceService : Service {
 
     override val name: String = "workspace-service"
 
-    private val pipeServer = PipeServer()
+    private val pipeServer = IPCServer()
 
     /**
      * Called upon application startup. Load default workspace and subscribe to events if necessary.

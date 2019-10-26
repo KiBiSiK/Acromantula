@@ -11,7 +11,7 @@ import java.nio.file.Files
 /**
  * Serves a named pipe / unix socket for communication with potential front ends
  */
-class PipeServer {
+class IPCServer {
 
     private val logger = LogManager.getLogger()
 
