@@ -5,8 +5,12 @@ out/
 target/
 doc/
 
+run/*
+!run/.gitkeep
+
 .idea/*
 !.idea/codeStyles
+!.idea/runConfigurations
 
 .gradle/
 **/build/
