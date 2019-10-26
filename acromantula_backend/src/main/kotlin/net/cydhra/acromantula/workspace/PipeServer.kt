@@ -30,8 +30,10 @@ class PipeServer {
             }
             SystemUtils.IS_OS_UNIX -> {
                 val tempDir = Files.createTempDirectory("ipcsocket")
-                val sock = tempDir.resolve("api.sock")
-                server = UnixDomainServerSocket(sock.toString())
+                val socketPath = tempDir.resolve("api.sock")
+
+                logger.info("creating unix socket at $socketPath")
+                server = UnixDomainServerSocket(socketPath.toString())
             }
             else -> {
                 throw IllegalStateException("this operating system is unsupported as no IPC can be provided")
