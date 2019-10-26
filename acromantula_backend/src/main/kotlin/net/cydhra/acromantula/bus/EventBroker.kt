@@ -1,6 +1,9 @@
 package net.cydhra.acromantula.bus
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.bus.event.Event
 import net.cydhra.acromantula.bus.service.Service
 import org.apache.logging.log4j.LogManager
@@ -72,24 +75,21 @@ object EventBroker : Service {
     }
 
     /**
-     * Any component may call this method to inform the bus and all services about an event. The event will be
-     * dispatched to all services registered to the specific event type.
-     *
-     * @param event a serializable event instance that is then handled by services
+     * Fire an event into the event bus. This method will synchronously call all event handlers and may suspend until
+     * all the handlers have finished their execution. The method will then return. Events that finish in a result or
+     * error may contain such, if attached by one or more handlers.
      */
-    fun fireEvent(event: Event) {
-        val id = eventIdCounter.incrementAndGet()
-        logger.trace("scheduling event (id: $id) $event")
-
-        singleThreadScope.launch(eventExceptionHandler) {
-            logger.trace("dispatch event with id: $id")
-
-            // TODO
+    suspend fun fireEvent(event: Event) {
+        val handlers = withContext(singleThreadContext) {
+            registeredEventHandlers.values.flatten()
+                    .filter { (type, _) -> type == event.javaClass }
         }
+
+        handlers.forEach { (_, handler) -> handler(event) }
     }
 
     /**
-     * Register a listener function for a given event class. All events of the specified class are now
+     * Register a listener function for a given event class. May suspend to synchronize
      */
     suspend fun <T : Event> registerEventListener(
         service: Service,
