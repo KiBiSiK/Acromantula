@@ -1,3 +1,6 @@
 package net.cydhra.acromantula.workspace
 
-abstract class WorkspaceClient
+abstract class WorkspaceClient {
+
+
+}
