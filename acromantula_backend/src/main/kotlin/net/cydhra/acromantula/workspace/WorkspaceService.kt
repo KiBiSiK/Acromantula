@@ -19,4 +19,11 @@ object WorkspaceService : Service {
         pipeServer.hostEndpoint()
     }
 
+    /**
+     * Shutdown routine that closes all resources and cleans up.
+     */
+    fun shutdown() {
+        pipeServer.shutdown()
+    }
+
 }
