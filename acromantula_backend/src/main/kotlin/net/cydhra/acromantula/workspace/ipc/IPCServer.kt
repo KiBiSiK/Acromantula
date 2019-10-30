@@ -4,12 +4,12 @@ import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import org.scalasbt.ipcsocket.UnixDomainServerSocket
 import org.scalasbt.ipcsocket.Win32NamedPipeServerSocket
-import java.io.BufferedReader
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.IOException
-import java.io.InputStreamReader
-import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.charset.Charset
 import java.nio.file.Files
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
@@ -65,11 +65,11 @@ class IPCServer {
     }
 
     fun shutdown() {
-        logger.info("closing IPC server...")
-        server.close()
-
         logger.info("shutting down IPC clients...")
         this.connectedClients.forEach(ClientThread::shutdown)
+
+        logger.info("closing IPC server...")
+        server.close()
 
         logger.info("shutting down IPC thread pool...")
         this.cachedThreadPool.shutdown()
@@ -109,14 +109,13 @@ class IPCServer {
 
         private val logger = LogManager.getLogger("IPC.${id}")
 
-        private val output = PrintWriter(clientSocket.getOutputStream(), true)
-        private val input = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
+        private val output = DataOutputStream(clientSocket.getOutputStream())
+        private val input = DataInputStream(clientSocket.getInputStream())
 
         override fun run() {
             try {
-                var line = ""
                 do {
-                    line = input.readLine()
+                    val line = readPacket(input)
 
                     logger.info("server recv: $line")
                     // TODO handle
@@ -133,10 +132,34 @@ class IPCServer {
             this@IPCServer.connectedClients -= this
         }
 
+        /**
+         * Read a packet of data by first reading a signed big-endian integer stating the size of the payload and
+         * then reading bytes given by this size and interpreting them as an UTF-8 String.
+         */
+        private fun readPacket(inputStream: DataInputStream): String {
+            val length = inputStream.readShort()
+            require(length > 0) { "client sent packet with negative size. Terminating..." }
+
+            val buf = ByteArray(length.toInt())
+            inputStream.read(buf)
+
+            return String(buf, Charset.forName("UTF-8"))
+        }
+
+        /**
+         * Write a string to the stream by encoding its length as a signed big-endian integer and then
+         * writing it as UTF-8 encoded binary data.
+         */
+        private fun writePacket(data: String, output: DataOutputStream) {
+            val bytes = data.toByteArray()
+            output.writeInt(bytes.size)
+            output.write(bytes)
+        }
+
         fun shutdown() {
             logger.debug("shutdown IPC client...")
 
-            output.write("bye")
+            writePacket("bye", output)
             output.close()
             input.close()
             clientSocket.close()
