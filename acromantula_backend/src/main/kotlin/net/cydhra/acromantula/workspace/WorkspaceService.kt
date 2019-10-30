@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.bus.service.Service
+import net.cydhra.acromantula.workspace.ipc.IPCServer
 
 /**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
