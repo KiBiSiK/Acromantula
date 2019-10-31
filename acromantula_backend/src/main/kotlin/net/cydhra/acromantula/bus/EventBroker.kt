@@ -82,7 +82,7 @@ object EventBroker : Service {
     suspend fun fireEvent(event: Event) {
         val handlers = withContext(singleThreadContext) {
             registeredEventHandlers.values.flatten()
-                    .filter { (type, _) -> type == event.javaClass }
+                    .filter { (type, _) -> type == event.javaClass.kotlin }
         }
 
         handlers.forEach { (_, handler) -> handler(event) }
