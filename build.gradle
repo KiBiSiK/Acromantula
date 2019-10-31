@@ -1,6 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.3.50'
-    ext.jvm_target = '12'
+    ext.jvm_target = '1.8'
     ext.junit_version = '5.2.0'
     ext.log4j2_version = '2.11.1'
 
