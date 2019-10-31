@@ -12,6 +12,7 @@ import java.net.Socket
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -33,7 +34,7 @@ class IPCServer {
     /**
      * The IPC server does not use coroutines thus threads are managed in its own threadpool
      */
-    private val cachedThreadPool = Executors.newCachedThreadPool()
+    private lateinit var cachedThreadPool: ExecutorService
 
     private var clientCounter: Int = 0
 
@@ -42,6 +43,8 @@ class IPCServer {
      * will wait in a new thread, so this method won't block after the IPC channel has been established.
      */
     fun hostEndpoint() {
+        cachedThreadPool = Executors.newCachedThreadPool()
+
         when {
             SystemUtils.IS_OS_WINDOWS -> {
                 val pipeName = """\\.\pipe\api"""
