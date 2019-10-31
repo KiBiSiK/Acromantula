@@ -1,5 +1,7 @@
 package net.cydhra.acromantula.workspace
 
+import net.cydhra.acromantula.bus.EventBroker
+import net.cydhra.acromantula.bus.event.ApplicationStartupEvent
 import net.cydhra.acromantula.bus.service.Service
 import net.cydhra.acromantula.workspace.ipc.IPCServer
 
@@ -17,6 +19,11 @@ object WorkspaceService : Service {
      * Called upon application startup. Load default workspace and subscribe to events if necessary.
      */
     override suspend fun initialize() {
+        EventBroker.registerEventListener(this, ApplicationStartupEvent::class, this::onStartup)
+    }
+
+    @Suppress("RedundantSuspendModifier", "UNUSED_PARAMETER")
+    private suspend fun onStartup(event: ApplicationStartupEvent) {
         pipeServer.hostEndpoint()
     }
 
