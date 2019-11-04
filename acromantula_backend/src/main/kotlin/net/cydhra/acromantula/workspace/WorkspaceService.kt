@@ -19,7 +19,7 @@ object WorkspaceService : Service {
      * Called upon application startup. Load default workspace and subscribe to events if necessary.
      */
     override suspend fun initialize() {
-        EventBroker.registerEventListener(this, ApplicationStartupEvent::class, this::onStartup)
+        EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartup)
     }
 
     @Suppress("RedundantSuspendModifier", "UNUSED_PARAMETER")
