@@ -5,9 +5,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import net.cydhra.acromantula.bus.event.Event
-import net.cydhra.acromantula.bus.event.Request
-import net.cydhra.acromantula.bus.service.Service
 import org.junit.jupiter.api.Test
 
 internal class EventBrokerTest {

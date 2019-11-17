@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.plugins
 
-import net.cydhra.acromantula.bus.service.Service
+import net.cydhra.acromantula.bus.Service
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*

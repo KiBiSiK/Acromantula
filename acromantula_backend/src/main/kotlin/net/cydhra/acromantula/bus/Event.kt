@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.bus.event
+package net.cydhra.acromantula.bus
 
 /**
  * Any form of event occurring in a [net.cydhra.acromantula.bus.service.Service]. It will be raised by the respective

@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.bus.service
+package net.cydhra.acromantula.bus
 
 /**
  * Since the application is designed as an event-driven bus architecture, all sub systems are implemented as a

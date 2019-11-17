@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.bus.event
+package net.cydhra.acromantula.bus
 
 /**
  * An event type, that can be sent to the broker, is dispatched and after dispatchment, yields a result. This event

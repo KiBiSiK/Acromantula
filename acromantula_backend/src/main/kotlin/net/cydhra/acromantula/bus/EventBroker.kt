@@ -2,9 +2,6 @@ package net.cydhra.acromantula.bus
 
 import com.google.common.collect.HashMultimap
 import kotlinx.coroutines.*
-import net.cydhra.acromantula.bus.event.Event
-import net.cydhra.acromantula.bus.event.Request
-import net.cydhra.acromantula.bus.service.Service
 import net.cydhra.acromantula.concurrency.ThreadPool
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors

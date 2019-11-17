@@ -1,8 +1,8 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.event.ApplicationStartupEvent
-import net.cydhra.acromantula.bus.service.Service
+import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
+import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.workspace.ipc.IPCServer
 
 /**
