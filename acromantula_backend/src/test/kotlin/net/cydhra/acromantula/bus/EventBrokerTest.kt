@@ -12,12 +12,12 @@ internal class EventBrokerTest {
     /**
      * Test event without actual implementation
      */
-    class EventTest : Event
+    class EventTest(override val type: String = "test_event") : Event
 
     /**
      * Test request without actual implementation
      */
-    class RequestTest : Request<String> {
+    class RequestTest(override val type: String = "test_request") : Request<String> {
         override fun fulfil(data: String) {
             TODO("not implemented")
         }

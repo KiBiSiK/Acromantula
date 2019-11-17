@@ -5,4 +5,4 @@ package net.cydhra.acromantula.bus
  * component, dispatched at the [net.cydhra.acromantula.bus.EventBroker] and then handled by all subscribers to the
  * specific event type. Events must be serializable in order to be transferable over a network.
  */
-interface Event
+interface Event : IPCSerializable
