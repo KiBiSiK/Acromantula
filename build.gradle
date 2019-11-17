@@ -42,6 +42,7 @@ project("acromantula_backend") {
 
         // database
         implementation group: 'org.jetbrains.exposed', name: 'exposed', version: '0.17.6'
+        implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 
         // IPC
         implementation group: 'org.scala-sbt.ipcsocket', name: 'ipcsocket', version: '1.0.0'
