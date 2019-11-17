@@ -66,6 +66,9 @@ class IPCServer {
         cachedThreadPool.submit(this::serverLoop)
     }
 
+    /**
+     * Shutdown the IPC server, closing all clients and connections, freeing socket resources and cleaning up.
+     */
     fun shutdown() {
         logger.info("shutting down IPC clients...")
         this.connectedClients.forEach(ClientThread::shutdown)
