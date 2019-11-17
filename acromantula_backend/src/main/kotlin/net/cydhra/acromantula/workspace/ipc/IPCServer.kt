@@ -6,11 +6,11 @@ import org.scalasbt.ipcsocket.UnixDomainServerSocket
 import org.scalasbt.ipcsocket.Win32NamedPipeServerSocket
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.io.File
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
 import java.nio.charset.Charset
-import java.nio.file.Files
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -53,8 +53,7 @@ class IPCServer {
                 server = Win32NamedPipeServerSocket(pipeName)
             }
             SystemUtils.IS_OS_UNIX -> {
-                val tempDir = Files.createTempDirectory("ipcsocket")
-                val socketPath = tempDir.resolve("api.sock")
+                val socketPath = File("api.sock")
 
                 logger.info("creating unix socket at $socketPath")
                 server = UnixDomainServerSocket(socketPath.toString())
