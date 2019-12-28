@@ -6,6 +6,11 @@ import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.config.ConfigurationService
 import net.cydhra.acromantula.plugins.PluginService
 import net.cydhra.acromantula.workspace.WorkspaceService
+import org.apache.logging.log4j.LogManager
+import java.io.BufferedReader
+import java.io.InputStreamReader
+
+private val logger = LogManager.getLogger("CLI")
 
 fun main() {
     runBlocking {
@@ -16,4 +21,19 @@ fun main() {
 
         EventBroker.fireEvent(ApplicationStartupEvent())
     }
+
+    val input = BufferedReader(InputStreamReader(System.`in`))
+    var command = ""
+    while (true) {
+        command = input.readLine()
+        if (command != "quit") {
+            logger.info("dispatching \"$command\"...")
+        } else {
+            logger.info("shutdown...")
+            WorkspaceService.shutdown()
+            break
+        }
+    }
+
+    logger.info("bye!")
 }
