@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.workspace.ipc
+package net.cydhra.acromantula.ipc
 
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager

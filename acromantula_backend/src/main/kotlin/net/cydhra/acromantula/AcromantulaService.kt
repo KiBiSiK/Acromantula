@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.config.ConfigurationService
+import net.cydhra.acromantula.ipc.IPCService
 import net.cydhra.acromantula.plugins.PluginService
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -18,6 +19,7 @@ fun main() {
         EventBroker.registerService(ConfigurationService)
         EventBroker.registerService(PluginService)
         EventBroker.registerService(WorkspaceService)
+        EventBroker.registerService(IPCService)
 
         EventBroker.fireEvent(ApplicationStartupEvent())
     }
@@ -30,7 +32,9 @@ fun main() {
             logger.info("dispatching \"$command\"...")
         } else {
             logger.info("shutdown...")
-            WorkspaceService.shutdown()
+
+            // TODO shut-down event
+
             break
         }
     }
