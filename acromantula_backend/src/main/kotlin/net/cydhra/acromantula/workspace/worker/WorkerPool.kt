@@ -7,7 +7,7 @@ import java.util.concurrent.Executors
 /**
  * Provides different scopes for asynchronous dispatching of work.
  */
-object ThreadPool {
+class WorkerPool {
 
     /**
      * A cached thread pool for low-utilisation/long-running or asymmetrical work load.
