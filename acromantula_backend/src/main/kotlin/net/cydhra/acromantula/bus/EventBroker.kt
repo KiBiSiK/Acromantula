@@ -2,7 +2,6 @@ package net.cydhra.acromantula.bus
 
 import com.google.common.collect.HashMultimap
 import kotlinx.coroutines.*
-import net.cydhra.acromantula.concurrency.ThreadPool
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
@@ -33,6 +32,16 @@ object EventBroker : Service {
     private val singleThreadPool = Executors.newSingleThreadExecutor()
 
     private val singleThreadScope = CoroutineScope(singleThreadPool.asCoroutineDispatcher())
+
+    /**
+     * Work-stealing pool that is used for event handling
+     */
+    private val eventHandlerPool = Executors.newWorkStealingPool()
+
+    /**
+     * Coroutine scope using the [eventHandlerPool]
+     */
+    private val eventHandlerScope = CoroutineScope(eventHandlerPool.asCoroutineDispatcher())
 
     /**
      * Single thread context for critical modifications of event handler list and service list
@@ -77,12 +86,12 @@ object EventBroker : Service {
      * @param event an event that is fired and then not used again
      */
     fun fireEvent(event: Event) {
-        ThreadPool.workerCoroutineScope.launch {
+        eventHandlerScope.launch {
             val handlers = withContext(singleThreadContext) {
                 registeredEventHandlers[event.javaClass.kotlin]
             }
 
-            handlers.forEach { handler -> ThreadPool.workerCoroutineScope.launch { handler(event) } }
+            handlers.forEach { handler -> eventHandlerScope.launch { handler(event) } }
         }
     }
 
