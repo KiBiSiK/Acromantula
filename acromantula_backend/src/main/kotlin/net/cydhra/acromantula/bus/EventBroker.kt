@@ -30,11 +30,6 @@ object EventBroker : Service {
      */
     private val registeredEventHandlers = HashMultimap.create<KClass<out Event>, suspend (Event) -> Unit>()
 
-    /**
-     * A map of registered handlers to specific requests
-     */
-    private val registeredRequestHandlers = mutableMapOf<KClass<out Request<*>>, suspend (Request<*>) -> Unit>()
-
     private val singleThreadPool = Executors.newSingleThreadExecutor()
 
     private val singleThreadScope = CoroutineScope(singleThreadPool.asCoroutineDispatcher())
@@ -92,15 +87,6 @@ object EventBroker : Service {
     }
 
     /**
-     * Handle a specific request. This method suspends until the request has been handled. After this method returns,
-     * the request's [Request.fulfil] function has been called, if a handler was available and able to handle the
-     * request.
-     */
-    suspend fun <T> handleRequest(request: Request<T>) {
-        registeredRequestHandlers[request.javaClass.kotlin]?.invoke(request)
-    }
-
-    /**
      * Register a listener function for a given event class. May suspend to synchronize
      */
     suspend fun <T : Event> registerEventListener(
@@ -110,31 +96,6 @@ object EventBroker : Service {
         withContext(singleThreadContext) {
             @Suppress("UNCHECKED_CAST")
             registeredEventHandlers.put(eventClass, listener as (suspend (Event) -> Unit))
-        }
-    }
-
-    /**
-     * Register a handler for a class of requests.
-     *
-     * @param requestClass the kotlin class of the request type
-     * @param handler the handler function for that request type
-     * @param T the request data type
-     * @param E the request type
-     *
-     * @throws IllegalStateException if there is already a handler for that type registered
-     */
-    suspend fun <T, E : Request<T>> registerRequestHandler(
-        requestClass: KClass<E>,
-        handler: suspend (E) -> Unit
-    ) {
-        withContext(singleThreadContext) {
-            @Suppress("UNCHECKED_CAST")
-            check(
-                registeredRequestHandlers.putIfAbsent(
-                    requestClass,
-                    handler as suspend (Request<*>) -> Unit
-                ) == null
-            ) { "cannot register multiple handlers for the same request class" }
         }
     }
 

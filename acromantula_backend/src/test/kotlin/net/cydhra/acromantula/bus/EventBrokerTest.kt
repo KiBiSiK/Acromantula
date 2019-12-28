@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.bus
 
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.delay
@@ -13,15 +12,6 @@ internal class EventBrokerTest {
      * Test event without actual implementation
      */
     class EventTest(override val type: String = "test_event") : Event
-
-    /**
-     * Test request without actual implementation
-     */
-    class RequestTest(override val type: String = "test_request") : Request<String> {
-        override fun fulfil(data: String) {
-            TODO("not implemented")
-        }
-    }
 
     @Test
     fun testServices() {
@@ -43,21 +33,6 @@ internal class EventBrokerTest {
             EventBroker.registerEventListener(EventTest::class, handler)
             EventBroker.fireEvent(event)
             delay(10)
-        }
-
-        coVerify { handler.invoke(allAny()) }
-    }
-
-    @Test
-    fun testRequestHandling() {
-        val handler = mockk<suspend (RequestTest) -> Unit>()
-        val event = mockk<RequestTest>(relaxed = true)
-
-        coEvery { handler.invoke(allAny()) } returns Unit
-
-        runBlocking {
-            EventBroker.registerRequestHandler(RequestTest::class, handler)
-            EventBroker.handleRequest(event)
         }
 
         coVerify { handler.invoke(allAny()) }
