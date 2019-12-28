@@ -2,6 +2,7 @@ package net.cydhra.acromantula.ipc
 
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
+import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 
 /**
@@ -19,6 +20,7 @@ object IPCService : Service {
 
     override suspend fun initialize() {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartup)
+        EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
     }
 
     @Suppress("RedundantSuspendModifier", "UNUSED_PARAMETER")
@@ -29,7 +31,8 @@ object IPCService : Service {
     /**
      * Shutdown routine that closes all resources and cleans up.
      */
-    fun shutdown() {
+    @Suppress("RedundantSuspendModifier", "UNUSED_PARAMETER")
+    private suspend fun onShutdown(event: ApplicationShutdownEvent) {
         pipeServer.shutdown()
     }
 }

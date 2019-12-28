@@ -32,7 +32,7 @@ fun main() {
         if (command != "quit") {
             logger.info("dispatching \"$command\"...")
         } else {
-            logger.info("shutdown...")
+            logger.info("attempting shutdown...")
 
             runBlocking {
                 EventBroker.fireEvent(ApplicationShutdownEvent())
@@ -41,5 +41,5 @@ fun main() {
         }
     }
 
-    logger.info("bye!")
+    logger.info("CLI exited.")
 }
