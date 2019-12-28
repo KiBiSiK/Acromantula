@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.concurrency
+package net.cydhra.acromantula.workspace.worker
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
