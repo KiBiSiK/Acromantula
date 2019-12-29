@@ -1,7 +1,10 @@
 package net.cydhra.acromantula.bus.events
 
-const val LEVEL_APPLICATION = "application"
-const val LEVEL_LIFETIME = "$LEVEL_APPLICATION.lifetime"
+import net.cydhra.acromantula.bus.ChildEventChannel
+import net.cydhra.acromantula.bus.RootEventChannel
 
-const val EVENT_TYPE_STARTUP = "$LEVEL_LIFETIME.startup"
-const val EVENT_TYPE_SHUTDOWN = "$LEVEL_LIFETIME.shutdown"
+val EVENT_CHANNEL_APPLICATION = RootEventChannel("application")
+val EVENT_CHANNEL_APPLICATION_LIFETIME = ChildEventChannel(EVENT_CHANNEL_APPLICATION, "lifetime")
+
+val EVENT_CHANNEL_STARTUP = ChildEventChannel(EVENT_CHANNEL_APPLICATION_LIFETIME, "startup")
+val EVENT_CHANNEL_SHUTDOWN = ChildEventChannel(EVENT_CHANNEL_APPLICATION_LIFETIME, "shutdown")

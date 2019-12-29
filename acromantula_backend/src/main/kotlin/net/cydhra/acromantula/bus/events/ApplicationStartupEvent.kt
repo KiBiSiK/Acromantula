@@ -6,5 +6,5 @@ import net.cydhra.acromantula.bus.Event
  * Event fired after plugins are loaded and services have been registered.
  */
 class ApplicationStartupEvent : Event {
-    override val type: String = EVENT_TYPE_STARTUP
+    override val channel = EVENT_CHANNEL_STARTUP
 }

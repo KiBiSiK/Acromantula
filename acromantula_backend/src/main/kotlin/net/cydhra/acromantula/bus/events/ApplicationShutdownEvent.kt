@@ -6,5 +6,5 @@ import net.cydhra.acromantula.bus.Event
  * Event fired when the server shuts down.
  */
 class ApplicationShutdownEvent : Event {
-    override val type: String = EVENT_TYPE_SHUTDOWN
+    override val channel = EVENT_CHANNEL_SHUTDOWN
 }

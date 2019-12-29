@@ -11,7 +11,9 @@ internal class EventBrokerTest {
     /**
      * Test event without actual implementation
      */
-    class EventTest(override val type: String = "test_event") : Event
+    class EventTest : Event {
+        override val channel = RootEventChannel("test")
+    }
 
     @Test
     fun testServices() {
