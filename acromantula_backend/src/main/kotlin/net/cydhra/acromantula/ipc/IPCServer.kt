@@ -55,6 +55,10 @@ class IPCServer {
             SystemUtils.IS_OS_UNIX -> {
                 val socketPath = File("api.sock")
 
+                if (socketPath.exists()) {
+                    socketPath.delete()
+                }
+
                 logger.info("creating unix socket at $socketPath")
                 server = UnixDomainServerSocket(socketPath.toString())
             }
