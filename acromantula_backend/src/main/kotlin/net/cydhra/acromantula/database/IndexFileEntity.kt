@@ -2,9 +2,9 @@ package net.cydhra.acromantula.database
 
 import org.jetbrains.exposed.dao.IntIdTable
 
-class Directory
+class IndexFileEntity
 
-object DirectoryTable : IntIdTable("TreeDirectory") {
+object IndexFileTable : IntIdTable("TreeIndexFile") {
     val name = varchar("name", MAX_FILE_NAME)
     val parent = reference("parent", DirectoryTable).nullable()
     val archive = reference("archive", ArchiveTable).nullable()
