@@ -69,10 +69,12 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      * @param content the resource's content in raw binary form
      */
     fun addResource(file: FileEntity, content: ByteArray) {
-        val newFile = File(this.resourceDirectory, this.index.currentFileIndex++.toString())
+        val newFile = File(this.resourceDirectory, (++this.index.currentFileIndex).toString())
         newFile.writeBytes(content)
 
-        // TODO write index into file entity
+        transaction {
+            file.resource = this@WorkspaceFileSystem.index.currentFileIndex
+        }
 
         saveIndex()
     }
