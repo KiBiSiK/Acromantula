@@ -6,8 +6,5 @@ package net.cydhra.acromantula.bus
  * specific event type. Events must be serializable in order to be transferable over a network.
  */
 interface Event {
-    /**
-     * A hierarchical descriptor for this serializable component. Hierarchy levels are separated by periods.
-     */
-    val channel: EventChannel
+
 }

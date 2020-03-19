@@ -2,7 +2,6 @@ package net.cydhra.acromantula.workspace.commands
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import net.cydhra.acromantula.bus.RootEventChannel
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,9 +14,7 @@ internal class CommandDispatcherTest {
     /**
      * An example command for the workspace that shall simply yield success.
      */
-    private class WorkspaceEchoCommand : WorkspaceCommand {
-        override val channel = RootEventChannel("test")
-    }
+    private class WorkspaceEchoCommand : WorkspaceCommand
 
     @BeforeEach
     fun setUp() {
