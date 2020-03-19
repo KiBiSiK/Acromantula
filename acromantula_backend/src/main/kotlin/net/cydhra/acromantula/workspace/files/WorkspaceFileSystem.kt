@@ -1,9 +1,12 @@
 package net.cydhra.acromantula.workspace.files
 
 import com.google.gson.GsonBuilder
+import net.cydhra.acromantula.database.DirectoryEntity
 import net.cydhra.acromantula.database.FileEntity
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.FileReader
+import java.net.URL
 
 /**
  * A facade to all file system interaction of a workspace. No other part within the workspace should directly
@@ -35,6 +38,27 @@ class WorkspaceFileSystem(private val workspacePath: File) {
             index = gson.fromJson(FileReader(indexFile), WorkspaceIndex::class.java)
         }
 
+    }
+
+    /**
+     * Import a resource into the workspace. This will create the file entity and save the resource content into the
+     * workspace. This method will read the contents of the specified url. It is assumed, that it is a trusted source.
+     *
+     * @param name the name this resource will get in the file tree
+     * @param url the url where to load the resource from
+     * @param parent an optional parent for the resource to integrate it into the file tree
+     */
+    fun importResource(name: String, url: URL, parent: DirectoryEntity? = null): FileEntity {
+        val content = url.openStream().use { it.readBytes() }
+        return transaction {
+            val newEntity = FileEntity.new {
+                this.name = name
+                this.parent = parent
+            }
+
+            this@WorkspaceFileSystem.addResource(newEntity, content)
+            return@transaction newEntity
+        }
     }
 
     /**
