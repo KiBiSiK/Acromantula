@@ -62,8 +62,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
     }
 
     /**
-     * Add a resource to the workspace. The location of the resource is stored in the given file entity, therefore a
-     * transaction must be present.
+     * Add a resource to the workspace and associate it with the given file entity.
      *
      * @param file the internal representation of the new entity. Gets modified to store the location of data
      * @param content the resource's content in raw binary form
@@ -80,7 +79,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
     }
 
     /**
-     * Read the content of a resource from workspace. Throws [IllegalStateException] if the resource has not been
+     * Read the content of a resource from workspace. Throws [IllegalArgumentException] if the resource has not been
      * added to the workspace, yet.
      *
      * @param file the resource to read
@@ -88,18 +87,28 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      * @return the raw binary content of the given resource
      */
     fun readResource(file: FileEntity): ByteArray {
-        TODO()
+        val id = transaction {
+            require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
+            file.resource!!
+        }
+
+        return File(resourceDirectory, id.toString()).readBytes()
     }
 
     /**
-     * Update the content of a resource from workspace. Throws [IllegalStateException] if the resource has not been
+     * Update the content of a resource from workspace. Throws [IllegalArgumentException] if the resource has not been
      * added to the workspace, yet.
      *
      * @param file the resource to update
      * @param newContent the new resource content
      */
     fun updateResource(file: FileEntity, newContent: ByteArray) {
-        TODO()
+        val id = transaction {
+            require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
+            file.resource!!
+        }
+
+        File(resourceDirectory, id.toString()).writeBytes(newContent)
     }
 
     /**
@@ -108,7 +117,17 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      * @param file the resource to delete.
      */
     fun deleteResource(file: FileEntity) {
-        TODO()
+        val id = transaction {
+            file.resource
+        }
+
+        if (id != null) {
+            File(resourceDirectory, id.toString()).delete()
+
+            transaction {
+                file.resource = null
+            }
+        }
     }
 
     /**
