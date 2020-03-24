@@ -155,6 +155,19 @@ class WorkspaceFileSystem(private val workspacePath: File) {
     }
 
     /**
+     * Export a resource from the workspace by copying it into a channel. The channel is not closed afterwards. The
+     * resource is read from disk.
+     *
+     * @throws IllegalArgumentException if the file is not added to the workspace yet
+     */
+    fun exportResource(file: FileEntity, output: WritableByteChannel) {
+        val buffer = readResource(file)
+        while (buffer.remaining() > 0) {
+            output.write(buffer)
+        }
+    }
+
+    /**
      * Save the index to disk
      */
     private fun saveIndex() {
