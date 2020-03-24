@@ -1,17 +1,25 @@
 package net.cydhra.acromantula.workspace.files
 
 import com.google.gson.GsonBuilder
+import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.database.DirectoryEntity
 import net.cydhra.acromantula.database.FileEntity
+import net.cydhra.acromantula.workspace.files.events.AddedResourceEvent
+import net.cydhra.acromantula.workspace.files.events.DeletedResourceEvent
+import net.cydhra.acromantula.workspace.files.events.UpdatedResourceEvent
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.FileReader
 import java.net.URL
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import java.nio.channels.WritableByteChannel
 
 /**
  * A facade to all file system interaction of a workspace. No other part within the workspace should directly
  * interact with files of the workspace.
  */
+// TODO somehow handle exclusive write access to resources, so no two clients ever write the same resource at once
 class WorkspaceFileSystem(private val workspacePath: File) {
 
     /**
@@ -76,6 +84,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
         }
 
         saveIndex()
+        EventBroker.fireEvent(AddedResourceEvent(file))
     }
 
     /**
@@ -84,15 +93,16 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      *
      * @param file the resource to read
      *
-     * @return the raw binary content of the given resource
+     * @return the raw binary content of the given resource as a direct buffer.
      */
-    fun readResource(file: FileEntity): ByteArray {
+    fun readResource(file: FileEntity): ByteBuffer {
         val id = transaction {
             require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
             file.resource!!
         }
 
-        return File(resourceDirectory, id.toString()).readBytes()
+        val channel = File(resourceDirectory, id.toString()).inputStream().channel
+        return channel.use { it.map(FileChannel.MapMode.READ_ONLY, 0L, channel.size()) }
     }
 
     /**
@@ -102,13 +112,25 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      * @param file the resource to update
      * @param newContent the new resource content
      */
-    fun updateResource(file: FileEntity, newContent: ByteArray) {
+    fun updateResource(file: FileEntity, newContent: ByteBuffer) {
         val id = transaction {
             require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
             file.resource!!
         }
 
-        File(resourceDirectory, id.toString()).writeBytes(newContent)
+        val channel = File(resourceDirectory, id.toString())
+            .apply(File::delete)
+            .apply(File::createNewFile)
+            .outputStream()
+            .channel
+
+        while (newContent.remaining() > 0) {
+            channel.write(newContent)
+        }
+
+        channel.close()
+
+        EventBroker.fireEvent(UpdatedResourceEvent(file))
     }
 
     /**
@@ -121,6 +143,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
             file.resource
         }
 
+        // TODO do the transaction first and then delete the file. Rollback the transaction if the deletion fails.
         if (id != null) {
             File(resourceDirectory, id.toString()).delete()
 
@@ -128,6 +151,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
                 file.resource = null
             }
         }
+        EventBroker.fireEvent(DeletedResourceEvent(file))
     }
 
     /**
