@@ -1,24 +1,18 @@
 package net.cydhra.acromantula.features.disassemble
 
-import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.database.disassembly.Disassembly
 import sun.plugin.com.JavaClass
 
 /**
  * Provides the disassembly features for the application. Multiple disassemblers can be registered.
  */
-object DisassemblerService : Service {
-
-    override val name: String = "disassembler"
+object DisassemblerFeature {
 
     /**
      * Map of all registered disassemblers accessible by name
      */
     private val disassemblers = mutableMapOf<String, Disassembler>()
 
-    override suspend fun initialize() {
-
-    }
 
     /**
      * Register a [Disassembler] at the service.
