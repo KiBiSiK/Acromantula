@@ -3,6 +3,7 @@ buildscript {
     ext.jvm_target = '1.8'
     ext.junit_version = '5.2.0'
     ext.log4j2_version = '2.11.1'
+    ext.asm_version = '8.0.1'
 
     repositories {
         jcenter()
@@ -63,6 +64,10 @@ project("acromantula_backend") {
         testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junit_version
         testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit_version
         testImplementation group: 'io.mockk', name: 'mockk', version: '1.9.3'
+
+        // bytecode
+        implementation group: 'org.ow2.asm', name: 'asm', version: asm_version
+        implementation group: 'org.ow2.asm', name: 'asm-tree', version: asm_version
     }
 
     test {
