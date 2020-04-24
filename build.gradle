@@ -1,5 +1,6 @@
 buildscript {
-    ext.kotlin_version = '1.3.50'
+    ext.kotlin_version = '1.3.70'
+    ext.serialization_version = '0.20.0'
     ext.jvm_target = '1.8'
     ext.junit_version = '5.2.0'
     ext.log4j2_version = '2.11.1'
@@ -10,13 +11,16 @@ buildscript {
     }
     dependencies {
         classpath group: 'org.jetbrains.kotlin', name: 'kotlin-gradle-plugin', version: kotlin_version
+        classpath group: 'org.jetbrains.kotlin', name: 'kotlin-serialization', version: kotlin_version
     }
 }
 
 apply plugin: 'kotlin'
+apply plugin: 'kotlinx-serialization'
 
 allprojects {
     apply plugin: 'kotlin'
+    apply plugin: 'kotlinx-serialization'
 
     group 'net.cydhra'
     version '0.1.0'
@@ -39,7 +43,11 @@ project("acromantula_backend") {
     dependencies {
         // kotlin
         implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
-        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.2'
+        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.5'
+        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-runtime',
+                version:serialization_version
+        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-protobuf',
+                version: serialization_version
 
         // database
         implementation group: 'org.jetbrains.exposed', name: 'exposed', version: '0.17.6'
