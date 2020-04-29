@@ -30,12 +30,10 @@ allprojects {
         maven { url 'https://dl.bintray.com/kotlin/exposed/' }
     }
 
-    compileKotlin {
-        kotlinOptions.jvmTarget = jvm_target
-    }
-
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = jvm_target
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            kotlinOptions.jvmTarget = jvm_target
+        }
     }
 }
 
