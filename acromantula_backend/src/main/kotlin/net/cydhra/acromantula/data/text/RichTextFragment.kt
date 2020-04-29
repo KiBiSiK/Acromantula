@@ -17,7 +17,10 @@ infix fun TextClass.and(other: TextClass): TextClass {
 }
 
 const val TEXT_CLASS_NONE: TextClass = "none"
-
+const val TEXT_CLASS_KEYWORD: TextClass = "keyword"
+const val TEXT_CLASS_ANNOTATION: TextClass = "annotation"
+const val TEXT_CLASS_COMMENT: TextClass = "comment"
+const val TEXT_CLASS_DOCUMENTATION: TextClass = "documentation"
 
 @Serializable
 sealed class RichTextFragment {
@@ -49,5 +52,13 @@ sealed class RichTextFragment {
         override val textClass: TextClass,
         override val children: List<RichTextFragment>,
         val jumpTargetIdentifier: String
+    ) : RichTextFragment()
+
+    @Serializable
+    @SerialName("foldable")
+    class FoldableFragment(
+        override val textFragment: String = "",
+        override val textClass: TextClass = TEXT_CLASS_NONE,
+        override val children: List<RichTextFragment>
     ) : RichTextFragment()
 }
