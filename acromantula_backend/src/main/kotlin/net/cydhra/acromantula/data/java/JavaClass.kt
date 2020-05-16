@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.database.java
+package net.cydhra.acromantula.data.java
 
 import net.cydhra.acromantula.database.FileTable
 import org.jetbrains.exposed.dao.EntityID
