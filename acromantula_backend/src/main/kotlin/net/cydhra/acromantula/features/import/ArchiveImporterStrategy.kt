@@ -30,6 +30,8 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
         while (currentEntry != null) {
             logger.trace("importing ${currentEntry.name}")
 
+            // do not test for `sDirectory` explicitly here, as java accepts zip files whose folders contain file
+            // content. Just check whether content is available and treat it as a file, if there is.
             if (zipInputStream.available() > 0) {
                 val entryContent: ByteArray = zipInputStream.readBytes()
 
