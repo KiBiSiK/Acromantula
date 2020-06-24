@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.import
 
-import net.cydhra.acromantula.database.DirectoryEntity
+import net.cydhra.acromantula.data.DirectoryEntity
 
 /**
  * Implementations import different files into the workspace using different strategies. Using [handles] the

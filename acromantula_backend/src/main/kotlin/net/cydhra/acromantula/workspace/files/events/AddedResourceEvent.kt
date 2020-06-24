@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.workspace.files.events
 
 import net.cydhra.acromantula.bus.Event
-import net.cydhra.acromantula.database.FileEntity
+import net.cydhra.acromantula.data.FileEntity
 
 /**
  * Fired whenever a new resource is imported or otherwise added into the workspace

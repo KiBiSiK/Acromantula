@@ -2,8 +2,8 @@ package net.cydhra.acromantula.workspace.files
 
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.database.DirectoryEntity
-import net.cydhra.acromantula.database.FileEntity
+import net.cydhra.acromantula.data.DirectoryEntity
+import net.cydhra.acromantula.data.FileEntity
 import net.cydhra.acromantula.workspace.files.events.AddedResourceEvent
 import net.cydhra.acromantula.workspace.files.events.DeletedResourceEvent
 import net.cydhra.acromantula.workspace.files.events.UpdatedResourceEvent

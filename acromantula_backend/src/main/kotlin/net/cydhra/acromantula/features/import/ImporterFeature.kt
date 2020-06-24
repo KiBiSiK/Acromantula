@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.import
 
-import net.cydhra.acromantula.database.DirectoryEntity
+import net.cydhra.acromantula.data.DirectoryEntity
 import org.apache.logging.log4j.LogManager
 import java.net.URL
 
