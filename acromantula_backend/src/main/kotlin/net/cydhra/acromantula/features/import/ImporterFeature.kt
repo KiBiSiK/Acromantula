@@ -31,7 +31,8 @@ object ImporterFeature {
             return
         }
 
-        TODO("not implemented")
+        val importer = registeredImporters.first { it.handles(fileName, fileContent) }
+        importer.import(parent, fileName, fileContent)
     }
 
     /**
