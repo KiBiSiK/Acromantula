@@ -22,7 +22,7 @@ internal class WorkspaceFileSystemTest {
         if (wfsPath.exists())
             wfsPath.delete()
 
-        wfsPath.apply(File::mkdir)
+        wfsPath.apply { mkdir() }
         wfs = WorkspaceFileSystem(wfsPath)
     }
 

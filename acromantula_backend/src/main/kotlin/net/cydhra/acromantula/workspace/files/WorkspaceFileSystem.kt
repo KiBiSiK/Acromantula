@@ -119,8 +119,8 @@ class WorkspaceFileSystem(private val workspacePath: File) {
         }
 
         val channel = File(resourceDirectory, id.toString())
-            .apply(File::delete)
-            .apply(File::createNewFile)
+            .apply { delete() }
+            .apply { createNewFile() }
             .outputStream()
             .channel
 
