@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.workspace.commands
+package net.cydhra.acromantula.commands
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -26,7 +26,7 @@ internal class CommandDispatcherTest {
     @Test
     fun dispatchCommand() {
         runBlocking {
-            WorkspaceService.commandDispatcher.dispatchCommand(WorkspaceEchoCommand())
+            CommandDispatcher.dispatchCommand(WorkspaceEchoCommand())
             delay(10L)
         }
 

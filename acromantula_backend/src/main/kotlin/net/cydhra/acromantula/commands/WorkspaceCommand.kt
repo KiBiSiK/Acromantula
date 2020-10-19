@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.workspace.commands
+package net.cydhra.acromantula.commands
 
 import net.cydhra.acromantula.bus.Event
 

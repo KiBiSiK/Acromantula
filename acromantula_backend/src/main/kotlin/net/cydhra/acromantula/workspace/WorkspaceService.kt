@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.bus.Service
-import net.cydhra.acromantula.workspace.commands.CommandDispatcher
 
 /**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
@@ -10,12 +9,6 @@ import net.cydhra.acromantula.workspace.commands.CommandDispatcher
 object WorkspaceService : Service {
 
     override val name: String = "workspace-service"
-
-    /**
-     * The command dispatcher that handles incoming requests for the workspace. Every request for the workspace is
-     * dispatched here.
-     */
-    lateinit var commandDispatcher: CommandDispatcher
 
     /**
      * The client of the current workspace connection. This is only used internally by the service and hidden from
@@ -29,6 +22,5 @@ object WorkspaceService : Service {
      */
     override suspend fun initialize() {
         workspaceClient = LocalWorkspaceClient()
-        commandDispatcher = CommandDispatcher(workspaceClient)
     }
 }
