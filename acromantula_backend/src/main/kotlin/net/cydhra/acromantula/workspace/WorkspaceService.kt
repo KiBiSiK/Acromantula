@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.bus.Service
+import net.cydhra.acromantula.data.filesystem.ArchiveEntity
 import java.io.File
 
 /**
@@ -21,5 +22,6 @@ object WorkspaceService : Service {
      */
     override suspend fun initialize() {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
+        workspaceClient.initialize()
     }
 }

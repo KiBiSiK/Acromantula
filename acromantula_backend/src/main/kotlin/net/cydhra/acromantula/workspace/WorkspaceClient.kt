@@ -20,5 +20,11 @@ abstract class WorkspaceClient(databaseUrl: URL) {
      * The thread pools used for work related to workspace content
      */
     val workerPool = WorkerPool()
-}
 
+    /**
+     * Initialize client connections, resources, etc
+     */
+    open fun initialize() {
+        databaseClient.connect()
+    }
+}
