@@ -1,12 +1,10 @@
-package net.cydhra.acromantula.workspace.files
+package net.cydhra.acromantula.data.filesystem
 
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.data.DirectoryEntity
-import net.cydhra.acromantula.data.FileEntity
-import net.cydhra.acromantula.workspace.files.events.AddedResourceEvent
-import net.cydhra.acromantula.workspace.files.events.DeletedResourceEvent
-import net.cydhra.acromantula.workspace.files.events.UpdatedResourceEvent
+import net.cydhra.acromantula.data.filesystem.events.AddedResourceEvent
+import net.cydhra.acromantula.data.filesystem.events.DeletedResourceEvent
+import net.cydhra.acromantula.data.filesystem.events.UpdatedResourceEvent
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.FileReader

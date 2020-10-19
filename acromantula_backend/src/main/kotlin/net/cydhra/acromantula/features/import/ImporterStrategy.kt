@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.features.import
 
-import net.cydhra.acromantula.data.DirectoryEntity
+import net.cydhra.acromantula.data.filesystem.DirectoryEntity
+import java.io.InputStream
 
 /**
  * Implementations import different files into the workspace using different strategies. Using [handles] the
@@ -9,7 +10,7 @@ import net.cydhra.acromantula.data.DirectoryEntity
  */
 interface ImporterStrategy {
 
-    fun handles(fileName: String, fileContent: ByteArray): Boolean
+    fun handles(fileName: String, fileContent: InputStream): Boolean
 
-    fun import(parent: DirectoryEntity, fileName: String, fileContent: ByteArray)
+    fun import(parent: DirectoryEntity, fileName: String, fileContent: InputStream)
 }

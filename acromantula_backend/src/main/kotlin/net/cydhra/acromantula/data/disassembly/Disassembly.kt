@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.data.disassembly
 
-import net.cydhra.acromantula.data.FileEntity
-import net.cydhra.acromantula.data.FileTable
+import net.cydhra.acromantula.data.filesystem.FileEntity
+import net.cydhra.acromantula.data.filesystem.FileTable
 import net.cydhra.acromantula.data.java.JavaClass
 import net.cydhra.acromantula.data.java.JavaClassTable
 import org.jetbrains.exposed.dao.EntityID

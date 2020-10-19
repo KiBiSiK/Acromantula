@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.workspace.files.WorkspaceFileSystem
+import net.cydhra.acromantula.data.filesystem.WorkspaceFileSystem
 import org.h2.jdbcx.JdbcDataSource
 import java.io.File
 import javax.sql.DataSource
