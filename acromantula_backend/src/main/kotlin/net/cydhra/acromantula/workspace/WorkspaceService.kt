@@ -24,4 +24,12 @@ object WorkspaceService : Service {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
     }
+
+    fun addArchiveEntry(archiveName: String): ArchiveEntity {
+        return workspaceClient.databaseClient.transaction {
+            ArchiveEntity.new {
+                this.name = archiveName
+            }
+        }
+    }
 }
