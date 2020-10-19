@@ -25,7 +25,7 @@ class DatabaseClient(private val url: URL) {
     /**
      * Transaction into the connected database
      */
-    fun transaction(statement: Transaction.() -> Unit) {
-        transaction(database, statement)
+    fun <T> transaction(statement: Transaction.() -> T): T {
+        return transaction(database, statement)
     }
 }
