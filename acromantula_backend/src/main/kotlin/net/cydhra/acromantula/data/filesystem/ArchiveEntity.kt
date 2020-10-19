@@ -13,4 +13,6 @@ object ArchiveTable : IntIdTable("TreeArchives") {
 
 class ArchiveEntity(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<ArchiveEntity>(ArchiveTable)
+
+    var name by ArchiveTable.name
 }
