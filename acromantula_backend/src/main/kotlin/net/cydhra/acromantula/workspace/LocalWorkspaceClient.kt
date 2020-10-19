@@ -1,9 +1,12 @@
 package net.cydhra.acromantula.workspace
 
-import org.jetbrains.exposed.sql.transactions.TransactionManager
+import net.cydhra.acromantula.data.WorkspaceFileSystem
+import java.io.File
 
-class LocalWorkspaceClient() : WorkspaceClient() {
-    override var database: TransactionManager
-        get() = TODO("not implemented")
-        set(value) {}
+class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(directory, "db").toURI().toURL()) {
+
+    /**
+     * Directory where files of the workspace are stored
+     */
+    private val workspaceFileSystem = WorkspaceFileSystem(directory)
 }
