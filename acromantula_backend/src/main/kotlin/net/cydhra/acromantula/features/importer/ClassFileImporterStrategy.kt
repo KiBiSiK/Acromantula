@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.features.import
+package net.cydhra.acromantula.features.importer
 
 import net.cydhra.acromantula.data.filesystem.DirectoryEntity
 import java.io.PushbackInputStream
@@ -12,10 +12,11 @@ internal class ClassFileImporterStrategy : ImporterStrategy {
             readSize = fileContent.read(buffer, 0, 4)
 
             return readSize == 4 && byteArrayOf(
-                0xca.toUByte().toByte(),
-                0xfe.toUByte().toByte(),
-                0xba.toUByte().toByte(),
-                0xbe.toUByte().toByte(),
+                0xca.toByte(),
+                0xfe.toByte(),
+                0xba.toByte(),
+                0xbe.toByte(),
+                0xff.toByte()
             ).contentEquals(buffer)
         } finally {
             fileContent.unread(readSize)

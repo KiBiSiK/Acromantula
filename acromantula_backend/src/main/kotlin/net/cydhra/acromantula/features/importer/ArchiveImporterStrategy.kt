@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.features.import
+package net.cydhra.acromantula.features.importer
 
 import net.cydhra.acromantula.data.filesystem.DirectoryEntity
 import net.cydhra.acromantula.workspace.WorkspaceService
