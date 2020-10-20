@@ -25,17 +25,12 @@ internal object JavaClassTable : IntIdTable("JavaClasses") {
 class JavaClass(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<JavaClass>(JavaClassTable)
 
+    var identifier by JavaIdentifier referencedOn JavaClassTable.identifier
+        internal set
     var name by JavaClassTable.name
         internal set
     var accessFlags by JavaClassTable.access
         internal set
     var signature by JavaClassTable.signature
         internal set
-}
-
-/**
- * Import a java class into database
- */
-fun JavaClass.import(byteCode: ByteArray): JavaClass {
-    TODO()
 }
