@@ -8,11 +8,9 @@ import org.jetbrains.exposed.dao.IntIdTable
 const val MAX_FILE_NAME = 255
 
 object ArchiveTable : IntIdTable("TreeArchives") {
-    val name = varchar("name", MAX_FILE_NAME)
+
 }
 
 class ArchiveEntity(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<ArchiveEntity>(ArchiveTable)
-
-    var name by ArchiveTable.name
 }

@@ -13,4 +13,8 @@ object DirectoryTable : IntIdTable("TreeDirectory") {
 
 class DirectoryEntity(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<DirectoryEntity>(DirectoryTable)
+
+    var name by DirectoryTable.name
+    var parent by DirectoryEntity optionalReferencedOn DirectoryTable.parent
+    var archive by ArchiveEntity optionalReferencedOn DirectoryTable.archive
 }
