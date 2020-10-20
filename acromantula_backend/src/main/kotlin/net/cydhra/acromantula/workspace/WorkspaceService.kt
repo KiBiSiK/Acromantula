@@ -4,6 +4,7 @@ import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.data.filesystem.ArchiveEntity
 import net.cydhra.acromantula.data.filesystem.DirectoryEntity
 import net.cydhra.acromantula.data.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.worker.WorkerPool
 import java.io.File
 
 /**
@@ -25,6 +26,13 @@ object WorkspaceService : Service {
     override suspend fun initialize() {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
+    }
+
+    /**
+     * Get the common thread pool for the current workspace
+     */
+    fun getWorkerPool(): WorkerPool {
+        return workspaceClient.workerPool
     }
 
     /**

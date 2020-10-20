@@ -20,7 +20,7 @@ class WorkerPool {
      * A thread pool with an unlimited number of threads. Use this for threads that do not perform heavy-duty tasks
      * or if it is unclear how many threads of its type are scheduled. Do not this to perform actual work on data
      */
-    val unboundedCoroutineScope = CoroutineScope(cachedThreadPool.asCoroutineDispatcher())
+    private val unboundedCoroutineScope = CoroutineScope(cachedThreadPool.asCoroutineDispatcher())
 
     /**
      * A work-stealing pool that is used for heavy-duty worker threads
@@ -31,7 +31,7 @@ class WorkerPool {
      * A work-stealing threadpool for heavy-duty jobs that can easily be paralleled and require high amounts of green
      * threads. Use this for actual work on data. The pool is limited to the number of logical cores available.
      */
-    val workerCoroutineScope = CoroutineScope(workerPool.asCoroutineDispatcher())
+    private val workerCoroutineScope = CoroutineScope(workerPool.asCoroutineDispatcher())
 
     /**
      * Submit a heavy duty task and return a deferred promise. The task is scheduled in a work stealing threadpool.
