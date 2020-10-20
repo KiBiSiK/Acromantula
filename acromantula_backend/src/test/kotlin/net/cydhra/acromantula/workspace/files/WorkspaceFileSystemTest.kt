@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.workspace.files
 
+import net.cydhra.acromantula.data.DatabaseClient
 import net.cydhra.acromantula.data.WorkspaceFileSystem
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -23,8 +24,11 @@ internal class WorkspaceFileSystemTest {
         if (wfsPath.exists())
             wfsPath.delete()
 
+        val client = DatabaseClient("mem:test")
+        client.connect()
+
         wfsPath.apply { mkdir() }
-        wfs = WorkspaceFileSystem(wfsPath)
+        wfs = WorkspaceFileSystem(wfsPath, client)
     }
 
     @AfterEach

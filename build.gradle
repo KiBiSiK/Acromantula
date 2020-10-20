@@ -1,6 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.4.10'
-    ext.serialization_version = '0.20.0'
+    ext.serialization_version = '1.0.0'
     ext.jvm_target = '1.8'
     ext.junit_version = '5.2.0'
     ext.log4j2_version = '2.11.1'
@@ -38,42 +38,70 @@ allprojects {
 }
 
 project("acromantula_backend") {
+    sourceSets {
+        bus {
+            dependencies {
+                // kotlin
+                implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
+                implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.5'
+                implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-protobuf',
+                        version: serialization_version
+
+                // utility
+                implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+                implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
+                implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+
+                // logging
+                implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4j2_version
+                implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4j2_version
+                implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: log4j2_version
+            }
+        }
+        database {
+            compileClasspath += sourceSets.bus.runtimeClasspath
+
+            dependencies {
+                // bytecode
+                implementation group: 'org.ow2.asm', name: 'asm', version: asm_version
+                implementation group: 'org.ow2.asm', name: 'asm-tree', version: asm_version
+
+                // database
+                implementation group: 'org.jetbrains.exposed', name: 'exposed', version: '0.17.6'
+                implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+            }
+        }
+        workspace {
+            compileClasspath += sourceSets.bus.runtimeClasspath
+            compileClasspath += sourceSets.database.runtimeClasspath
+        }
+        main {
+            compileClasspath += sourceSets.bus.runtimeClasspath
+            compileClasspath += sourceSets.database.runtimeClasspath
+            compileClasspath += sourceSets.workspace.runtimeClasspath
+        }
+
+        test {
+            compileClasspath += sourceSets.bus.runtimeClasspath
+            compileClasspath += sourceSets.database.runtimeClasspath
+            compileClasspath += sourceSets.workspace.runtimeClasspath
+            runtimeClasspath += sourceSets.bus.runtimeClasspath
+            runtimeClasspath += sourceSets.database.runtimeClasspath
+            runtimeClasspath += sourceSets.workspace.runtimeClasspath
+        }
+    }
+
+    // main source set and test
     dependencies {
-        // kotlin
-        implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
-        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.5'
-        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-runtime',
-                version:serialization_version
-        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-protobuf',
-                version: serialization_version
-
-        // database
-        implementation group: 'org.jetbrains.exposed', name: 'exposed', version: '0.17.6'
-        implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
-
         // IPC
         implementation group: 'org.scala-sbt.ipcsocket', name: 'ipcsocket', version: '1.0.0'
 
-        // utility
-        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-        implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
-        implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-
-        // logging
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4j2_version
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4j2_version
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: log4j2_version
-
         // testing framework
-        testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
-        testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junit_version
-        testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junit_version
+        testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junit_version
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junit_version
         testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit_version
         testImplementation group: 'io.mockk', name: 'mockk', version: '1.9.3'
-
-        // bytecode
-        implementation group: 'org.ow2.asm', name: 'asm', version: asm_version
-        implementation group: 'org.ow2.asm', name: 'asm-tree', version: asm_version
     }
 
     test {

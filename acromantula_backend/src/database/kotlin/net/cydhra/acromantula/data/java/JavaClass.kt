@@ -29,3 +29,11 @@ class JavaClass(id: EntityID<Int>) : IntEntity(id) {
     val accessFlags by JavaClassTable.access
     val signature by JavaClassTable.signature
 }
+
+/**
+ * Import a java class into database
+ */
+fun JavaClass.import(byteCode: ByteArray): JavaClass {
+
+    TODO()
+}
