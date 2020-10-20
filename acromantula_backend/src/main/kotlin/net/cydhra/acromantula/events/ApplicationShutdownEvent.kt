@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.bus.events
+package net.cydhra.acromantula.events
 
 import net.cydhra.acromantula.bus.Event
 

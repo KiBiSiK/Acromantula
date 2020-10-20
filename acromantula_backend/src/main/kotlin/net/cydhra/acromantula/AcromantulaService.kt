@@ -2,9 +2,9 @@ package net.cydhra.acromantula
 
 import kotlinx.coroutines.runBlocking
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
-import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.config.ConfigurationService
+import net.cydhra.acromantula.events.ApplicationShutdownEvent
+import net.cydhra.acromantula.events.ApplicationStartupEvent
 import net.cydhra.acromantula.ipc.IPCService
 import net.cydhra.acromantula.plugins.PluginService
 import net.cydhra.acromantula.workspace.WorkspaceService
