@@ -43,4 +43,16 @@ object WorkspaceService : Service {
             }
         }
     }
+
+    /**
+     * Add a directory entry into the workspace file tree.
+     */
+    fun addDirectoryEntry(name: String, parent: DirectoryEntity?): DirectoryEntity {
+        return workspaceClient.databaseClient.transaction {
+            DirectoryEntity.new {
+                this.name = name
+                this.parent = parent
+            }
+        }
+    }
 }
