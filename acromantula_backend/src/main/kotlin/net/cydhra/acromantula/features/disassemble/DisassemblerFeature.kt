@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.disassemble
 
-import net.cydhra.acromantula.data.disassembly.Disassembly
+import net.cydhra.acromantula.workspace.disassembly.Disassembly
 import sun.plugin.com.JavaClass
 
 /**

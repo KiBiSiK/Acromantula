@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.data
+package net.cydhra.acromantula.workspace
 
 import org.h2.jdbcx.JdbcDataSource
 import org.jetbrains.exposed.sql.Database

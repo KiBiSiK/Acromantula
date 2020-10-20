@@ -1,6 +1,6 @@
-package net.cydhra.acromantula.data.java
+package net.cydhra.acromantula.workspace.java
 
-import net.cydhra.acromantula.data.filesystem.FileTable
+import net.cydhra.acromantula.workspace.filesystem.FileTable
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass

@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.data.filesystem
+package net.cydhra.acromantula.workspace.filesystem
 
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity

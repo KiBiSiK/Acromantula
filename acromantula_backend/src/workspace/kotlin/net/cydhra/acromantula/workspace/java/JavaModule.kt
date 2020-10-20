@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.data.java
+package net.cydhra.acromantula.workspace.java
 
 import org.jetbrains.exposed.dao.IntIdTable
 

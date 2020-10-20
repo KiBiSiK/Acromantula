@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.data.DatabaseClient
-import net.cydhra.acromantula.data.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import java.net.URL
 

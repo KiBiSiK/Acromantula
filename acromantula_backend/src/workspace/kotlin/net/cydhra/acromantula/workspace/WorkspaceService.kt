@@ -1,9 +1,9 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.bus.Service
-import net.cydhra.acromantula.data.filesystem.ArchiveEntity
-import net.cydhra.acromantula.data.filesystem.DirectoryEntity
-import net.cydhra.acromantula.data.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
+import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import java.io.File
 

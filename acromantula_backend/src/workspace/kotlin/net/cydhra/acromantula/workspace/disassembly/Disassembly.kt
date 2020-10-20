@@ -1,9 +1,9 @@
-package net.cydhra.acromantula.data.disassembly
+package net.cydhra.acromantula.workspace.disassembly
 
-import net.cydhra.acromantula.data.filesystem.FileEntity
-import net.cydhra.acromantula.data.filesystem.FileTable
-import net.cydhra.acromantula.data.java.JavaClass
-import net.cydhra.acromantula.data.java.JavaClassTable
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.FileTable
+import net.cydhra.acromantula.workspace.java.JavaClass
+import net.cydhra.acromantula.workspace.java.JavaClassTable
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass

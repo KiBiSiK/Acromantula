@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.workspace.files
 
-import net.cydhra.acromantula.data.DatabaseClient
-import net.cydhra.acromantula.data.WorkspaceFileSystem
+import net.cydhra.acromantula.workspace.DatabaseClient
+import net.cydhra.acromantula.workspace.WorkspaceFileSystem
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

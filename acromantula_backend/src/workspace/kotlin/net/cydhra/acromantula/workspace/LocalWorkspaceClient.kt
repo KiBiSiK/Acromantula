@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.data.WorkspaceFileSystem
-import net.cydhra.acromantula.data.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.File
 
 class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(directory, "db").toURI().toURL()) {

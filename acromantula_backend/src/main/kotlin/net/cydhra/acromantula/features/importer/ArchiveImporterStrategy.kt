@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
-import net.cydhra.acromantula.data.filesystem.DirectoryEntity
 import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import org.apache.logging.log4j.LogManager
 import java.io.PushbackInputStream
 import java.util.zip.ZipEntry

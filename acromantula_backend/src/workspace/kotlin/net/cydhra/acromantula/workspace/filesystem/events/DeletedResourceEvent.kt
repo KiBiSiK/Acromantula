@@ -1,7 +1,7 @@
-package net.cydhra.acromantula.data.filesystem.events
+package net.cydhra.acromantula.workspace.filesystem.events
 
 import net.cydhra.acromantula.bus.Event
-import net.cydhra.acromantula.data.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 
 /**
  * Fired whenever a resource is deleted or otherwise removed from the workspace

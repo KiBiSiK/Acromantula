@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
-import net.cydhra.acromantula.data.filesystem.DirectoryEntity
+import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import java.io.PushbackInputStream
 
 internal class ClassFileImporterStrategy : ImporterStrategy {
