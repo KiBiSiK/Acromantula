@@ -1,7 +1,9 @@
 package net.cydhra.acromantula.workspace.worker
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
 import java.util.concurrent.Executors
 
 /**
@@ -30,4 +32,11 @@ class WorkerPool {
      * threads. Use this for actual work on data. The pool is limited to the number of logical cores available.
      */
     val workerCoroutineScope = CoroutineScope(workerPool.asCoroutineDispatcher())
+
+    /**
+     * Submit a heavy duty task and return a deferred promise. The task is scheduled in a work stealing threadpool.
+     */
+    fun <T> submit(worker: suspend CoroutineScope.() -> T): Deferred<T> {
+        return workerCoroutineScope.async(block = worker)
+    }
 }
