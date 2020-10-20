@@ -58,6 +58,7 @@ project("acromantula_backend") {
                 implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: log4j2_version
             }
         }
+
         workspace {
             compileClasspath += sourceSets.bus.runtimeClasspath
 
@@ -71,16 +72,20 @@ project("acromantula_backend") {
                 implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
             }
         }
-        main {
+
+        features {
             compileClasspath += sourceSets.bus.runtimeClasspath
             compileClasspath += sourceSets.workspace.runtimeClasspath
         }
 
-        test {
+        main {
             compileClasspath += sourceSets.bus.runtimeClasspath
             compileClasspath += sourceSets.workspace.runtimeClasspath
-            runtimeClasspath += sourceSets.bus.runtimeClasspath
-            runtimeClasspath += sourceSets.workspace.runtimeClasspath
+            compileClasspath += sourceSets.features.runtimeClasspath
+        }
+
+        test {
+
         }
     }
 

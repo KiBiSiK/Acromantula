@@ -23,11 +23,11 @@ object DisassemblerFeature {
      * registered
      */
     fun registerDisassembler(disassembler: Disassembler) {
-        if (this.disassemblers.containsKey(disassembler.identifier)) {
+        if (disassemblers.containsKey(disassembler.identifier)) {
             throw IllegalArgumentException("cannot register two disassemblers with the same name")
         }
 
-        this.disassemblers[disassembler.identifier] = disassembler
+        disassemblers[disassembler.identifier] = disassembler
     }
 
     /**
@@ -39,7 +39,7 @@ object DisassemblerFeature {
      * @throws IllegalArgumentException if the named disassembler is unknown
      */
     suspend fun provideDisassembly(classFile: JavaClass, disassembler: String): Disassembly {
-        if (!this.disassemblers.containsKey(disassembler)) {
+        if (!disassemblers.containsKey(disassembler)) {
             throw IllegalArgumentException("disassembler named \"$disassembler\" cannot be found")
         }
 
