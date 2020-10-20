@@ -9,7 +9,7 @@ class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(directory, "d
     /**
      * Directory where files of the workspace are stored
      */
-    private val workspaceFileSystem = WorkspaceFileSystem(directory)
+    private val workspaceFileSystem = WorkspaceFileSystem(directory, this.databaseClient)
 
     override fun uploadFile(fileEntity: FileEntity, content: ByteArray) {
         this.workspaceFileSystem.addResource(fileEntity, content)

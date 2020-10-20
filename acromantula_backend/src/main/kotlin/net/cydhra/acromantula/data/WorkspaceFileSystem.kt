@@ -20,7 +20,7 @@ import java.nio.channels.WritableByteChannel
  * interact with files of the workspace.
  */
 // TODO somehow handle exclusive write access to resources, so no two clients ever write the same resource at once
-class WorkspaceFileSystem(private val workspacePath: File) {
+class WorkspaceFileSystem(private val workspacePath: File, private val databaseClient: DatabaseClient) {
 
     /**
      * A file containing meta information for this service to correctly operate
@@ -79,7 +79,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
         val newFile = File(this.resourceDirectory, (++this.index.currentFileIndex).toString())
         newFile.writeBytes(content)
 
-        transaction {
+        this.databaseClient.transaction {
             file.resource = this@WorkspaceFileSystem.index.currentFileIndex
         }
 
@@ -96,7 +96,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      * @return the raw binary content of the given resource as a direct buffer.
      */
     fun readResource(file: FileEntity): ByteBuffer {
-        val id = transaction {
+        val id = this.databaseClient.transaction {
             require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
             file.resource!!
         }
@@ -113,7 +113,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      * @param newContent the new resource content
      */
     fun updateResource(file: FileEntity, newContent: ByteBuffer) {
-        val id = transaction {
+        val id = this.databaseClient.transaction {
             require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
             file.resource!!
         }
@@ -139,7 +139,7 @@ class WorkspaceFileSystem(private val workspacePath: File) {
      * @param file the resource to delete.
      */
     fun deleteResource(file: FileEntity) {
-        val id = transaction {
+        val id = this.databaseClient.transaction {
             file.resource
         }
 
