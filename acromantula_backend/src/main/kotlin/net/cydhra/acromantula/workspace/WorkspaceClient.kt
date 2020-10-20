@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.data.DatabaseClient
+import net.cydhra.acromantula.data.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import java.net.URL
 
@@ -27,4 +28,12 @@ abstract class WorkspaceClient(databaseUrl: URL) {
     open fun initialize() {
         databaseClient.connect()
     }
+
+    /**
+     * Upload a file into the workspace
+     *
+     * @param fileEntity database entry to reference the file
+     * @param content file binary content
+     */
+    abstract fun uploadFile(fileEntity: FileEntity, content: ByteArray)
 }

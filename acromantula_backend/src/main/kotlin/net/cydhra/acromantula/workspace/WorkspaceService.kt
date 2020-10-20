@@ -3,6 +3,7 @@ package net.cydhra.acromantula.workspace
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.data.filesystem.ArchiveEntity
 import net.cydhra.acromantula.data.filesystem.DirectoryEntity
+import net.cydhra.acromantula.data.filesystem.FileEntity
 import java.io.File
 
 /**
@@ -54,5 +55,25 @@ object WorkspaceService : Service {
                 this.parent = parent
             }
         }
+    }
+
+    /**
+     * Add a file into the workspace. An entry in database is create for reference and the content is uploaded into
+     * the workspace.
+     *
+     * @param name file name
+     * @param parent optional parent directory
+     * @param content file binary content
+     */
+    fun addFileEntry(name: String, parent: DirectoryEntity?, content: ByteArray): FileEntity {
+        val fileEntity = workspaceClient.databaseClient.transaction {
+            FileEntity.new {
+                this.name = name
+                this.parent = parent
+            }
+        }
+
+        workspaceClient.uploadFile(fileEntity, content)
+        return fileEntity
     }
 }
