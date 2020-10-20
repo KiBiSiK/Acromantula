@@ -1,9 +1,6 @@
 package net.cydhra.acromantula.workspace.worker
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 
 /**
@@ -38,5 +35,13 @@ class WorkerPool {
      */
     fun <T> submit(worker: suspend CoroutineScope.() -> T): Deferred<T> {
         return workerCoroutineScope.async(block = worker)
+    }
+
+    /**
+     * Launch a potentially long running task in an unbounded pool of threads. This should not perform heavy duty
+     * work, because that might starve the actual worker threads.
+     */
+    fun launchTask(task: suspend CoroutineScope.() -> Unit): Job {
+        return unboundedCoroutineScope.launch(block = task)
     }
 }
