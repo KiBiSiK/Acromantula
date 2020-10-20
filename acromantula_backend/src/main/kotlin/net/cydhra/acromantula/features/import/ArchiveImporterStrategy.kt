@@ -3,7 +3,7 @@ package net.cydhra.acromantula.features.import
 import net.cydhra.acromantula.data.filesystem.DirectoryEntity
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
-import java.io.InputStream
+import java.io.PushbackInputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
@@ -18,12 +18,12 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
     private val directoryMap = mutableMapOf<String, DirectoryEntity>()
 
-    override fun handles(fileName: String, fileContent: InputStream): Boolean {
+    override fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
         // TODO maybe search magic bytes idk
         return fileName.endsWith(".zip") || fileName.endsWith(".jar")
     }
 
-    override fun import(parent: DirectoryEntity, fileName: String, fileContent: InputStream) {
+    override fun import(parent: DirectoryEntity, fileName: String, fileContent: PushbackInputStream) {
         val archive = WorkspaceService.addArchiveEntry(fileName, parent)
         directoryMap["/"] = archive
 

@@ -3,6 +3,7 @@ package net.cydhra.acromantula.features.import
 import net.cydhra.acromantula.data.filesystem.DirectoryEntity
 import org.apache.logging.log4j.LogManager
 import java.io.InputStream
+import java.io.PushbackInputStream
 import java.net.URL
 
 /**
@@ -19,10 +20,11 @@ object ImporterFeature {
     private val registeredImporters = mutableListOf<ImporterStrategy>()
 
     /**
-     * Import a file into the workspace, using an importer strategy is available
+     * Import a file into the workspace
      *
      * @param parent a parent entity in the file tree, that gets this file as a
-     * @param fileName a name this
+     * @param fileName name for the file in the workspace
+     * @param file URL pointing to the file
      */
     fun importFile(parent: DirectoryEntity, fileName: String, file: URL) {
         val fileStream = try {
@@ -32,12 +34,21 @@ object ImporterFeature {
             return
         }
 
-        val importer = registeredImporters.first { it.handles(fileName, fileStream) }
-        importer.import(parent, fileName, fileStream)
+        importFile(parent, fileName, fileStream)
     }
 
+    /**
+     * Import a file into the workspace
+     *
+     * @param parent a parent entity in the file tree, that gets this file as a
+     * @param fileName name for the file in the workspace
+     * @param fileStream an [InputStream] for the file content
+     */
     fun importFile(parent: DirectoryEntity, fileName: String, fileStream: InputStream) {
+        val pushbackStream = if (fileStream is PushbackInputStream) fileStream else PushbackInputStream(fileStream)
 
+        val importer = registeredImporters.first { it.handles(fileName, pushbackStream) }
+        importer.import(parent, fileName, pushbackStream)
     }
 
     /**
