@@ -9,7 +9,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
 
-object DisassemblyTable : IntIdTable() {
+internal object DisassemblyTable : IntIdTable() {
     val codeFile = reference("codefile", JavaClassTable)
     val disassembly = reference("disassembly", FileTable)
     val created = datetime("created")
@@ -23,6 +23,9 @@ class Disassembly(entityID: EntityID<Int>) : IntEntity(entityID) {
     companion object : IntEntityClass<Disassembly>(DisassemblyTable)
 
     var codeFile by JavaClass referencedOn DisassemblyTable.codeFile
+        internal set
     var disassembly by FileEntity referencedOn DisassemblyTable.disassembly
+        internal set
     var created by DisassemblyTable.created
+        internal set
 }

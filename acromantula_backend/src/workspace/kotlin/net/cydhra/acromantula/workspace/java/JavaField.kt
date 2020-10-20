@@ -4,7 +4,7 @@ import org.jetbrains.exposed.dao.IntIdTable
 
 class JavaField
 
-object JavaFieldTable : IntIdTable("JavaFields") {
+internal object JavaFieldTable : IntIdTable("JavaFields") {
     val name = varchar("name", MAX_IDENTIFIER_LENGTH)
     val access = integer("access")
 

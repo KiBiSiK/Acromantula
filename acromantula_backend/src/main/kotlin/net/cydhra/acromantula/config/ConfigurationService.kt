@@ -8,4 +8,8 @@ object ConfigurationService : Service {
     override suspend fun initialize() {
 
     }
+
+    internal fun lol() {
+
+    }
 }

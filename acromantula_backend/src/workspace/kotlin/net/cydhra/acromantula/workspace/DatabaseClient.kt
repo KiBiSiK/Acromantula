@@ -11,7 +11,7 @@ import javax.sql.DataSource
  * A database client connecting to the database identified by `databasePath`. This can either be a URL or the term
  * `mem:<name>`
  */
-class DatabaseClient(private val databasePath: String) {
+internal class DatabaseClient(private val databasePath: String) {
 
     /**
      * A client that connects to a database identified by a url. Can be file or network URL.

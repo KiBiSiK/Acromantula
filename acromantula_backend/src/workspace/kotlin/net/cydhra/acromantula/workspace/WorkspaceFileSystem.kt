@@ -20,7 +20,7 @@ import java.nio.channels.WritableByteChannel
  * interact with files of the workspace.
  */
 // TODO somehow handle exclusive write access to resources, so no two clients ever write the same resource at once
-class WorkspaceFileSystem(private val workspacePath: File, private val databaseClient: DatabaseClient) {
+internal class WorkspaceFileSystem(private val workspacePath: File, private val databaseClient: DatabaseClient) {
 
     /**
      * A file containing meta information for this service to correctly operate

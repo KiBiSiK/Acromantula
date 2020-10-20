@@ -4,6 +4,6 @@ import org.jetbrains.exposed.dao.IntIdTable
 
 class JavaModule
 
-object JavaModuleTable : IntIdTable("JavaModule") {
+internal object JavaModuleTable : IntIdTable("JavaModule") {
     val name = varchar("name", MAX_IDENTIFIER_LENGTH)
 }

@@ -9,7 +9,7 @@ import java.net.URL
  * opaque handling of local and remote connections. It offers all resources associated with the workspace connection,
  * including, but not limited to, database access and worker-thread-pool.
  */
-abstract class WorkspaceClient(databaseUrl: URL) {
+internal abstract class WorkspaceClient(databaseUrl: URL) {
 
     /**
      * A connection to the workspace database

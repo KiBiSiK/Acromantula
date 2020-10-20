@@ -4,7 +4,7 @@ import org.jetbrains.exposed.dao.IntIdTable
 
 class MemberReference
 
-object MemberReferenceTable : IntIdTable("references") {
+internal object MemberReferenceTable : IntIdTable("references") {
     val referrer = reference("referrer", JavaMethodTable)
     val referred = reference("referred", JavaIdentifierTable)
 

@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 
-object JavaClassTable : IntIdTable("JavaClasses") {
+internal object JavaClassTable : IntIdTable("JavaClasses") {
     val identifier = reference("identifier", JavaIdentifierTable, ReferenceOption.RESTRICT).index()
     val name = varchar("name", MAX_IDENTIFIER_LENGTH)
     val superIdentifier = reference("super_identifier", JavaIdentifierTable).nullable()
@@ -25,15 +25,17 @@ object JavaClassTable : IntIdTable("JavaClasses") {
 class JavaClass(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<JavaClass>(JavaClassTable)
 
-    val name by JavaClassTable.name
-    val accessFlags by JavaClassTable.access
-    val signature by JavaClassTable.signature
+    var name by JavaClassTable.name
+        internal set
+    var accessFlags by JavaClassTable.access
+        internal set
+    var signature by JavaClassTable.signature
+        internal set
 }
 
 /**
  * Import a java class into database
  */
 fun JavaClass.import(byteCode: ByteArray): JavaClass {
-
     TODO()
 }

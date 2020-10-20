@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.IntIdTable
 
 const val MAX_FILE_NAME = 255
 
-object ArchiveTable : IntIdTable("TreeArchives") {
+internal object ArchiveTable : IntIdTable("TreeArchives") {
 
 }
 
