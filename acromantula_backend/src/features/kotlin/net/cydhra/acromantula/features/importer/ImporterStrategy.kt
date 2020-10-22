@@ -12,5 +12,5 @@ interface ImporterStrategy {
 
     fun handles(fileName: String, fileContent: PushbackInputStream): Boolean
 
-    fun import(parent: DirectoryEntity, fileName: String, fileContent: PushbackInputStream)
+    fun import(parent: DirectoryEntity?, fileName: String, fileContent: PushbackInputStream)
 }
