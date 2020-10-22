@@ -82,6 +82,9 @@ project("acromantula_backend") {
             compileClasspath += sourceSets.bus.runtimeClasspath
             compileClasspath += sourceSets.workspace.runtimeClasspath
             compileClasspath += sourceSets.features.runtimeClasspath
+            runtimeClasspath += sourceSets.bus.runtimeClasspath
+            runtimeClasspath += sourceSets.workspace.runtimeClasspath
+            runtimeClasspath += sourceSets.features.runtimeClasspath
         }
 
         test {
