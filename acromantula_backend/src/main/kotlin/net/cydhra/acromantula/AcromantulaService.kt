@@ -33,6 +33,14 @@ fun main() {
         command = input.readLine()
         if (command != "quit") {
             logger.info("dispatching \"$command\"...")
+
+            try {
+                CommandDispatcher.dispatchCommand(command)
+            } catch (e: IllegalStateException) {
+                logger.error("cannot dispatch command: ${e.message}")
+            } catch (e: Exception) {
+                logger.error("command dispatch failed for unexpected reasons", e)
+            }
         } else {
             logger.info("attempting shutdown...")
 
