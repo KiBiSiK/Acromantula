@@ -84,4 +84,12 @@ object WorkspaceService : Service {
         workspaceClient.uploadFile(fileEntity, content)
         return fileEntity
     }
+
+    fun queryDirectory(path: String): DirectoryEntity {
+        TODO()
+    }
+
+    fun queryDirectory(id: Int): DirectoryEntity {
+        TODO()
+    }
 }
