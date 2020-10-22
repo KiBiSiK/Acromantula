@@ -3,6 +3,7 @@ package net.cydhra.acromantula.features.importer
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import org.apache.logging.log4j.LogManager
+import java.io.ByteArrayInputStream
 import java.io.PushbackInputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -35,12 +36,15 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
             // do not test for `isDirectory` explicitly here, as java accepts zip files whose folders contain file
             // content. Just check whether content is available and treat it as a file, if there is.
-            if (zipInputStream.available() > 0) {
+            // Unfortunately reading the data is the only way to see if data is available, because `available()`
+            // violates its contract in `ZipInputStream`. So we are a little bit inefficient in our use of streams here.
+            val blob = zipInputStream.readBytes()
+            if (blob.isNotEmpty()) {
                 val parentDirectory = getParentDirectory(currentEntry.name)
                 ImporterFeature.importFile(
                     parent = parentDirectory,
                     fileName = currentEntry.name.removePrefix(parentDirectory.name),
-                    fileStream = zipInputStream
+                    fileStream = PushbackInputStream(ByteArrayInputStream(blob))
                 )
             }
 
