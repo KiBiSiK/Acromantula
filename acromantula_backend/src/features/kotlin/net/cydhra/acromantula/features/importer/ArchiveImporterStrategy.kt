@@ -23,7 +23,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
         return fileName.endsWith(".zip") || fileName.endsWith(".jar")
     }
 
-    override fun import(parent: DirectoryEntity, fileName: String, fileContent: PushbackInputStream) {
+    override fun import(parent: DirectoryEntity?, fileName: String, fileContent: PushbackInputStream) {
         val archive = WorkspaceService.addArchiveEntry(fileName, parent)
         directoryMap["/"] = archive
 

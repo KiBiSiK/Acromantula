@@ -23,7 +23,7 @@ internal class ClassFileImporterStrategy : ImporterStrategy {
         }
     }
 
-    override fun import(parent: DirectoryEntity, fileName: String, fileContent: PushbackInputStream) {
+    override fun import(parent: DirectoryEntity?, fileName: String, fileContent: PushbackInputStream) {
         // TODO parse to ClassNode, hand to worker to parse, insert file into tree
     }
 }
