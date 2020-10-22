@@ -6,6 +6,7 @@ import java.io.File
 import java.io.InputStream
 import java.io.PushbackInputStream
 import java.net.URL
+import java.util.*
 
 /**
  * Imports files into the workspace. [ImporterStrategies][ImporterStrategy] can be registered to handle files
@@ -18,7 +19,16 @@ object ImporterFeature {
 
     private val logger = LogManager.getLogger()
 
-    private val registeredImporters = mutableListOf<ImporterStrategy>()
+    /**
+     * Different strategies for importing files into workspace. Order is important, as the first strategy that claims
+     * to handle a file has precedence over later strategies
+     */
+    private val registeredImporters = LinkedList<ImporterStrategy>()
+
+    /**
+     * Fallback importer strategy that simply copies the file into workspace
+     */
+    private val genericFileImporterStrategy = GenericFileImporterStrategy()
 
     init {
         registerImporterStrategy(ArchiveImporterStrategy())
@@ -55,14 +65,20 @@ object ImporterFeature {
         logger.trace("importing \"$fileName\"")
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else PushbackInputStream(fileStream)
 
-        val importer = registeredImporters.first { it.handles(fileName, pushbackStream) }
+        val importer =
+            registeredImporters.firstOrNull { it.handles(fileName, pushbackStream) } ?: genericFileImporterStrategy
         importer.import(parent, fileName, pushbackStream)
     }
 
     /**
      * Register a new strategy for importing files
+     *
+     * @param strategy a [ImporterStrategy] implementation
+     * @param priority if true, the strategy is not appended to the list, but added on top of it. Strategies further
+     * to the front of the list take precedence over strategies further back. So this can be used to override a
+     * strategy, that is already in the list.
      */
-    fun registerImporterStrategy(strategy: ImporterStrategy) {
+    fun registerImporterStrategy(strategy: ImporterStrategy, priority: Boolean = false) {
         registeredImporters += strategy
     }
 }
