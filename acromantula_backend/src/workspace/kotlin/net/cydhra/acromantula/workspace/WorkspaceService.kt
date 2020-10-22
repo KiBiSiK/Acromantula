@@ -3,6 +3,7 @@ package net.cydhra.acromantula.workspace
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
+import net.cydhra.acromantula.workspace.filesystem.DirectoryTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import java.io.File
@@ -86,10 +87,30 @@ object WorkspaceService : Service {
     }
 
     fun queryDirectory(path: String): DirectoryEntity {
-        TODO()
+        val pathParts = path.split("/")
+        return this.workspaceClient.databaseClient.transaction {
+            var index = pathParts.size - 1
+
+            // TODO this query should be replaced by a singular recursive query, but for now it at least works for
+            //  unique directory names
+            var results = DirectoryEntity.find { DirectoryTable.name eq pathParts[index--] }
+
+            while (index >= 0) {
+                when {
+                    results.empty() -> error("directory with path $path does not exist")
+                    results.count() == 1 -> return@transaction results.first()
+                    else -> TODO("implement recursive query to search for parent directory")
+                }
+            }
+
+            error("directory with path $path does not exist")
+        }
     }
 
     fun queryDirectory(id: Int): DirectoryEntity {
-        TODO()
+        return this.workspaceClient.databaseClient.transaction {
+            DirectoryEntity.find { DirectoryTable.id eq id }.firstOrNull()
+                ?: error("directory with id $id does not exist")
+        }
     }
 }
