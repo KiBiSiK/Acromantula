@@ -2,6 +2,7 @@ package net.cydhra.acromantula.features.importer
 
 import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import org.apache.logging.log4j.LogManager
+import java.io.File
 import java.io.InputStream
 import java.io.PushbackInputStream
 import java.net.URL
@@ -26,7 +27,9 @@ object ImporterFeature {
      * @param fileName name for the file in the workspace
      * @param file URL pointing to the file
      */
-    fun importFile(parent: DirectoryEntity?, fileName: String, file: URL) {
+    fun importFile(parent: DirectoryEntity?, file: URL) {
+        val fileName = File(file.toURI()).name
+
         val fileStream = try {
             file.openConnection().getInputStream()
         } catch (e: Exception) {
@@ -45,6 +48,7 @@ object ImporterFeature {
      * @param fileStream an [InputStream] for the file content
      */
     fun importFile(parent: DirectoryEntity?, fileName: String, fileStream: InputStream) {
+        logger.trace("importing \"$fileName\"")
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else PushbackInputStream(fileStream)
 
         val importer = registeredImporters.first { it.handles(fileName, pushbackStream) }

@@ -17,7 +17,6 @@ import java.net.URL
  *
  * @param directory optional. the entity id of parent directory
  * @param directoryPath optional. the path of the directory in workspace
- * @param fileName name of the file in the workspace file tree
  * @param fileUrl URL pointing to the file
  */
 @Suppress("DataClassPrivateConstructor")
@@ -25,7 +24,6 @@ import java.net.URL
 data class ImportCommand private constructor(
     val directory: Int? = null,
     val directoryPath: String? = null,
-    val fileName: String,
     val fileUrl: String
 ) : WorkspaceCommand {
 
@@ -33,31 +31,24 @@ data class ImportCommand private constructor(
      * Command to import files into workspace.
      *
      * @param directory optional. the entity id of parent directory
-     * @param fileName name of the file in the workspace file tree
      * @param fileUrl URL pointing to the file
      */
-    constructor(directory: Int? = null, fileName: String, fileUrl: String) : this(directory, null, fileName, fileUrl)
+    constructor(directory: Int? = null, fileUrl: String) : this(directory, null, fileUrl)
 
     /**
      * Command to import files into workspace.
      *
      * @param directoryPath optional. the path of the directory in workspace
-     * @param fileName name of the file in the workspace file tree
      * @param fileUrl URL pointing to the file
      */
-    constructor(directoryPath: String? = null, fileName: String, fileUrl: String) : this(
-        null,
-        directoryPath,
-        fileName,
-        fileUrl
-    )
+    constructor(directoryPath: String? = null, fileUrl: String) : this(null, directoryPath, fileUrl)
 
     override suspend fun evaluate() {
         val sourceFile = try {
             // TODO how to parse URLs without blocking? Why does this block anyway?
             URL(fileUrl)
         } catch (e: MalformedURLException) {
-            throw IllegalArgumentException("cannot import $fileName", e)
+            throw IllegalArgumentException("cannot import \"$fileUrl\"", e)
         }
 
         val parentDirectoryEntity = when {
@@ -67,7 +58,7 @@ data class ImportCommand private constructor(
         }
 
         withContext(Dispatchers.IO) {
-            ImporterFeature.importFile(parentDirectoryEntity, fileName, sourceFile)
+            ImporterFeature.importFile(parentDirectoryEntity, sourceFile)
         }
     }
 }
@@ -80,10 +71,8 @@ class ImportCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
         )
         .default(null)
 
-    val fileName by parser.positional("NAME", help = "name in the workspace file tree")
-
     val fileUrl by parser.positional("URL", help = "URL pointing to the file")
 
-    override fun build() = ImportCommand(directory, fileName, fileUrl)
+    override fun build() = ImportCommand(directory, fileUrl)
 
 }
