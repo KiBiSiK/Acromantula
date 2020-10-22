@@ -2,6 +2,8 @@ package net.cydhra.acromantula.commands.impl
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import net.cydhra.acromantula.commands.WorkspaceCommand
 import net.cydhra.acromantula.commands.WorkspaceCommandArgs
@@ -64,7 +66,9 @@ data class ImportCommand private constructor(
             else -> null
         }
 
-        ImporterFeature.importFile(parentDirectoryEntity, fileName, sourceFile)
+        withContext(Dispatchers.IO) {
+            ImporterFeature.importFile(parentDirectoryEntity, fileName, sourceFile)
+        }
     }
 }
 
