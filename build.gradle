@@ -94,6 +94,9 @@ project("acromantula_backend") {
         // IPC
         implementation group: 'org.scala-sbt.ipcsocket', name: 'ipcsocket', version: '1.0.0'
 
+        // argument parsing for CLI
+        implementation group: 'com.xenomachina', name: 'kotlin-argparser', version: '2.0.7'
+
         // testing framework
         testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
         testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junit_version
