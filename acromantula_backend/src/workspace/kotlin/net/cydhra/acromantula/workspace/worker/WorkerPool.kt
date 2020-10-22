@@ -1,12 +1,15 @@
 package net.cydhra.acromantula.workspace.worker
 
 import kotlinx.coroutines.*
+import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
 
 /**
  * Provides different scopes for asynchronous dispatching of work.
  */
 class WorkerPool {
+
+    private val logger = LogManager.getLogger()
 
     /**
      * A cached thread pool for low-utilisation/long-running or asymmetrical work load.
@@ -34,6 +37,7 @@ class WorkerPool {
      * Submit a heavy duty task and return a deferred promise. The task is scheduled in a work stealing threadpool.
      */
     fun <T> submit(worker: suspend CoroutineScope.() -> T): Deferred<T> {
+        logger.trace("launching worker in bounded thread pool...")
         return workerCoroutineScope.async(block = worker)
     }
 
@@ -42,6 +46,7 @@ class WorkerPool {
      * work, because that might starve the actual worker threads.
      */
     fun launchTask(task: suspend CoroutineScope.() -> Unit): Job {
+        logger.trace("launching task in unbounded thread pool...")
         return unboundedCoroutineScope.launch(block = task)
     }
 }

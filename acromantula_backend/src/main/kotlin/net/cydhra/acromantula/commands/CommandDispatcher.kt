@@ -5,12 +5,16 @@ import kotlinx.coroutines.Job
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.commands.impl.ImportCommandArgs
 import net.cydhra.acromantula.workspace.WorkspaceService
+import org.apache.logging.log4j.LogManager
 
 /**
  *
  */
 object CommandDispatcher : Service {
+
     override val name: String = "command dispatcher"
+
+    private val logger = LogManager.getLogger()
 
     /**
      * A map of command names to argument parsers, so commands can be parsed from strings
@@ -21,6 +25,7 @@ object CommandDispatcher : Service {
      * Register a command handler and an argument parser for a given name
      */
     fun registerCommandParser(command: String, argumentParser: (ArgParser) -> WorkspaceCommandArgs) {
+        logger.trace("registering command parser for $command: [${argumentParser.javaClass.simpleName}]")
         registeredCommandParsers[command] = argumentParser
     }
 
@@ -29,6 +34,7 @@ object CommandDispatcher : Service {
      * the worker pool and generate a status code, that can be used to request status information about the command.
      */
     fun dispatchCommand(command: WorkspaceCommand): Job {
+        logger.trace("launching command handler task for $command")
         return WorkspaceService.getWorkerPool().launchTask { command.evaluate() }
     }
 
