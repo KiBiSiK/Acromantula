@@ -20,11 +20,15 @@ object ImporterFeature {
 
     private val registeredImporters = mutableListOf<ImporterStrategy>()
 
+    init {
+        registerImporterStrategy(ArchiveImporterStrategy())
+        registerImporterStrategy(ClassFileImporterStrategy())
+    }
+
     /**
      * Import a file into the workspace
      *
      * @param parent a parent entity in the file tree, that gets this file as a
-     * @param fileName name for the file in the workspace
      * @param file URL pointing to the file
      */
     fun importFile(parent: DirectoryEntity?, file: URL) {
