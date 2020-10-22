@@ -69,7 +69,7 @@ project("acromantula_backend") {
 
                 // database
                 implementation group: 'org.jetbrains.exposed', name: 'exposed', version: '0.17.6'
-                implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+                implementation group: 'com.h2database', name: 'h2', version: '1.4.197'
             }
         }
 
