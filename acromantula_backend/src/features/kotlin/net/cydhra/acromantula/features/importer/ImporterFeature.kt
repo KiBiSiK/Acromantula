@@ -26,7 +26,7 @@ object ImporterFeature {
      * @param fileName name for the file in the workspace
      * @param file URL pointing to the file
      */
-    fun importFile(parent: DirectoryEntity, fileName: String, file: URL) {
+    fun importFile(parent: DirectoryEntity?, fileName: String, file: URL) {
         val fileStream = try {
             file.openConnection().getInputStream()
         } catch (e: Exception) {
@@ -44,7 +44,7 @@ object ImporterFeature {
      * @param fileName name for the file in the workspace
      * @param fileStream an [InputStream] for the file content
      */
-    fun importFile(parent: DirectoryEntity, fileName: String, fileStream: InputStream) {
+    fun importFile(parent: DirectoryEntity?, fileName: String, fileStream: InputStream) {
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else PushbackInputStream(fileStream)
 
         val importer = registeredImporters.first { it.handles(fileName, pushbackStream) }
