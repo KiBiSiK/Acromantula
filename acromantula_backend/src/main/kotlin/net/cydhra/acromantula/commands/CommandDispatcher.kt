@@ -4,6 +4,7 @@ import com.xenomachina.argparser.ArgParser
 import kotlinx.coroutines.Job
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.commands.impl.ImportCommandArgs
+import net.cydhra.acromantula.commands.impl.ListFilesParser
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 
@@ -51,5 +52,6 @@ object CommandDispatcher : Service {
 
     override suspend fun initialize() {
         registerCommandParser("import", ::ImportCommandArgs)
+        registerCommandParser("ls", ::ListFilesParser)
     }
 }
