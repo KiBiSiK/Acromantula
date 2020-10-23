@@ -17,7 +17,6 @@ internal class ClassFileImporterStrategy : ImporterStrategy {
                 0xfe.toByte(),
                 0xba.toByte(),
                 0xbe.toByte(),
-                0xff.toByte()
             ).contentEquals(buffer)
         } finally {
             fileContent.unread(readSize)
