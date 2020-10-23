@@ -10,17 +10,23 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
-object JavaClassParser {
+class JavaClassParser {
 
     private val logger = LogManager.getLogger()
+
+    /**
+     * Single thread executor for tasks susceptible for race conditions or database conflicts
+     */
+    private val singleThreadExecutor = Executors.newSingleThreadExecutor()
 
     /**
      * A single threaded executor for critical database accesses, that cannot be done concurrently without violating
      * database constraints
      */
     private val singleThreadExecutorCoroutineContext =
-        CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).coroutineContext
+        CoroutineScope(singleThreadExecutor.asCoroutineDispatcher()).coroutineContext
 
     /**
      * Imports a class and all its members into database.
@@ -99,5 +105,15 @@ object JavaClassParser {
         val reader = ClassReader(byteCode)
         reader.accept(node, ClassReader.EXPAND_FRAMES)
         return node
+    }
+
+    fun shutdown() {
+        logger.info("shutting down single thread executor (timeout 60 seconds)...")
+        this.singleThreadExecutor.shutdown()
+        if (!this.singleThreadExecutor.awaitTermination(60L, TimeUnit.SECONDS)) {
+            logger.info("timeout elapsed. forcing shutdown...")
+            this.singleThreadExecutor.shutdownNow()
+        }
+        logger.info("single thread executor terminated.")
     }
 }

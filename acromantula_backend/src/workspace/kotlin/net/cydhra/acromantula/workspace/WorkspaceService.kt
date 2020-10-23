@@ -7,7 +7,6 @@ import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import net.cydhra.acromantula.workspace.filesystem.DirectoryTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.java.JavaClassParser
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
 import java.io.File
@@ -116,7 +115,11 @@ object WorkspaceService : Service {
         logger.trace("scheduling class parsing for: \"$name\"")
         @Suppress("DeferredResultUnused")
         this.getWorkerPool().submit {
-            JavaClassParser.import(content, this@WorkspaceService.workspaceClient.databaseClient, fileEntity)
+            workspaceClient.classParser.import(
+                content,
+                this@WorkspaceService.workspaceClient.databaseClient,
+                fileEntity
+            )
         }
 
         return fileEntity
