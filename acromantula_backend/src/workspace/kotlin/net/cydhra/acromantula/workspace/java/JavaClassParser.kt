@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.workspace.DatabaseClient
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
@@ -17,7 +18,18 @@ object JavaClassParser {
     private val singleThreadExecutorCoroutineContext =
         CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher()).coroutineContext
 
-    internal suspend fun import(byteCode: ByteArray, databaseClient: DatabaseClient): JavaClass {
+    /**
+     * Imports a class and all its members into database.
+     *
+     * @param byteCode the content of the class file
+     * @param databaseClient the database
+     * @param classFile a reference to the [FileEntity] containing the bytecode.
+     */
+    internal suspend fun import(
+        byteCode: ByteArray,
+        databaseClient: DatabaseClient,
+        classFile: FileEntity
+    ): JavaClass {
         val classNode = generateClassNode(byteCode)
 
         // retrieve identifier for this class
@@ -34,6 +46,7 @@ object JavaClassParser {
                 this.name = classNode.name
                 this.accessFlags = classNode.access
                 this.signature = classNode.signature
+                this.classFile = classFile
             }
         }
 

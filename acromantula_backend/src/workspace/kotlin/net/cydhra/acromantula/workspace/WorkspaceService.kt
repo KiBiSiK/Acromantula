@@ -5,6 +5,7 @@ import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import net.cydhra.acromantula.workspace.filesystem.DirectoryTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.java.JavaClassParser
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import java.io.File
 
@@ -83,6 +84,25 @@ object WorkspaceService : Service {
         }
 
         workspaceClient.uploadFile(fileEntity, content)
+        return fileEntity
+    }
+
+    /**
+     * Add a file into workspace and parse its contents as a java class and insert its members into database. The
+     * file is uploaded into the workspace.
+     *
+     * @param name file name
+     * @param parent optional parent directory
+     * @param content file binary content (bytecode)
+     */
+    fun addClassEntry(name: String, parent: DirectoryEntity?, content: ByteArray): FileEntity {
+        val fileEntity = addFileEntry(name, parent, content)
+
+        @Suppress("DeferredResultUnused")
+        this.getWorkerPool().submit {
+            JavaClassParser.import(content, this@WorkspaceService.workspaceClient.databaseClient, fileEntity)
+        }
+
         return fileEntity
     }
 

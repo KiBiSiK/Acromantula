@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.workspace.java
 
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
@@ -33,4 +34,6 @@ class JavaClass(id: EntityID<Int>) : IntEntity(id) {
         internal set
     var signature by JavaClassTable.signature
         internal set
+
+    var classFile by FileEntity referencedOn JavaClassTable.classFile
 }
