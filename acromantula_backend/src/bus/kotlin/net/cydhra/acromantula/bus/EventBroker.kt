@@ -2,6 +2,7 @@ package net.cydhra.acromantula.bus
 
 import com.google.common.collect.HashMultimap
 import kotlinx.coroutines.*
+import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
@@ -58,7 +59,7 @@ object EventBroker : Service {
     }
 
     override suspend fun initialize() {
-
+        registerEventListener(ApplicationShutdownEvent::class, ::shutdown)
     }
 
     /**
@@ -108,7 +109,8 @@ object EventBroker : Service {
         }
     }
 
-    private suspend fun shutdown() {
+    @Suppress("RedundantSuspendModifier")
+    private suspend fun shutdown(@Suppress("UNUSED_PARAMETER") e: ApplicationShutdownEvent) {
         logger.info("shutdown event broker thread")
         singleThreadPool.shutdown()
     }
