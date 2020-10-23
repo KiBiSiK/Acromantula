@@ -2,8 +2,8 @@ package net.cydhra.acromantula.ipc
 
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
-import net.cydhra.acromantula.events.ApplicationShutdownEvent
-import net.cydhra.acromantula.events.ApplicationStartupEvent
+import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
+import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 
 /**
  * This service handles IPC with frontend applications. It will forward events from clients to the

@@ -3,6 +3,7 @@ package net.cydhra.acromantula.workspace.worker
 import kotlinx.coroutines.*
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Provides different scopes for asynchronous dispatching of work.
@@ -48,5 +49,23 @@ class WorkerPool {
     fun launchTask(task: suspend CoroutineScope.() -> Unit): Job {
         logger.trace("launching task in unbounded thread pool...")
         return unboundedCoroutineScope.launch(block = task)
+    }
+
+    fun shutdown() {
+        logger.info("awaiting cached thread pool termination (timeout 60 seconds)...")
+        this.cachedThreadPool.shutdown()
+        if (!this.cachedThreadPool.awaitTermination(60L, TimeUnit.SECONDS)) {
+            logger.info("timeout elapsed. attempting shutdown by force.")
+            this.cachedThreadPool.shutdownNow()
+        }
+        logger.info("cached thread pool terminated.")
+
+        logger.info("awaiting worker thread pool termination (timeout 60 seconds)...")
+        this.workerPool.shutdown()
+        if (!this.workerPool.awaitTermination(60L, TimeUnit.SECONDS)) {
+            logger.info("timeout elapsed. forcing shutdown...")
+            this.workerPool.shutdownNow()
+        }
+        logger.info("worker thread pool terminated.")
     }
 }

@@ -29,6 +29,13 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     }
 
     /**
+     * Shutdown connections, release resources and terminate thread pools.
+     */
+    open fun shutdown() {
+        workerPool.shutdown()
+    }
+
+    /**
      * Upload a file into the workspace
      *
      * @param fileEntity database entry to reference the file

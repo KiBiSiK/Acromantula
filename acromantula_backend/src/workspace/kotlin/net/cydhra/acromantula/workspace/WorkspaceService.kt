@@ -1,6 +1,8 @@
 package net.cydhra.acromantula.workspace
 
+import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
+import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import net.cydhra.acromantula.workspace.filesystem.DirectoryTable
@@ -31,6 +33,13 @@ object WorkspaceService : Service {
     override suspend fun initialize() {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
+
+        EventBroker.registerEventListener(ApplicationShutdownEvent::class, ::onShutdown)
+    }
+
+    @Suppress("RedundantSuspendModifier")
+    private suspend fun onShutdown(@Suppress("UNUSED_PARAMETER") e: ApplicationShutdownEvent) {
+        this.workspaceClient.shutdown()
     }
 
     /**
