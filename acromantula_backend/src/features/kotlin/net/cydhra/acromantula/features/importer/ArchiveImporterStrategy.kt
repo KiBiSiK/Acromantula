@@ -32,7 +32,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
         var currentEntry: ZipEntry? = zipInputStream.nextEntry
         while (currentEntry != null) {
-            logger.trace("importing ${currentEntry.name}")
+            logger.trace("found zip entry: \"${currentEntry.name}\"")
 
             // do not test for `isDirectory` explicitly here, as java accepts zip files whose folders contain file
             // content. Just check whether content is available and treat it as a file, if there is.

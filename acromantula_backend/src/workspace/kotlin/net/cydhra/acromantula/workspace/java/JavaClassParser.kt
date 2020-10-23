@@ -5,12 +5,16 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.workspace.DatabaseClient
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import java.util.concurrent.Executors
 
 object JavaClassParser {
+
+    private val logger = LogManager.getLogger()
+
     /**
      * A single threaded executor for critical database accesses, that cannot be done concurrently without violating
      * database constraints
@@ -31,6 +35,7 @@ object JavaClassParser {
         classFile: FileEntity
     ): JavaClass {
         val classNode = generateClassNode(byteCode)
+        logger.trace("parsed class node: \"${classNode.name}\"")
 
         // retrieve identifier for this class
         val identifier = withContext(singleThreadExecutorCoroutineContext) {

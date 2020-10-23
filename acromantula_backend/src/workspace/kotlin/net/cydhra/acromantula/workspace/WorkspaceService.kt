@@ -7,6 +7,7 @@ import net.cydhra.acromantula.workspace.filesystem.DirectoryTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.java.JavaClassParser
 import net.cydhra.acromantula.workspace.worker.WorkerPool
+import org.apache.logging.log4j.LogManager
 import java.io.File
 
 /**
@@ -16,6 +17,8 @@ import java.io.File
 object WorkspaceService : Service {
 
     override val name: String = "workspace-service"
+
+    private val logger = LogManager.getLogger()
 
     /**
      * The client of the current workspace connection.
@@ -44,6 +47,7 @@ object WorkspaceService : Service {
      * @param archiveName simple name of the archive
      */
     fun addArchiveEntry(archiveName: String, parent: DirectoryEntity?): DirectoryEntity {
+        logger.trace("creating archive entry in file tree: \"$archiveName\"")
         return workspaceClient.databaseClient.transaction {
             val archive = ArchiveEntity.new {}
 
@@ -59,6 +63,7 @@ object WorkspaceService : Service {
      * Add a directory entry into the workspace file tree.
      */
     fun addDirectoryEntry(name: String, parent: DirectoryEntity?): DirectoryEntity {
+        logger.trace("creating directory entry in file tree: \"$name\"")
         return workspaceClient.databaseClient.transaction {
             DirectoryEntity.new {
                 this.name = name
@@ -76,6 +81,7 @@ object WorkspaceService : Service {
      * @param content file binary content
      */
     fun addFileEntry(name: String, parent: DirectoryEntity?, content: ByteArray): FileEntity {
+        logger.trace("creating file entry in file tree: \"$name\"")
         val fileEntity = workspaceClient.databaseClient.transaction {
             FileEntity.new {
                 this.name = name
@@ -98,6 +104,7 @@ object WorkspaceService : Service {
     fun addClassEntry(name: String, parent: DirectoryEntity?, content: ByteArray): FileEntity {
         val fileEntity = addFileEntry(name, parent, content)
 
+        logger.trace("scheduling class parsing for: \"$name\"")
         @Suppress("DeferredResultUnused")
         this.getWorkerPool().submit {
             JavaClassParser.import(content, this@WorkspaceService.workspaceClient.databaseClient, fileEntity)
