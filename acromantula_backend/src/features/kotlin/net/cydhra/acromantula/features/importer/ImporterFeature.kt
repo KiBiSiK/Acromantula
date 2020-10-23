@@ -79,6 +79,9 @@ object ImporterFeature {
      * strategy, that is already in the list.
      */
     fun registerImporterStrategy(strategy: ImporterStrategy, priority: Boolean = false) {
-        registeredImporters += strategy
+        if (priority)
+            registeredImporters.addFirst(strategy)
+        else
+            registeredImporters.add(strategy)
     }
 }
