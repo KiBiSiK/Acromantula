@@ -58,7 +58,7 @@ internal class DatabaseClient(private val databasePath: String) {
     /**
      * Transaction into the connected database
      */
-    internal fun <T> transaction(statement: Transaction.() -> T): T {
+    fun <T> transaction(statement: Transaction.() -> T): T {
         return transaction(database, statement)
     }
 }
