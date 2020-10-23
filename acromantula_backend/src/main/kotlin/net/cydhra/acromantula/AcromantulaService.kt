@@ -42,7 +42,7 @@ fun main() {
                 logger.error("command dispatch failed for unexpected reasons", e)
             }
         } else {
-            logger.info("attempting shutdown...")
+            logger.info("shutdown...")
 
             runBlocking {
                 EventBroker.fireEvent(ApplicationShutdownEvent())
