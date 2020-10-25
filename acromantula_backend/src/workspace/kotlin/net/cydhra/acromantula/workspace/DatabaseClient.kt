@@ -76,14 +76,14 @@ internal class DatabaseClient(private val databasePath: String) {
 
             val resultList = mutableListOf<List<String>>()
 
-            (0 until columnCount)
+            (1..columnCount)
                 .map { resultSet.metaData.getColumnName(it) }
                 .toList()
                 .also(resultList::add)
 
             while (resultSet.next()) {
-                (0 until columnCount)
-                    .map { resultSet.getObject(it).toString() }
+                (1..columnCount)
+                    .map { resultSet.getObject(it)?.toString() ?: "" }
                     .toList()
                     .also(resultList::add)
             }
