@@ -48,7 +48,13 @@ class WorkerPool {
      */
     fun launchTask(task: suspend CoroutineScope.() -> Unit): Job {
         logger.trace("launching task in unbounded thread pool...")
-        return unboundedCoroutineScope.launch(block = task)
+        return unboundedCoroutineScope.launch {
+            try {
+                this.task()
+            } catch (t: Throwable) {
+                logger.error("job failed", t)
+            }
+        }
     }
 
     fun shutdown() {
