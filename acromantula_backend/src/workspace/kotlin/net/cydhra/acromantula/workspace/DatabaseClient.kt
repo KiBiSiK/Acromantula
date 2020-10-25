@@ -40,7 +40,6 @@ internal class DatabaseClient(private val databasePath: String) {
                 DirectoryTable,
                 ArchiveTable,
                 FileTable,
-                IndexFileTable,
                 IndexMetaDatumTable,
                 DisassemblyTable,
                 JavaIdentifierTable,
