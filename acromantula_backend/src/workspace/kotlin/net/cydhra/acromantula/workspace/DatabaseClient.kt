@@ -8,7 +8,9 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.transactions.transactionManager
 import java.net.URL
+import java.sql.ResultSet
 import javax.sql.DataSource
 
 /**
@@ -60,5 +62,15 @@ internal class DatabaseClient(private val databasePath: String) {
      */
     fun <T> transaction(statement: Transaction.() -> T): T {
         return transaction(database, statement)
+    }
+
+    /**
+     * Execute a direct, unprepared query on the database. This is a debug method and is not meant to be used by
+     * production code.
+     */
+    fun directQuery(query: String): ResultSet {
+        val statement = database.transactionManager.currentOrNull()!!.connection.createStatement()
+        statement.execute(query)
+        return statement.resultSet
     }
 }

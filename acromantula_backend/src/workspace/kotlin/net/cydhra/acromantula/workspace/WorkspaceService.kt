@@ -10,6 +10,7 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
 import java.io.File
+import java.sql.ResultSet
 
 /**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
@@ -152,4 +153,13 @@ object WorkspaceService : Service {
                 ?: error("directory with id $id does not exist")
         }
     }
+
+    /**
+     * A debug function to directly execute a raw, unprepared SQL query on the workspace database. This function
+     * should not be called in production builds, but is only meant for debugging the database from the CLI
+     */
+    fun directQuery(query: String): ResultSet {
+        return this.workspaceClient.databaseClient.directQuery(query)
+    }
+
 }
