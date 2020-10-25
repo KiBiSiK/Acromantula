@@ -8,8 +8,27 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
+
+private val RECURSIVE_LIST_FILE_TREE_QUERY = """
+    |WITH RECURSIVE tree (id, name, parent, is_directory, type, resource, archive, path) AS 
+    |(
+    |  SELECT id, name, parent, is_directory, type, resource, archive, CAST (id AS VARCHAR) As path
+    |  FROM TreeFile
+    |  WHERE parent IS NULL
+    |  UNION ALL
+    |    SELECT tf.id, tf.name, tf.parent, tf.is_directory, tf.type, tf.resource, tf.archive,
+    |     (r.path || '.' || CAST  (tf.id AS VARCHAR)) AS path
+    |    FROM TreeFile AS tf
+    |      INNER JOIN tree AS r
+    |      ON tf.parent = r.id
+    |)
+    |SELECT id, name, parent, is_directory, type, resource, archive FROM tree
+    |ORDER BY path
+""".trimMargin()
 
 /**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
@@ -152,6 +171,31 @@ object WorkspaceService : Service {
         return this.workspaceClient.databaseClient.transaction {
             FileEntity.find { FileTable.id eq id and (FileTable.isDirectory eq true) }.firstOrNull()
                 ?: error("directory with id $id does not exist")
+        }
+    }
+
+    // TODO: make this relative to a directory
+    fun listFiles(): List<FileEntity> {
+        return this.workspaceClient.databaseClient.transaction {
+            val statement = TransactionManager.current().connection.createStatement()
+            statement.execute(RECURSIVE_LIST_FILE_TREE_QUERY)
+            val rs = statement.resultSet
+            val entities = mutableListOf<FileEntity>()
+            while (rs.next()) {
+                entities += FileEntity.wrapRow(
+                    ResultRow.create(
+                        rs, listOf(
+                            FileTable.id,
+                            FileTable.name,
+                            FileTable.parent,
+                            FileTable.isDirectory,
+                            FileTable.type,
+                            FileTable.archive,
+                        )
+                    )
+                )
+            }
+            entities
         }
     }
 

@@ -5,6 +5,7 @@ import com.xenomachina.argparser.default
 import kotlinx.serialization.Serializable
 import net.cydhra.acromantula.commands.WorkspaceCommand
 import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.workspace.WorkspaceService
 
 /**
  * Command to list all files in a directory.
@@ -30,7 +31,9 @@ data class ListFilesCommand private constructor(
     constructor(directoryId: Int? = null) : this(null, directoryId)
 
     override suspend fun evaluate() {
-
+        WorkspaceService.listFiles().forEach {
+            println(it.name)
+        }
     }
 }
 
