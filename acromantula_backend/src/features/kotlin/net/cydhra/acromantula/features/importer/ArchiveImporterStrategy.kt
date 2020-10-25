@@ -41,9 +41,10 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
             val blob = zipInputStream.readBytes()
             if (blob.isNotEmpty()) {
                 val parentDirectory = getParentDirectory(currentEntry.name)
+                val parentDirectoryName = getParentPath(currentEntry.name)
                 ImporterFeature.importFile(
                     parent = parentDirectory,
-                    fileName = currentEntry.name.removePrefix(parentDirectory.name),
+                    fileName = currentEntry.name.removePrefix(parentDirectoryName),
                     fileStream = PushbackInputStream(ByteArrayInputStream(blob))
                 )
             }
@@ -64,8 +65,10 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
         return directoryMap.getOrPut(parentDirectoryPath) {
             val directoryParent = getParentDirectory(parentDirectoryPath)
+            val directoryParentPath = getParentPath(parentDirectoryPath)
+
             WorkspaceService.addDirectoryEntry(
-                name = parentDirectoryPath.removePrefix(directoryParent.name),
+                name = parentDirectoryPath.removePrefix(directoryParentPath),
                 parent = directoryParent
             )
         }
