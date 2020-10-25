@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.PushbackInputStream
 
 internal class ClassFileImporterStrategy : ImporterStrategy {
@@ -23,7 +23,7 @@ internal class ClassFileImporterStrategy : ImporterStrategy {
         }
     }
 
-    override fun import(parent: DirectoryEntity?, fileName: String, fileContent: PushbackInputStream) {
+    override fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
         WorkspaceService.addClassEntry(fileName, parent, fileContent.readBytes())
     }
 }

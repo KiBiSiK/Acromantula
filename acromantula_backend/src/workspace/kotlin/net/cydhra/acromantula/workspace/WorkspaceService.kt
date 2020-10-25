@@ -4,11 +4,11 @@ import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
-import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
-import net.cydhra.acromantula.workspace.filesystem.DirectoryTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.exposed.sql.and
 import java.io.File
 
 /**
@@ -54,15 +54,16 @@ object WorkspaceService : Service {
      *
      * @param archiveName simple name of the archive
      */
-    fun addArchiveEntry(archiveName: String, parent: DirectoryEntity?): DirectoryEntity {
+    fun addArchiveEntry(archiveName: String, parent: FileEntity?): FileEntity {
         logger.trace("creating archive entry in file tree: \"$archiveName\"")
         return workspaceClient.databaseClient.transaction {
             val archive = ArchiveEntity.new {}
 
-            DirectoryEntity.new {
+            FileEntity.new {
                 this.name = archiveName
                 this.parent = parent
-                this.archive = archive
+                this.isDirectory = true
+                this.archiveEntity = archive
             }
         }
     }
@@ -70,12 +71,13 @@ object WorkspaceService : Service {
     /**
      * Add a directory entry into the workspace file tree.
      */
-    fun addDirectoryEntry(name: String, parent: DirectoryEntity?): DirectoryEntity {
+    fun addDirectoryEntry(name: String, parent: FileEntity?): FileEntity {
         logger.trace("creating directory entry in file tree: \"$name\"")
         return workspaceClient.databaseClient.transaction {
-            DirectoryEntity.new {
+            FileEntity.new {
                 this.name = name
                 this.parent = parent
+                this.isDirectory = true
             }
         }
     }
@@ -88,7 +90,7 @@ object WorkspaceService : Service {
      * @param parent optional parent directory
      * @param content file binary content
      */
-    fun addFileEntry(name: String, parent: DirectoryEntity?, content: ByteArray): FileEntity {
+    fun addFileEntry(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
         logger.trace("creating file entry in file tree: \"$name\"")
         val fileEntity = workspaceClient.databaseClient.transaction {
             FileEntity.new {
@@ -109,7 +111,7 @@ object WorkspaceService : Service {
      * @param parent optional parent directory
      * @param content file binary content (bytecode)
      */
-    fun addClassEntry(name: String, parent: DirectoryEntity?, content: ByteArray): FileEntity {
+    fun addClassEntry(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
         val fileEntity = addFileEntry(name, parent, content)
 
         logger.trace("scheduling class parsing for: \"$name\"")
@@ -125,14 +127,14 @@ object WorkspaceService : Service {
         return fileEntity
     }
 
-    fun queryDirectory(path: String): DirectoryEntity {
+    fun queryDirectory(path: String): FileEntity {
         val pathParts = path.split("/")
         return this.workspaceClient.databaseClient.transaction {
             var index = pathParts.size - 1
 
             // TODO this query should be replaced by a singular recursive query, but for now it at least works for
             //  unique directory names
-            var results = DirectoryEntity.find { DirectoryTable.name eq pathParts[index--] }
+            var results = FileEntity.find { FileTable.name eq pathParts[index--] }
 
             while (index >= 0) {
                 when {
@@ -146,9 +148,9 @@ object WorkspaceService : Service {
         }
     }
 
-    fun queryDirectory(id: Int): DirectoryEntity {
+    fun queryDirectory(id: Int): FileEntity {
         return this.workspaceClient.databaseClient.transaction {
-            DirectoryEntity.find { DirectoryTable.id eq id }.firstOrNull()
+            FileEntity.find { FileTable.id eq id and (FileTable.isDirectory eq true) }.firstOrNull()
                 ?: error("directory with id $id does not exist")
         }
     }

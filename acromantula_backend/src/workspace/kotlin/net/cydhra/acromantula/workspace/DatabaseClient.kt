@@ -1,7 +1,9 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.disassembly.DisassemblyTable
-import net.cydhra.acromantula.workspace.filesystem.*
+import net.cydhra.acromantula.workspace.filesystem.ArchiveTable
+import net.cydhra.acromantula.workspace.filesystem.FileTable
+import net.cydhra.acromantula.workspace.filesystem.IndexMetaDatumTable
 import net.cydhra.acromantula.workspace.java.*
 import org.h2.jdbcx.JdbcDataSource
 import org.jetbrains.exposed.sql.Database
@@ -37,7 +39,6 @@ internal class DatabaseClient(private val databasePath: String) {
 
         transaction {
             SchemaUtils.createMissingTablesAndColumns(
-                DirectoryTable,
                 ArchiveTable,
                 FileTable,
                 IndexMetaDatumTable,

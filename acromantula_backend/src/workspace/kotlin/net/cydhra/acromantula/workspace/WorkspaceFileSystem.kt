@@ -2,7 +2,6 @@ package net.cydhra.acromantula.workspace
 
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
 import net.cydhra.acromantula.workspace.filesystem.events.DeletedResourceEvent
@@ -56,7 +55,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      * @param url the url where to load the resource from
      * @param parent an optional parent for the resource to integrate it into the file tree
      */
-    fun importResource(name: String, url: URL, parent: DirectoryEntity? = null): FileEntity {
+    fun importResource(name: String, url: URL, parent: FileEntity? = null): FileEntity {
         val content = url.openStream().use { it.readBytes() }
         return transaction {
             val newEntity = FileEntity.new {

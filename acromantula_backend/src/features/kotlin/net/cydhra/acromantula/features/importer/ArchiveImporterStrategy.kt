@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import java.io.ByteArrayInputStream
 import java.io.PushbackInputStream
@@ -17,14 +17,14 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
         private val lastDirectoryRegex = LAST_DIRECTORY_PATTERN.toRegex()
     }
 
-    private val directoryMap = mutableMapOf<String, DirectoryEntity>()
+    private val directoryMap = mutableMapOf<String, FileEntity>()
 
     override fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
         // TODO maybe search magic bytes idk
         return fileName.endsWith(".zip") || fileName.endsWith(".jar")
     }
 
-    override fun import(parent: DirectoryEntity?, fileName: String, fileContent: PushbackInputStream) {
+    override fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
         val archive = WorkspaceService.addArchiveEntry(fileName, parent)
         directoryMap["/"] = archive
 
@@ -59,7 +59,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
      * Return the [DirectoryEntity] that is the parent of the element denoted by [element]. If the directory does not
      * exist yet, it and its parents are created recursively.
      */
-    private fun getParentDirectory(element: String): DirectoryEntity {
+    private fun getParentDirectory(element: String): FileEntity {
         val parentDirectoryPath = getParentPath(element)
 
         return directoryMap.getOrPut(parentDirectoryPath) {

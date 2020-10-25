@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
-import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.InputStream
@@ -41,7 +41,7 @@ object ImporterFeature {
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param file URL pointing to the file
      */
-    fun importFile(parent: DirectoryEntity?, file: URL) {
+    fun importFile(parent: FileEntity?, file: URL) {
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -61,7 +61,7 @@ object ImporterFeature {
      * @param fileName name for the file in the workspace
      * @param fileStream an [InputStream] for the file content
      */
-    fun importFile(parent: DirectoryEntity?, fileName: String, fileStream: InputStream) {
+    fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
         logger.trace("importing \"$fileName\"")
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else PushbackInputStream(fileStream)
 

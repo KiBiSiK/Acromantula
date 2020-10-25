@@ -4,12 +4,21 @@ import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.or
 
 internal object FileTable : IntIdTable("TreeFile") {
     val name = varchar("name", MAX_FILE_NAME)
-    val parent = reference("parent", DirectoryTable).nullable()
+    val parent = reference("parent", FileTable).nullable()
+    val isDirectory = bool("is_directory").default(false)
     val type = varchar("type", 31).nullable()
     val resource = integer("resource").nullable()
+    val archive = reference("archive", ArchiveTable).nullable()
+
+    init {
+        check { (isDirectory eq true and resource.isNull()) or (isDirectory eq false and resource.isNotNull()) }
+        check { archive.isNull() or (archive.isNotNull() and (isDirectory eq true)) }
+    }
 }
 
 /**
@@ -20,10 +29,13 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
 
     var name by FileTable.name
         internal set
-    var parent by DirectoryEntity optionalReferencedOn FileTable.parent
+    var parent by FileEntity optionalReferencedOn FileTable.parent
+        internal set
+    var isDirectory by FileTable.isDirectory
         internal set
     var type by FileTable.type
         internal set
     var resource by FileTable.resource
         internal set
+    var archiveEntity by ArchiveEntity optionalReferencedOn FileTable.archive
 }

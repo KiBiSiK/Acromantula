@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
-import net.cydhra.acromantula.workspace.filesystem.DirectoryEntity
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.PushbackInputStream
 
 /**
@@ -12,5 +12,5 @@ interface ImporterStrategy {
 
     fun handles(fileName: String, fileContent: PushbackInputStream): Boolean
 
-    fun import(parent: DirectoryEntity?, fileName: String, fileContent: PushbackInputStream)
+    fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream)
 }
