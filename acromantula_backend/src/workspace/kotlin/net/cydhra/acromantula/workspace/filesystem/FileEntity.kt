@@ -16,7 +16,6 @@ internal object FileTable : IntIdTable("TreeFile") {
     val archive = reference("archive", ArchiveTable).nullable()
 
     init {
-        check { (isDirectory eq true and resource.isNull()) or (isDirectory eq false and resource.isNotNull()) }
         check { archive.isNull() or (archive.isNotNull() and (isDirectory eq true)) }
     }
 }
