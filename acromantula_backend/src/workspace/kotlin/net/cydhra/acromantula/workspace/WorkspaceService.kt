@@ -34,6 +34,14 @@ private val RECURSIVE_LIST_FILE_TREE_QUERY = """
     |ORDER BY path
 """.trimMargin()
 
+private val RECURSIVE_DIRECTORY_QUERY = """
+    |WITH RECURSIVE tree (id, name, parent, is_directory, type, resource, archive) AS
+    |(
+    |   SELECT id, name, parent, id_directory, type, resource, archive, path)
+    |   FROM TreeFile
+    |   WHERE 
+""".trimIndent()
+
 /**
  * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for the workspace root
  */
@@ -41,9 +49,9 @@ private val FILE_TREE_QUERY_ROOT_CLAUSE = "parent IS NULL"
 
 /**
  * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for a specified directory id as parent. The id is
- * inserted via `%id`
+ * inserted via prepared statement parameter
  */
-private val FILE_TREE_QUERY_RELATIVE_CLAUSE = "id = %{id}"
+private val FILE_TREE_QUERY_RELATIVE_CLAUSE = "id = (?)"
 
 /**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
@@ -187,24 +195,23 @@ object WorkspaceService : Service {
      */
     fun listFiles(root: FileEntity? = null): List<FileEntity> {
         return this.workspaceClient.databaseClient.transaction {
-            val statement = TransactionManager.current().connection.createStatement()
+            val con = TransactionManager.current().connection
 
-            val substitutor = if (root == null) {
-                StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_ROOT_CLAUSE))
-            } else {
-                val clause = StrSubstitutor(mapOf("id" to root.id.toString()))
+            val statement = if (root == null) {
+                val substitutor = StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_ROOT_CLAUSE))
                     .setVariablePrefix("%{")
                     .setVariableSuffix("}")
-                    .replace(FILE_TREE_QUERY_RELATIVE_CLAUSE)
-                StrSubstitutor(mapOf("clause" to clause))
+                con.prepareStatement(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
+            } else {
+                val substitutor = StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_RELATIVE_CLAUSE))
+                    .setVariablePrefix("%{")
+                    .setVariableSuffix("}")
+                val statement = con.prepareStatement(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
+                statement.setInt(1, root.id.value)
+                statement
             }
 
-            substitutor
-                .setVariablePrefix("%{")
-                .setVariableSuffix("}")
-
-            statement.execute(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
-            val rs = statement.resultSet
+            val rs = statement.executeQuery()
             val entities = mutableListOf<FileEntity>()
             while (rs.next()) {
                 entities += FileEntity.wrapRow(
