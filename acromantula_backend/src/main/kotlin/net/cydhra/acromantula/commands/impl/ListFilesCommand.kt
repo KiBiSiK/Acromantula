@@ -31,7 +31,12 @@ data class ListFilesCommand private constructor(
     constructor(directoryId: Int? = null) : this(null, directoryId)
 
     override suspend fun evaluate() {
-        WorkspaceService.listFiles().forEach {
+        val directory = when {
+            directoryId != null -> WorkspaceService.queryDirectory(directoryId)
+            directoryPath != null -> WorkspaceService.queryDirectory(directoryPath)
+            else -> null
+        }
+        WorkspaceService.listFiles(root = directory).forEach {
             println(it.name)
         }
     }

@@ -8,17 +8,21 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.lookup.StrSubstitutor
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 
+/**
+ * An SQL query to list a directory tree relative to a starting directory selected by `%clause`
+ */
 private val RECURSIVE_LIST_FILE_TREE_QUERY = """
     |WITH RECURSIVE tree (id, name, parent, is_directory, type, resource, archive, path) AS 
     |(
     |  SELECT id, name, parent, is_directory, type, resource, archive, CAST (id AS VARCHAR) As path
     |  FROM TreeFile
-    |  WHERE parent IS NULL
+    |  WHERE %{clause}
     |  UNION ALL
     |    SELECT tf.id, tf.name, tf.parent, tf.is_directory, tf.type, tf.resource, tf.archive,
     |     (r.path || '.' || CAST  (tf.id AS VARCHAR)) AS path
@@ -29,6 +33,17 @@ private val RECURSIVE_LIST_FILE_TREE_QUERY = """
     |SELECT id, name, parent, is_directory, type, resource, archive FROM tree
     |ORDER BY path
 """.trimMargin()
+
+/**
+ * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for the workspace root
+ */
+private val FILE_TREE_QUERY_ROOT_CLAUSE = "parent IS NULL"
+
+/**
+ * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for a specified directory id as parent. The id is
+ * inserted via `%id`
+ */
+private val FILE_TREE_QUERY_RELATIVE_CLAUSE = "id = %{id}"
 
 /**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
@@ -166,11 +181,29 @@ object WorkspaceService : Service {
         }
     }
 
-    // TODO: make this relative to a directory
-    fun listFiles(): List<FileEntity> {
+    /**
+     * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
+     * repository root is used.
+     */
+    fun listFiles(root: FileEntity? = null): List<FileEntity> {
         return this.workspaceClient.databaseClient.transaction {
             val statement = TransactionManager.current().connection.createStatement()
-            statement.execute(RECURSIVE_LIST_FILE_TREE_QUERY)
+
+            val substitutor = if (root == null) {
+                StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_ROOT_CLAUSE))
+            } else {
+                val clause = StrSubstitutor(mapOf("id" to root.id.toString()))
+                    .setVariablePrefix("%{")
+                    .setVariableSuffix("}")
+                    .replace(FILE_TREE_QUERY_RELATIVE_CLAUSE)
+                StrSubstitutor(mapOf("clause" to clause))
+            }
+
+            substitutor
+                .setVariablePrefix("%{")
+                .setVariableSuffix("}")
+
+            statement.execute(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
             val rs = statement.resultSet
             val entities = mutableListOf<FileEntity>()
             while (rs.next()) {
