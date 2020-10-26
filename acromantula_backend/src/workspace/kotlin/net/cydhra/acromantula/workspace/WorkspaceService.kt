@@ -147,23 +147,15 @@ object WorkspaceService : Service {
     }
 
     fun queryDirectory(path: String): FileEntity {
-        val pathParts = path.split("/")
         return this.workspaceClient.databaseClient.transaction {
-            var index = pathParts.size - 1
+            val results = FileEntity.find { FileTable.name like "%$path" }
 
-            // TODO this query should be replaced by a singular recursive query, but for now it at least works for
-            //  unique directory names
-            var results = FileEntity.find { FileTable.name eq pathParts[index--] }
-
-            while (index >= 0) {
-                when {
-                    results.empty() -> error("directory with path $path does not exist")
-                    results.count() == 1 -> return@transaction results.first()
-                    else -> TODO("implement recursive query to search for parent directory")
-                }
+            when {
+                results.empty() -> error("directory with path $path does not exist")
+                results.count() == 1 -> return@transaction results.first()
+                else ->
+                    throw IllegalArgumentException("there exist multiple directories with this partial path, please specify")
             }
-
-            error("directory with path $path does not exist")
         }
     }
 
