@@ -34,14 +34,6 @@ private val RECURSIVE_LIST_FILE_TREE_QUERY = """
     |ORDER BY path
 """.trimMargin()
 
-private val RECURSIVE_DIRECTORY_QUERY = """
-    |WITH RECURSIVE tree (id, name, parent, is_directory, type, resource, archive) AS
-    |(
-    |   SELECT id, name, parent, id_directory, type, resource, archive, path)
-    |   FROM TreeFile
-    |   WHERE 
-""".trimIndent()
-
 /**
  * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for the workspace root
  */
