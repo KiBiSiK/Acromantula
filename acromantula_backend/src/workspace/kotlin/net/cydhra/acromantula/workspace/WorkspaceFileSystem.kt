@@ -2,6 +2,7 @@ package net.cydhra.acromantula.workspace
 
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.bus.EventBroker
+import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
 import net.cydhra.acromantula.workspace.filesystem.events.DeletedResourceEvent

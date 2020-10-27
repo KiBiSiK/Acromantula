@@ -1,4 +1,4 @@
-package net.cydhra.acromantula.workspace
+package net.cydhra.acromantula.workspace.database
 
 import net.cydhra.acromantula.workspace.disassembly.DisassemblyTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveTable

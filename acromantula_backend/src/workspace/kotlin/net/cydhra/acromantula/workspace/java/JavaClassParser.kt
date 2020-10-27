@@ -3,7 +3,7 @@ package net.cydhra.acromantula.workspace.java
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
-import net.cydhra.acromantula.workspace.DatabaseClient
+import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.sql.transactions.transaction
