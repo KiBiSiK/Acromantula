@@ -9,6 +9,8 @@ import java.io.OutputStream
  */
 interface ExporterStrategy {
 
+    val name: String
+
     /**
      * Export the contents of [fileEntity] into the given [outputStream]
      */

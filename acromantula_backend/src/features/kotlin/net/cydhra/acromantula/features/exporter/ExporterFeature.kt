@@ -11,6 +11,10 @@ object ExporterFeature {
 
     private val registeredExporterStrategies = mutableMapOf<String, ExporterStrategy>()
 
+    init {
+        registerExporterStrategy(GenericExporterStrategy())
+    }
+
     /**
      * Export a given file at a given target path. This is a convenience method that automatically creates the file.
      */
@@ -31,5 +35,12 @@ object ExporterFeature {
             ?: throw IllegalArgumentException("exporter strategy \"$exporterStrategyName\" is unknown")
 
         strategy.exportFile(fileEntity, outputStream)
+    }
+
+    /**
+     * Register an exporter strategy at the feature. Its name must be unique
+     */
+    fun registerExporterStrategy(exporterStrategy: ExporterStrategy) {
+        this.registeredExporterStrategies[exporterStrategy.name] = exporterStrategy
     }
 }

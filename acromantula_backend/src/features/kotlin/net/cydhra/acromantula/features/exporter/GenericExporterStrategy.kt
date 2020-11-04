@@ -5,6 +5,8 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.OutputStream
 
 class GenericExporterStrategy : ExporterStrategy {
+    override val name: String = "generic"
+
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         WorkspaceService.exportFile(fileEntity, outputStream)
     }
