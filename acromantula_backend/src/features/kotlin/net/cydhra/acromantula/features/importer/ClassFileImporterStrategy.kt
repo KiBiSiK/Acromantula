@@ -8,8 +8,9 @@ internal class ClassFileImporterStrategy : ImporterStrategy {
 
     override fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
         var readSize: Int = 0
+        val buffer = ByteArray(4)
+
         try {
-            val buffer = ByteArray(4)
             readSize = fileContent.read(buffer, 0, 4)
 
             return readSize == 4 && byteArrayOf(
@@ -19,7 +20,7 @@ internal class ClassFileImporterStrategy : ImporterStrategy {
                 0xbe.toByte(),
             ).contentEquals(buffer)
         } finally {
-            fileContent.unread(readSize)
+            fileContent.unread(buffer.copyOfRange(0, readSize))
         }
     }
 
