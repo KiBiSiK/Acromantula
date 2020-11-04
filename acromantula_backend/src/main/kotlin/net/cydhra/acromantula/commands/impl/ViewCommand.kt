@@ -54,7 +54,7 @@ data class ViewCommand private constructor(
             if (viewResource == null)
                 LogManager.getLogger().info("cannot create view of type \"$type\" for \"${file.name}\"")
             else {
-                LogManager.getLogger().info("created view in new resource")
+                LogManager.getLogger().info("view available as resource")
             }
         }
     }
