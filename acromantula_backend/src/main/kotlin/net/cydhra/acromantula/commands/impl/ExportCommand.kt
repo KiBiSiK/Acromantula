@@ -53,14 +53,14 @@ data class ExportCommand private constructor(
     )
 
     override suspend fun evaluate() {
-        val parentFile = when {
+        val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)
             else -> throw IllegalStateException("either the entity id or the path of the file must be present")
         }
 
         withContext(Dispatchers.IO) {
-            ExporterFeature.exportFile(parentFile, exporterName, targetFileName)
+            ExporterFeature.exportFile(file, exporterName, targetFileName)
         }
     }
 }
