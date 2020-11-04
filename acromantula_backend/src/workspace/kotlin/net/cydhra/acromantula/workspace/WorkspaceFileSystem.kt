@@ -112,6 +112,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     fun openResource(file: FileEntity): FileInputStream {
         val id = this.databaseClient.transaction {
+            file.refresh()
             require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
             file.resource!!
         }
