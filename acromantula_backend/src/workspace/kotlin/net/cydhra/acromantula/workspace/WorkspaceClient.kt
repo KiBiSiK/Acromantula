@@ -62,4 +62,14 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * Export a file into a given [outputStream]
      */
     abstract fun exportFile(fileEntity: FileEntity, outputStream: OutputStream)
+
+    /**
+     * Upload file representation data into the workspace
+     *
+     * @param file reference file for the representation data
+     * @param type representation type
+     * @param viewData the binary data of the file's representation
+     */
+    abstract fun uploadFileRepresentation(file: FileEntity, type: String, viewData: ByteArray)
+
 }

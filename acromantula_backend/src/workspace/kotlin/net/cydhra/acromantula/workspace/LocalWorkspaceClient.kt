@@ -24,4 +24,8 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         this.workspaceFileSystem.exportResource(fileEntity, Channels.newChannel(outputStream))
     }
+
+    override fun uploadFileRepresentation(file: FileEntity, type: String, viewData: ByteArray) {
+        this.workspaceFileSystem.createFileRepresentation(file, type, viewData)
+    }
 }

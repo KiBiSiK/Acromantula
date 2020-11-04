@@ -9,8 +9,13 @@ import org.jetbrains.exposed.dao.IntIdTable
 
 internal object FileRepresentationTable : IntIdTable() {
     val file = reference("file", FileTable)
+    val type = varchar("type", 255)
     val resource = integer("view")
     val created = datetime("created")
+
+    init {
+        uniqueIndex(file, type)
+    }
 }
 
 /**
@@ -24,6 +29,11 @@ class FileRepresentation(entityID: EntityID<Int>) : IntEntity(entityID) {
      */
     var file by FileEntity referencedOn FileRepresentationTable.file
         internal set
+
+    /**
+     * Representation type to differ between different representations generated for the same file
+     */
+    var type by FileRepresentationTable.type
 
     /**
      * The workspace resource of this view

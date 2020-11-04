@@ -191,15 +191,16 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Creates a file representation resource in workspace.
      */
-    fun createFileRepresentation(file: FileEntity, content: ByteArray): FileRepresentation {
+    fun createFileRepresentation(file: FileEntity, type: String, content: ByteArray): FileRepresentation {
         val newFile = File(this.resourceDirectory, (++this.index.currentFileIndex).toString())
         newFile.writeBytes(content)
 
         return this.databaseClient.transaction {
             FileRepresentation.new {
                 this.file = file
-                resource = index.currentFileIndex
-                created = DateTime.now()
+                this.type = type
+                this.resource = index.currentFileIndex
+                this.created = DateTime.now()
             }
         }
     }
