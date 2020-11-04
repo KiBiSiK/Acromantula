@@ -4,6 +4,7 @@ import com.xenomachina.argparser.ArgParser
 import kotlinx.coroutines.Job
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.commands.impl.DirectQueryArgs
+import net.cydhra.acromantula.commands.impl.ExportCommandArgs
 import net.cydhra.acromantula.commands.impl.ImportCommandArgs
 import net.cydhra.acromantula.commands.impl.ListFilesParser
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -53,6 +54,7 @@ object CommandDispatcher : Service {
 
     override suspend fun initialize() {
         registerCommandParser("import", ::ImportCommandArgs)
+        registerCommandParser("export", ::ExportCommandArgs)
         registerCommandParser("ls", ::ListFilesParser)
         registerCommandParser("query", ::DirectQueryArgs)
     }

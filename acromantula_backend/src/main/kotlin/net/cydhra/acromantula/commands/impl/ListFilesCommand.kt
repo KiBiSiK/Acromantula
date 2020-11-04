@@ -32,8 +32,8 @@ data class ListFilesCommand private constructor(
 
     override suspend fun evaluate() {
         val directory = when {
-            directoryId != null -> WorkspaceService.queryDirectory(directoryId)
-            directoryPath != null -> WorkspaceService.queryDirectory(directoryPath)
+            directoryId != null -> WorkspaceService.queryPath(directoryId)
+            directoryPath != null -> WorkspaceService.queryPath(directoryPath)
             else -> null
         }
         WorkspaceService.listFiles(root = directory).forEach {

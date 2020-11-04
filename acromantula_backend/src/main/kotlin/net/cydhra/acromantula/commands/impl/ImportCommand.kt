@@ -52,8 +52,8 @@ data class ImportCommand private constructor(
         }
 
         val parentDirectoryEntity = when {
-            directory != null -> WorkspaceService.queryDirectory(directory)
-            directoryPath != null -> WorkspaceService.queryDirectory(directoryPath)
+            directory != null -> WorkspaceService.queryPath(directory)
+            directoryPath != null -> WorkspaceService.queryPath(directoryPath)
             else -> null
         }
 

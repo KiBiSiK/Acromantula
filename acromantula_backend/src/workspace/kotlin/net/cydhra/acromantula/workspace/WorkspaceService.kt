@@ -10,7 +10,6 @@ import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.lookup.StrSubstitutor
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
@@ -163,23 +162,23 @@ object WorkspaceService : Service {
         return fileEntity
     }
 
-    fun queryDirectory(path: String): FileEntity {
+    fun queryPath(path: String): FileEntity {
         return this.workspaceClient.databaseClient.transaction {
             val results = FileEntity.find { FileTable.name like "%$path" }
 
             when {
-                results.empty() -> error("directory with path $path does not exist")
+                results.empty() -> error("file with path $path does not exist")
                 results.count() == 1 -> return@transaction results.first()
                 else ->
-                    throw IllegalArgumentException("there exist multiple directories with this partial path, please specify")
+                    throw IllegalArgumentException("there exist multiple files with this partial path, please specify")
             }
         }
     }
 
-    fun queryDirectory(id: Int): FileEntity {
+    fun queryPath(id: Int): FileEntity {
         return this.workspaceClient.databaseClient.transaction {
-            FileEntity.find { FileTable.id eq id and (FileTable.isDirectory eq true) }.firstOrNull()
-                ?: error("directory with id $id does not exist")
+            FileEntity.find { FileTable.id eq id }.firstOrNull()
+                ?: error("file with id $id does not exist")
         }
     }
 
