@@ -14,6 +14,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 
 /**
  * An SQL query to list a directory tree relative to a starting directory selected by `%clause`
@@ -237,6 +238,13 @@ object WorkspaceService : Service {
      */
     fun getFileContent(fileEntity: FileEntity): InputStream {
         return this.workspaceClient.downloadFile(fileEntity)
+    }
+
+    /**
+     * Export a file into the given output stream
+     */
+    fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
+        this.workspaceClient.exportFile(fileEntity, outputStream)
     }
 
 }

@@ -3,6 +3,8 @@ package net.cydhra.acromantula.workspace
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
+import java.nio.channels.Channels
 
 internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(directory, "db").toURI().toURL()) {
 
@@ -17,5 +19,9 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
 
     override fun downloadFile(fileEntity: FileEntity): InputStream {
         return this.workspaceFileSystem.openResource(fileEntity)
+    }
+
+    override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
+        this.workspaceFileSystem.exportResource(fileEntity, Channels.newChannel(outputStream))
     }
 }
