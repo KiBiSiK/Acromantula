@@ -17,22 +17,22 @@ import java.io.File
 /**
  * An SQL query to list a directory tree relative to a starting directory selected by `%clause`
  */
-private val RECURSIVE_LIST_FILE_TREE_QUERY = """
-    |WITH RECURSIVE tree (id, name, parent, is_directory, type, resource, archive, path) AS 
-    |(
-    |  SELECT id, name, parent, is_directory, type, resource, archive, CAST (id AS VARCHAR) As path
-    |  FROM TreeFile
-    |  WHERE %{clause}
-    |  UNION ALL
-    |    SELECT tf.id, tf.name, tf.parent, tf.is_directory, tf.type, tf.resource, tf.archive,
-    |     (r.path || '.' || CAST  (tf.id AS VARCHAR)) AS path
-    |    FROM TreeFile AS tf
-    |      INNER JOIN tree AS r
-    |      ON tf.parent = r.id
-    |)
-    |SELECT id, name, parent, is_directory, type, resource, archive FROM tree
-    |ORDER BY path
-""".trimMargin()
+private const val RECURSIVE_LIST_FILE_TREE_QUERY = """
+    WITH RECURSIVE tree (id, name, parent, is_directory, type, resource, archive, path) AS 
+    (
+      SELECT id, name, parent, is_directory, type, resource, archive, CAST (id AS VARCHAR) As path
+      FROM TreeFile
+      WHERE %{clause}
+      UNION ALL
+        SELECT tf.id, tf.name, tf.parent, tf.is_directory, tf.type, tf.resource, tf.archive,
+         (r.path || '.' || CAST  (tf.id AS VARCHAR)) AS path
+        FROM TreeFile AS tf
+          INNER JOIN tree AS r
+          ON tf.parent = r.id
+    )
+    SELECT id, name, parent, is_directory, type, resource, archive FROM tree
+    ORDER BY path
+"""
 
 /**
  * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for the workspace root
