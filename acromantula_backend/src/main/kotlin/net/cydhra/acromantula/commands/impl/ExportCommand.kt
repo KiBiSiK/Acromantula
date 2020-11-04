@@ -11,7 +11,7 @@ import net.cydhra.acromantula.features.exporter.ExporterFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 
 /**
- * Command to import files into workspace.
+ * Command to export files from workspace.
  *
  * @param fileEntityId optional. the entity id of parent directory
  * @param filePath optional. the path of the directory in workspace
