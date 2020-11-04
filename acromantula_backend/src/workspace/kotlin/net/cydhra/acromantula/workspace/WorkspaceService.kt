@@ -44,7 +44,7 @@ private val FILE_TREE_QUERY_ROOT_CLAUSE = "parent IS NULL"
  * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for a specified directory id as parent. The id is
  * inserted via prepared statement parameter
  */
-private val FILE_TREE_QUERY_RELATIVE_CLAUSE = "id = (?)"
+private val FILE_TREE_QUERY_RELATIVE_CLAUSE = "parent = (?)"
 
 /**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
