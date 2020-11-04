@@ -22,6 +22,7 @@ object GenerateViewFeature {
     fun generateView(fileEntity: FileEntity, viewType: String): FileRepresentation? {
         val representation = WorkspaceService.queryRepresentation(fileEntity, viewType)
         if (representation != null) {
+            logger.debug("reusing existing representation from ${representation.created}")
             return representation
         }
 
@@ -30,6 +31,7 @@ object GenerateViewFeature {
         )
             return null
 
+        logger.info("creating representation for \"${fileEntity.name}\"")
         return registeredGenerators[viewType]!!.generateView(fileEntity)
     }
 
