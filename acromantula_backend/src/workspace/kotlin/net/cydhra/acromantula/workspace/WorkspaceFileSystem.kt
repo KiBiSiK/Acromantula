@@ -3,11 +3,13 @@ package net.cydhra.acromantula.workspace
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.workspace.database.DatabaseClient
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
 import net.cydhra.acromantula.workspace.filesystem.events.DeletedResourceEvent
 import net.cydhra.acromantula.workspace.filesystem.events.UpdatedResourceEvent
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.joda.time.DateTime
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileReader
@@ -60,7 +62,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     fun importResource(name: String, url: URL, parent: FileEntity? = null): FileEntity {
         val content = url.openStream().use { it.readBytes() }
-        return transaction {
+        return databaseClient.transaction {
             val newEntity = FileEntity.new {
                 this.name = name
                 this.parent = parent
@@ -143,6 +145,8 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
             channel.write(newContent)
         }
 
+        // TODO delete representations
+
         channel.close()
 
         EventBroker.fireEvent(UpdatedResourceEvent(file))
@@ -165,6 +169,8 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
             transaction {
                 file.resource = null
             }
+
+            // TODO delete representations
         }
         EventBroker.fireEvent(DeletedResourceEvent(file))
     }
@@ -179,6 +185,22 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         val buffer = readResource(file)
         while (buffer.remaining() > 0) {
             output.write(buffer)
+        }
+    }
+
+    /**
+     * Creates a file representation resource in workspace.
+     */
+    fun createFileRepresentation(file: FileEntity, content: ByteArray): FileRepresentation {
+        val newFile = File(this.resourceDirectory, (++this.index.currentFileIndex).toString())
+        newFile.writeBytes(content)
+
+        return this.databaseClient.transaction {
+            FileRepresentation.new {
+                this.file = file
+                resource = index.currentFileIndex
+                created = DateTime.now()
+            }
         }
     }
 
