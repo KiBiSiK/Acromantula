@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace.database
 
-import net.cydhra.acromantula.workspace.disassembly.DisassemblyTable
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveTable
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.filesystem.IndexMetaDatumTable
@@ -42,7 +42,7 @@ internal class DatabaseClient(private val databasePath: String) {
                 ArchiveTable,
                 FileTable,
                 IndexMetaDatumTable,
-                DisassemblyTable,
+                FileRepresentationTable,
                 JavaIdentifierTable,
                 JavaClassTable,
                 JavaMethodTable,
