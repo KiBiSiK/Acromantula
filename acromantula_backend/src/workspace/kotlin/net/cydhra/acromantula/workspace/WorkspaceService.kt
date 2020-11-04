@@ -13,6 +13,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
+import java.io.InputStream
 
 /**
  * An SQL query to list a directory tree relative to a starting directory selected by `%clause`
@@ -229,6 +230,13 @@ object WorkspaceService : Service {
      */
     fun directQuery(query: String): List<List<String>> {
         return this.workspaceClient.databaseClient.directQuery(query)
+    }
+
+    /**
+     * Get an [InputStream] of the file contents of the given [fileEntity]
+     */
+    fun getFileContent(fileEntity: FileEntity): InputStream {
+        return this.workspaceClient.downloadFile(fileEntity)
     }
 
 }

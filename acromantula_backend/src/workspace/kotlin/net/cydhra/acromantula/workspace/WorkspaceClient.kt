@@ -4,6 +4,7 @@ import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.java.JavaClassParser
 import net.cydhra.acromantula.workspace.worker.WorkerPool
+import java.io.InputStream
 import java.net.URL
 
 /**
@@ -50,4 +51,9 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * @param content file binary content
      */
     abstract fun uploadFile(fileEntity: FileEntity, content: ByteArray)
+
+    /**
+     * Download a file from the workspace. Returns the binary contents of the file as an input stream
+     */
+    abstract fun downloadFile(fileEntity: FileEntity): InputStream
 }

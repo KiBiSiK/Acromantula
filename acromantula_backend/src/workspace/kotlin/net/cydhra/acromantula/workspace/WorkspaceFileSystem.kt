@@ -9,7 +9,9 @@ import net.cydhra.acromantula.workspace.filesystem.events.DeletedResourceEvent
 import net.cydhra.acromantula.workspace.filesystem.events.UpdatedResourceEvent
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileReader
+import java.io.InputStream
 import java.net.URL
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
@@ -96,13 +98,25 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      * @return the raw binary content of the given resource as a direct buffer.
      */
     fun readResource(file: FileEntity): ByteBuffer {
+        val channel = this.openResource(file).channel
+        return channel.use { it.map(FileChannel.MapMode.READ_ONLY, 0L, channel.size()) }
+    }
+
+    /**
+     * Offer the content of a file as an [InputStream]. Throws [IllegalArgumentException] if the resource has not been
+     * added to the workspace, yet.
+     *
+     * @param file the resource to read
+     *
+     * @return an [InputStream] for the file
+     */
+    fun openResource(file: FileEntity): FileInputStream {
         val id = this.databaseClient.transaction {
             require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
             file.resource!!
         }
 
-        val channel = File(resourceDirectory, id.toString()).inputStream().channel
-        return channel.use { it.map(FileChannel.MapMode.READ_ONLY, 0L, channel.size()) }
+        return File(resourceDirectory, id.toString()).inputStream()
     }
 
     /**
