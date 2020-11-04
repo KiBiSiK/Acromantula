@@ -206,6 +206,23 @@ object WorkspaceService : Service {
     }
 
     /**
+     * Query a representation of a file. If it does exist, its entity is returned.
+     *
+     * @param fileEntity reference file for the representation
+     * @param viewType type of representation in question
+     *
+     * @return a [FileRepresentation] instance if the view already exists, `null` otherwise
+     */
+    fun queryRepresentation(fileEntity: FileEntity, viewType: String): FileRepresentation? {
+        return this.workspaceClient.databaseClient.transaction {
+            FileRepresentation.find {
+                FileRepresentationTable.file eq fileEntity.id and
+                        (FileRepresentationTable.type eq viewType)
+            }.firstOrNull()
+        }
+    }
+
+    /**
      * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
      * repository root is used.
      */

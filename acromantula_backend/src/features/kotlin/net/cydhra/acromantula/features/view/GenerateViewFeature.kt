@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.features.view
 
+import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
@@ -19,6 +20,11 @@ object GenerateViewFeature {
      * generated for the file, because the strategy does not handle this file, `null` is returned.
      */
     fun generateView(fileEntity: FileEntity, viewType: String): FileRepresentation? {
+        val representation = WorkspaceService.queryRepresentation(fileEntity, viewType)
+        if (representation != null) {
+            return representation
+        }
+
         if (!(registeredGenerators[viewType]?.handles(fileEntity)
                 ?: throw IllegalArgumentException("View generator \"$viewType\" does not exist"))
         )
