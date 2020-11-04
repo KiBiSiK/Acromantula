@@ -3,6 +3,8 @@ package net.cydhra.acromantula.workspace
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
@@ -10,6 +12,7 @@ import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.lookup.StrSubstitutor
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
@@ -85,7 +88,7 @@ object WorkspaceService : Service {
 
     /**
      * Add an archive entry into the workspace file tree. Since the archive is only parent to its content, no actual
-     * data is associated with it. It is simply a [DirectoryEntity] that has an [ArchiveEntity] associated
+     * data is associated with it. It is simply a [FileEntity] that has an [ArchiveEntity] associated
      *
      * @param archiveName simple name of the archive
      */
@@ -136,6 +139,26 @@ object WorkspaceService : Service {
 
         workspaceClient.uploadFile(fileEntity, content)
         return fileEntity
+    }
+
+    /**
+     * Upload the binary data of a file representation into the workspace to cache it for later access. It will be
+     * automatically deleted when the reference file changes //TODO
+     *
+     * @param file reference file for the representation data
+     * @param type representation type identifier
+     * @param viewData binary data of the representation
+     */
+    fun addFileRepresentation(file: FileEntity, type: String, viewData: ByteArray): FileRepresentation {
+        return workspaceClient.databaseClient.transaction {
+            file.refresh()
+            logger.trace("creating file view for file: \"${file.name}\"")
+
+            workspaceClient.uploadFileRepresentation(file, type, viewData)
+            FileRepresentation
+                .find { FileRepresentationTable.file eq file.id and (FileRepresentationTable.type eq type) }
+                .single()
+        }
     }
 
     /**
