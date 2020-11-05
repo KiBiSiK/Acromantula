@@ -4,6 +4,7 @@ import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
+import java.io.OutputStream
 
 /**
  * This feature holds a set of [ViewGeneratorStrategy]s that can be used to generate human-readable interpretations
@@ -33,6 +34,13 @@ object GenerateViewFeature {
 
         logger.info("creating representation for \"${fileEntity.name}\"")
         return registeredGenerators[viewType]!!.generateView(fileEntity)
+    }
+
+    /**
+     * Exports binary content of a file representation into [outputStream]. The output stream is not closed afterwards.
+     */
+    fun exportView(representation: FileRepresentation, outputStream: OutputStream) {
+        outputStream.write(WorkspaceService.getRepresentationContent(representation).readBytes())
     }
 
     /**
