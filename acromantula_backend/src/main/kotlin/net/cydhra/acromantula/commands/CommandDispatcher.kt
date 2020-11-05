@@ -55,5 +55,6 @@ object CommandDispatcher : Service {
         registerCommandParser("ls", ::ListFilesParser)
         registerCommandParser("query", ::DirectQueryArgs)
         registerCommandParser("view", ::ViewCommandArgs)
+        registerCommandParser("exportview", ::ExportViewCommandArgs)
     }
 }
