@@ -86,12 +86,14 @@ data class ExportViewCommand private constructor(
             if (recursive) {
                 ZipOutputStream(FileOutputStream(targetFileName))
             } else {
-                val outputFileStream = FileOutputStream(targetFileName)
                 val representation = GenerateViewFeature.generateView(file, viewType)
                 if (representation == null) {
                     logger.error("cannot create view of \"${file.name}\"")
                 } else {
-                    GenerateViewFeature.exportView(representation, outputFileStream)
+                    val outputFileStream = FileOutputStream(targetFileName)
+                    outputFileStream.use { stream ->
+                        GenerateViewFeature.exportView(representation, stream)
+                    }
                     logger.info("exported view \"$targetFileName\" of \"${file.name}\"")
                 }
             }
