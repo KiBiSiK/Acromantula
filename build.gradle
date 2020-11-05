@@ -114,4 +114,16 @@ project("acromantula_backend") {
             events "passed", "skipped", "failed"
         }
     }
+
+    jar {
+        from(sourceSets.bus.output)
+        from(sourceSets.workspace.output)
+        from(sourceSets.features.output)
+
+        manifest {
+            attributes "Implementation-Title": project.name,
+                    "Implementation-Version": project.version,
+                    "Main-Class": "net.cydhra.acromantula.AcromantulaServiceKt"
+        }
+    }
 }
