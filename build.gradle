@@ -106,6 +106,10 @@ project("acromantula_backend") {
         testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junit_version
         testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit_version
         testImplementation group: 'io.mockk', name: 'mockk', version: '1.9.3'
+
+        implementation sourceSets.bus.output
+        implementation sourceSets.workspace.output
+        implementation sourceSets.features.output
     }
 
     test {
