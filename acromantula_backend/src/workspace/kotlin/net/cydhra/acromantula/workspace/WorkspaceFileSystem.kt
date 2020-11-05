@@ -206,6 +206,18 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     }
 
     /**
+     * Open a file representation in an [InputStream]
+     */
+    fun openFileRepresentation(representation: FileRepresentation): InputStream {
+        val id = this.databaseClient.transaction {
+            representation.refresh()
+            representation.resource
+        }
+
+        return File(resourceDirectory, id.toString()).inputStream()
+    }
+
+    /**
      * Save the index to disk
      */
     private fun saveIndex() {

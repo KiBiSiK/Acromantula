@@ -279,6 +279,10 @@ object WorkspaceService : Service {
         return this.workspaceClient.downloadFile(fileEntity)
     }
 
+    fun getRepresentationContent(representation: FileRepresentation): InputStream {
+        return this.workspaceClient.downloadRepresentation(representation)
+    }
+
     /**
      * Export a file into the given output stream
      */

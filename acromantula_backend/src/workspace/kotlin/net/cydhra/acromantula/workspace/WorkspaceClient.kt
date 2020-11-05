@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.database.DatabaseClient
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.java.JavaClassParser
 import net.cydhra.acromantula.workspace.worker.WorkerPool
@@ -71,5 +72,11 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * @param viewData the binary data of the file's representation
      */
     abstract fun uploadFileRepresentation(file: FileEntity, type: String, viewData: ByteArray)
+
+    /**
+     *  Download a file representation from the workspace. Returns the binary contents of the representation as an
+     *  input stream
+     */
+    abstract fun downloadRepresentation(representation: FileRepresentation): InputStream
 
 }
