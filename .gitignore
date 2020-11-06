@@ -20,8 +20,8 @@ acromantula_gui/.idea/*
 .gradle/
 **/build/
 
-"acromantula_gui/Acromantula GUI/bin/"
-"acromantula_gui/Acromantula GUI/obj/"
+acromantula_gui/Acromantula\ GUI/bin/
+acromantula_gui/Acromantula\ GUI/obj/
 acromantula_gui/.vs/
 
 acromantula_gui/packages/
