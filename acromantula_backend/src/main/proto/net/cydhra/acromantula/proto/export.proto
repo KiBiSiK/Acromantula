@@ -3,7 +3,10 @@ syntax = "proto3";
 package net.cydhra.acromantula.proto;
 
 message ExportCommand {
-  int32 directory_id = 1;
+  int32 file_id = 1;
+  string file_path = 2;
+  string target_path = 3;
+  string exporter = 4;
 }
 
 message ExportResponse {

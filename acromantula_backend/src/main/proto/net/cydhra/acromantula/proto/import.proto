@@ -4,6 +4,8 @@ package net.cydhra.acromantula.proto;
 
 message ImportCommand {
   int32 directory_id = 1;
+  string directory_path = 2;
+  string file_url = 3;
 }
 
 message ImportResponse {
