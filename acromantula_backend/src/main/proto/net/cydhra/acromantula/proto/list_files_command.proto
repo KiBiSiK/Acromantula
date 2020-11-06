@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package net.cydhra.acromantula.proto;
+
+message ListFilesCommand {
+  int32 file_id = 1;
+  string file_path = 2;
+}
+
+message ListFilesResponse {
+  repeated FileEntity trees = 1;
+}
+
+message FileEntity {
+  int32 id = 1;
+  string name = 2;
+  bool is_directory = 3;
+  repeated FileEntity children = 4;
+}
