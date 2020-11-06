@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package net.cydhra.acromantula.proto;
+
+message ImportCommand {
+  int32 directory_id = 1;
+}
+
+message ImportResponse {
+
+}

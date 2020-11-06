@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package net.cydhra.acromantula.proto;
+
+import "net/cydhra/acromantula/proto/import.proto";
+import "net/cydhra/acromantula/proto/export.proto";
+
+service CommandDispatcherService {
+
+  rpc import (ImportCommand) returns (ImportResponse) {}
+
+  rpc export (ExportCommand) returns (ExportResponse) {}
+}
