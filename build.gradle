@@ -1,10 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.4.10'
-    ext.serialization_version = '1.0.0'
-    ext.jvm_target = '1.8'
-    ext.junit_version = '5.2.0'
-    ext.log4j2_version = '2.11.1'
-    ext.asm_version = '8.0.1'
+    ext {
+        kotlin_version = '1.4.10'
+        serialization_version = '1.0.0'
+        jvm_target = '1.8'
+        junit_version = '5.2.0'
+        log4j2_version = '2.11.1'
+        asm_version = '8.0.1'
+        protobuf_plugin_version = '0.8.13'
+        protobuf_version = '3.13.0'
+    }
 
     repositories {
         jcenter()
@@ -12,6 +16,7 @@ buildscript {
     dependencies {
         classpath group: 'org.jetbrains.kotlin', name: 'kotlin-gradle-plugin', version: kotlin_version
         classpath group: 'org.jetbrains.kotlin', name: 'kotlin-serialization', version: kotlin_version
+        classpath group: 'com.google.protobuf', name: 'protobuf-gradle-plugin', version: protobuf_plugin_version
     }
 }
 
@@ -38,6 +43,15 @@ allprojects {
 }
 
 project("acromantula_backend") {
+    apply plugin: 'java'
+    apply plugin: 'com.google.protobuf'
+
+    protobuf {
+        protoc {
+            artifact = "com.google.protobuf:protoc:$protobuf_version"
+        }
+    }
+
     sourceSets {
         bus {
             dependencies {
@@ -99,6 +113,9 @@ project("acromantula_backend") {
         implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.5'
         implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-protobuf',
                 version: serialization_version
+
+        // protobuf
+        implementation group: 'com.google.protobuf', name: 'protobuf-java', version: protobuf_version
 
         // utility
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
