@@ -11,7 +11,7 @@ namespace Acromantula_GUI
             InitializeComponent();
         }
 
-        private void newWindowToolStripMenuItem_Click(object sender, EventArgs e)
+        private void codeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new CodeViewMain {MdiParent = this}.Show();
         }
