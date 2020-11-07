@@ -1,7 +1,4 @@
-﻿using ImageProcessor.Imaging.Formats;
-using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace Acromantula_GUI.FileView
 {
@@ -10,10 +7,6 @@ namespace Acromantula_GUI.FileView
         public PictureView()
         {
             InitializeComponent();
-        }
-
-        private void PictureView_Load(object sender, EventArgs e)
-        {
         }
     }
 }

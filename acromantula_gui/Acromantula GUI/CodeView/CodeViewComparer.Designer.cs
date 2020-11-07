@@ -75,7 +75,6 @@
             this.Controls.Add(this.scintillaDiffControl1);
             this.Name = "CodeViewComparer";
             this.Text = "CodeViewComparer";
-            this.Load += new System.EventHandler(this.CodeViewComparer_Load);
             this.ResumeLayout(false);
 
         }
