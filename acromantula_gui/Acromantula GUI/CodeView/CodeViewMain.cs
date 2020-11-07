@@ -10,18 +10,23 @@ namespace Acromantula_GUI.CodeView
     public partial class CodeViewMain : Form
     {
         #region Props
+
         private Scintilla Scintilla { get; } = new Scintilla();
         private FindReplace Finder { get; } = new FindReplace();
+
         #endregion
 
         #region Constructor
+
         public CodeViewMain()
         {
             InitializeComponent();
         }
+
         #endregion
-        
+
         #region Load
+
         private void CodeViewMain_Load(object sender, EventArgs e)
         {
             editorContainer.Controls.Add(Scintilla);
@@ -47,6 +52,7 @@ namespace Acromantula_GUI.CodeView
         #endregion
 
         #region Finder
+
         private void Finder_KeyPressed(object sender, KeyEventArgs e)
         {
             OnHotkey(sender, e);
@@ -56,6 +62,7 @@ namespace Acromantula_GUI.CodeView
         {
             searchResults.UpdateFindAllResults(findAllResults.FindReplace, findAllResults.FindAllResults);
         }
+
         #endregion
 
         #region Hotkey
@@ -89,13 +96,15 @@ namespace Acromantula_GUI.CodeView
             }
             else if (e.Control && e.KeyCode == Keys.G)
             {
-                new GoTo((Scintilla)sender).ShowGoToDialog();
+                new GoTo((Scintilla) sender).ShowGoToDialog();
                 e.SuppressKeyPress = true;
             }
         }
+
         #endregion
 
         #region Init
+
         private void InitColors()
         {
             Scintilla.SetSelectionBackColor(true, Color.DarkGray);
@@ -125,9 +134,11 @@ namespace Acromantula_GUI.CodeView
 
             ScintillaLexers.CreateLexer(Scintilla, LexerEnumerations.LexerType.Java);
 
-            Scintilla.SetKeywords(0, "abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return short static strictfp super switch synchronized this throw throws transient try void volatile while");
+            Scintilla.SetKeywords(0,
+                "abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return short static strictfp super switch synchronized this throw throws transient try void volatile while");
             Scintilla.SetKeywords(1, "as fun in object is typeof typealias when val lateinit by var companion");
         }
+
         #endregion
 
         #region Numbers, Bookmarks, Code Folding
@@ -138,7 +149,7 @@ namespace Acromantula_GUI.CodeView
         private const int BookmarkMargin = 2;
         private const int BookmarkMarker = 2;
         private const int FoldingMargin = 3;
-        
+
         private const bool CodefoldingCircular = false;
 
         private void InitNumberMargin()
@@ -173,7 +184,6 @@ namespace Acromantula_GUI.CodeView
             marker.SetBackColor(IntToColor(0xFF003B));
             marker.SetForeColor(IntToColor(0x000000));
             marker.SetAlpha(100);
-
         }
 
         private void InitCodeFolding()
@@ -199,11 +209,16 @@ namespace Acromantula_GUI.CodeView
             }
 
             // Configure folding markers with respective symbols
-            Scintilla.Markers[Marker.Folder].Symbol = CodefoldingCircular ? MarkerSymbol.CirclePlus : MarkerSymbol.BoxPlus;
-            Scintilla.Markers[Marker.FolderOpen].Symbol = CodefoldingCircular ? MarkerSymbol.CircleMinus : MarkerSymbol.BoxMinus;
-            Scintilla.Markers[Marker.FolderEnd].Symbol = CodefoldingCircular ? MarkerSymbol.CirclePlusConnected : MarkerSymbol.BoxPlusConnected;
+            Scintilla.Markers[Marker.Folder].Symbol =
+                CodefoldingCircular ? MarkerSymbol.CirclePlus : MarkerSymbol.BoxPlus;
+            Scintilla.Markers[Marker.FolderOpen].Symbol =
+                CodefoldingCircular ? MarkerSymbol.CircleMinus : MarkerSymbol.BoxMinus;
+            Scintilla.Markers[Marker.FolderEnd].Symbol =
+                CodefoldingCircular ? MarkerSymbol.CirclePlusConnected : MarkerSymbol.BoxPlusConnected;
             Scintilla.Markers[Marker.FolderMidTail].Symbol = MarkerSymbol.TCorner;
-            Scintilla.Markers[Marker.FolderOpenMid].Symbol = CodefoldingCircular ? MarkerSymbol.CircleMinusConnected : MarkerSymbol.BoxMinusConnected;
+            Scintilla.Markers[Marker.FolderOpenMid].Symbol = CodefoldingCircular
+                ? MarkerSymbol.CircleMinusConnected
+                : MarkerSymbol.BoxMinusConnected;
             Scintilla.Markers[Marker.FolderSub].Symbol = MarkerSymbol.VLine;
             Scintilla.Markers[Marker.FolderTail].Symbol = MarkerSymbol.LCorner;
 
@@ -214,7 +229,7 @@ namespace Acromantula_GUI.CodeView
         private void scintilla_MarginClick(object sender, MarginClickEventArgs e)
         {
             if (e.Margin != BookmarkMargin) return;
-            
+
             // Do we have a marker for this line?
             const uint mask = (1 << BookmarkMarker);
             var line = Scintilla.Lines[Scintilla.LineFromPosition(e.Position)];
@@ -234,7 +249,7 @@ namespace Acromantula_GUI.CodeView
 
         private static Color IntToColor(int rgb)
         {
-            return Color.FromArgb(255, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
+            return Color.FromArgb(255, (byte) (rgb >> 16), (byte) (rgb >> 8), (byte) rgb);
         }
 
         #endregion
