@@ -47,6 +47,10 @@
       <HintPath>..\packages\Config.Net.4.15.0\lib\netstandard2.0\Config.Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Config.Net.Json, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Config.Net.Json.4.15.0\lib\netstandard2.0\Config.Net.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="DiffPlex, Version=1.6.3.0, Culture=neutral, PublicKeyToken=1d35e91d1bd7bc0f, processorArchitecture=MSIL">
       <HintPath>..\packages\DiffPlex.1.6.3\lib\net40\DiffPlex.dll</HintPath>
     </Reference>
@@ -64,6 +68,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ScintillaDiff, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ScintillaDiff.1.0.9\lib\net40\ScintillaDiff.dll</HintPath>
     </Reference>
