@@ -2,21 +2,80 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
-import "net/cydhra/acromantula/proto/import.proto";
-import "net/cydhra/acromantula/proto/export.proto";
-import "net/cydhra/acromantula/proto/list_files_command.proto";
-import "net/cydhra/acromantula/proto/view.proto";
-import "net/cydhra/acromantula/proto/export_view.proto";
+option java_multiple_files = true;
+option java_generic_services = true;
+option java_package = "net.cydhra.acromantula.proto";
+option java_outer_classname = "CommandDispatcher";
 
 service CommandDispatcherService {
 
-  rpc import (ImportCommand) returns (ImportResponse) {}
+  rpc importFile (ImportCommand) returns (ImportResponse);
 
-  rpc export (ExportCommand) returns (ExportResponse) {}
+  rpc exportFile (ExportCommand) returns (ExportResponse);
 
-  rpc listFiles (ListFilesCommand) returns (ListFilesResponse) {}
+  rpc listFiles (ListFilesCommand) returns (ListFilesResponse);
 
-  rpc view (ViewCommand) returns (ViewResponse) {}
+  rpc view (ViewCommand) returns (ViewResponse);
 
-  rpc exportView (ExportViewCommand) returns (ExportViewResponse) {}
+  rpc exportView (ExportViewCommand) returns (ExportViewResponse);
+}
+
+message ExportCommand {
+  int32 file_id = 1;
+  string file_path = 2;
+  string target_path = 3;
+  string exporter = 4;
+}
+
+message ExportResponse {
+
+}
+
+message ExportViewCommand {
+  int32 file_id = 1;
+  string file_path = 2;
+  string target_path = 3;
+  string type = 4;
+  bool recursive = 5;
+  bool include_incompatible = 6;
+}
+
+message ExportViewResponse {
+
+}
+
+message ImportCommand {
+  int32 directory_id = 1;
+  string directory_path = 2;
+  string file_url = 3;
+}
+
+message ImportResponse {
+
+}
+
+message ListFilesCommand {
+  int32 file_id = 1;
+  string file_path = 2;
+}
+
+message ListFilesResponse {
+  repeated FileEntity trees = 1;
+}
+
+message FileEntity {
+  int32 id = 1;
+  string name = 2;
+  bool is_directory = 3;
+  repeated FileEntity children = 4;
+}
+
+message ViewCommand {
+  int32 file_id = 1;
+  string file_path = 2;
+  string type = 3;
+}
+
+message ViewResponse {
+
 }
