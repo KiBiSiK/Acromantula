@@ -61,7 +61,7 @@
             this.Controls.Add(this.editorContainer);
             this.Name = "CodeViewMain";
             this.Text = "CodeView";
-            this.Load += new System.EventHandler(this.Test_Load);
+            this.Load += new System.EventHandler(this.CodeViewMain_Load);
             this.ResumeLayout(false);
 
         }
