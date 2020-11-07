@@ -99,6 +99,8 @@ project("acromantula_backend") {
             runtimeClasspath += sourceSets.bus.runtimeClasspath
             runtimeClasspath += sourceSets.workspace.runtimeClasspath
             runtimeClasspath += sourceSets.features.runtimeClasspath
+
+            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/java"
         }
 
         test {
