@@ -1,6 +1,10 @@
 package net.cydhra.acromantula.rpc
 
+import io.grpc.Server
+import io.grpc.ServerBuilder
+import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
+import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.*
 import net.cydhra.acromantula.proto.*
@@ -15,8 +19,20 @@ object RemoteProcedureService : RemoteDispatcherGrpcKt.RemoteDispatcherCoroutine
 
     private val logger = LogManager.getLogger()
 
+    private lateinit var server: Server
+
     override suspend fun initialize() {
         logger.info("running RPC server...")
+
+        EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
+
+        server = ServerBuilder.forPort(26666).addService(this).build()
+    }
+
+    @Suppress("RedundantSuspendModifier")
+    private suspend fun onStartUp(@Suppress("UNUSED_PARAMETER") event: ApplicationStartupEvent) {
+        server.start()
+        logger.info("rpc service listening for clients...")
     }
 
     override suspend fun importFile(request: ImportCommand): ImportResponse {
