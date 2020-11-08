@@ -1,10 +1,10 @@
 package net.cydhra.acromantula.cli.parsers
 
 import com.xenomachina.argparser.ArgParser
-import net.cydhra.acromantula.cli.WorkspaceCommandArgs
+import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.interpreters.DirectQueryCommandInterpreter
 
-class DirectQueryArgs(argParser: ArgParser) : WorkspaceCommandArgs {
+class DirectQueryCommandParser(argParser: ArgParser) : WorkspaceCommandParser {
 
     val query by argParser.positionalList("QUERY", help = "a raw SQL query")
 

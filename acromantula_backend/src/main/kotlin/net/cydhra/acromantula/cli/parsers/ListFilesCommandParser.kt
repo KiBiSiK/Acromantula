@@ -2,11 +2,11 @@ package net.cydhra.acromantula.cli.parsers
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
-import net.cydhra.acromantula.cli.WorkspaceCommandArgs
+import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 
-class ListFilesParser(parser: ArgParser) : WorkspaceCommandArgs {
+class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser {
 
     val directoryPath by parser.storing("-d", "-p", "--path", help = "directory path").default(null)
 

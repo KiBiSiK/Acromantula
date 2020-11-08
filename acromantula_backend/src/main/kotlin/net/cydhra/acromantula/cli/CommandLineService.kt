@@ -30,12 +30,12 @@ object CommandLineService : Service {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
 
-        registerCommandParser("import", ::ImportCommandArgs)
-        registerCommandParser("export", ::ExportCommandArgs)
-        registerCommandParser("ls", ::ListFilesParser)
-        registerCommandParser("query", ::DirectQueryArgs)
-        registerCommandParser("view", ::ViewCommandArgs)
-        registerCommandParser("exportview", ::ExportViewCommandArgs)
+        registerCommandParser("import", ::ImportCommandCommandParser)
+        registerCommandParser("export", ::ExportCommandCommandParser)
+        registerCommandParser("ls", ::ListFilesCommandParser)
+        registerCommandParser("query", ::DirectQueryCommandParser)
+        registerCommandParser("view", ::ViewCommandCommandParser)
+        registerCommandParser("exportview", ::ExportViewCommandCommandParser)
     }
 
     @Suppress("RedundantSuspendModifier")
@@ -75,12 +75,12 @@ object CommandLineService : Service {
     /**
      * A map of command names to argument parsers, so commands can be parsed from strings
      */
-    private val registeredCommandParsers = mutableMapOf<String, (ArgParser) -> WorkspaceCommandArgs>()
+    private val registeredCommandParsers = mutableMapOf<String, (ArgParser) -> WorkspaceCommandParser>()
 
     /**
      * Register a command handler and an argument parser for a given name
      */
-    fun registerCommandParser(command: String, argumentParser: (ArgParser) -> WorkspaceCommandArgs) {
+    fun registerCommandParser(command: String, argumentParser: (ArgParser) -> WorkspaceCommandParser) {
         logger.trace("registering command parser for $command: [${argumentParser.javaClass.simpleName}]")
         registeredCommandParsers[command] = argumentParser
     }

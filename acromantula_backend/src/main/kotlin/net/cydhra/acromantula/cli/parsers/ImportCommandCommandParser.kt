@@ -2,10 +2,10 @@ package net.cydhra.acromantula.cli.parsers
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
-import net.cydhra.acromantula.cli.WorkspaceCommandArgs
+import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.interpreters.ImportCommandInterpreter
 
-class ImportCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
+class ImportCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser {
     val directory by parser
         .storing(
             "-d", "--directory",
