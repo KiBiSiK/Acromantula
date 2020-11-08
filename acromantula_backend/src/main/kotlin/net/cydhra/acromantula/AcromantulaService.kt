@@ -6,7 +6,6 @@ import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.config.ConfigurationService
-import net.cydhra.acromantula.ipc.IPCService
 import net.cydhra.acromantula.plugins.PluginService
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -21,7 +20,6 @@ fun main() {
         EventBroker.registerService(ConfigurationService)
         EventBroker.registerService(PluginService)
         EventBroker.registerService(WorkspaceService)
-        EventBroker.registerService(IPCService)
         EventBroker.registerService(CommandDispatcherService)
 
         EventBroker.fireEvent(ApplicationStartupEvent())
