@@ -7,7 +7,7 @@ option java_generic_services = true;
 option java_package = "net.cydhra.acromantula.proto";
 option java_outer_classname = "CommandDispatcher";
 
-service CommandDispatcherService {
+service RemoteDispatcher {
 
   rpc importFile (ImportCommand) returns (ImportResponse);
 

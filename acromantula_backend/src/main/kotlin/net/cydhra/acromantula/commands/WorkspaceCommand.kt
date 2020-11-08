@@ -3,7 +3,7 @@ package net.cydhra.acromantula.commands
 import net.cydhra.acromantula.bus.Event
 
 /**
- * A command for the [CommandDispatcher] that invokes some kind of service within the Workspace. A command is a
+ * A command for the [CommandDispatcherService] that invokes some kind of service within the Workspace. A command is a
  * special kind of [Event].
  */
 interface WorkspaceCommand {

@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager
 /**
  *
  */
-object CommandDispatcher : Service {
+object CommandDispatcherService : Service {
 
     override val name: String = "command dispatcher"
 

@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
-import net.cydhra.acromantula.commands.CommandDispatcher
+import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.config.ConfigurationService
 import net.cydhra.acromantula.ipc.IPCService
 import net.cydhra.acromantula.plugins.PluginService
@@ -22,7 +22,7 @@ fun main() {
         EventBroker.registerService(PluginService)
         EventBroker.registerService(WorkspaceService)
         EventBroker.registerService(IPCService)
-        EventBroker.registerService(CommandDispatcher)
+        EventBroker.registerService(CommandDispatcherService)
 
         EventBroker.fireEvent(ApplicationStartupEvent())
     }
@@ -35,7 +35,7 @@ fun main() {
             logger.info("dispatching \"$command\"...")
 
             try {
-                CommandDispatcher.dispatchCommand(command)
+                CommandDispatcherService.dispatchCommand(command)
             } catch (e: IllegalStateException) {
                 logger.error("cannot dispatch command: ${e.message}")
             } catch (e: Exception) {
