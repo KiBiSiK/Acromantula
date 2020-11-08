@@ -1,7 +1,5 @@
 package net.cydhra.acromantula.rpc
 
-import com.google.protobuf.RpcCallback
-import com.google.protobuf.RpcController
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.*
@@ -12,7 +10,7 @@ import org.apache.logging.log4j.LogManager
  * Server that translates remote procedure calls into command invocations.
  * TODO: report back command results to caller
  */
-object RemoteProcedureService : RemoteDispatcher(), Service {
+object RemoteProcedureService : RemoteDispatcherGrpcKt.RemoteDispatcherCoroutineImplBase(), Service {
     override val name: String = "RPC Server"
 
     private val logger = LogManager.getLogger()
@@ -21,7 +19,7 @@ object RemoteProcedureService : RemoteDispatcher(), Service {
         logger.info("running RPC server...")
     }
 
-    override fun importFile(controller: RpcController, request: ImportCommand, done: RpcCallback<ImportResponse>) {
+    override suspend fun importFile(request: ImportCommand): ImportResponse {
         CommandDispatcherService.dispatchCommand(
             ImportCommandInterpreter(
                 directory = request.directoryId,
@@ -29,9 +27,10 @@ object RemoteProcedureService : RemoteDispatcher(), Service {
                 fileUrl = request.fileUrl
             )
         )
+        return ImportResponse.newBuilder().build()
     }
 
-    override fun exportFile(controller: RpcController, request: ExportCommand, done: RpcCallback<ExportResponse>) {
+    override suspend fun exportFile(request: ExportCommand): ExportResponse {
         CommandDispatcherService.dispatchCommand(
             ExportCommandInterpreter(
                 fileEntityId = request.fileId,
@@ -39,35 +38,30 @@ object RemoteProcedureService : RemoteDispatcher(), Service {
                 targetFileName = request.targetPath
             )
         )
+        return ExportResponse.newBuilder().build()
     }
 
-    override fun listFiles(
-        controller: RpcController,
-        request: ListFilesCommand,
-        done: RpcCallback<ListFilesResponse>
-    ) {
+    override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
         CommandDispatcherService.dispatchCommand(
             ListFilesCommandInterpreter(
                 directoryId = request.fileId,
                 directoryPath = request.filePath
             )
         )
+        return ListFilesResponse.newBuilder().build()
     }
 
-    override fun view(controller: RpcController, request: ViewCommand, done: RpcCallback<ViewResponse>) {
+    override suspend fun view(request: ViewCommand): ViewResponse {
         CommandDispatcherService.dispatchCommand(
             ViewCommandInterpreter(
                 fileEntityId = request.fileId,
                 type = request.type
             )
         )
+        return ViewResponse.newBuilder().build()
     }
 
-    override fun exportView(
-        controller: RpcController,
-        request: ExportViewCommand,
-        done: RpcCallback<ExportViewResponse>
-    ) {
+    override suspend fun exportView(request: ExportViewCommand): ExportViewResponse {
         CommandDispatcherService.dispatchCommand(
             ExportViewCommandInterpreter(
                 fileEntityId = request.fileId,
@@ -77,6 +71,6 @@ object RemoteProcedureService : RemoteDispatcher(), Service {
                 targetFileName = request.targetPath
             )
         )
+        return ExportViewResponse.newBuilder().build()
     }
-
 }
