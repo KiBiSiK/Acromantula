@@ -9,7 +9,7 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  * @param directoryPath directory path. If null, either `directoryId` must be set, or the root directory is referred
  * @param directoryId directory id. If null, either `directory` must be set, or the root directory is referred
  */
-class ListFilesCommandInterpreter private constructor(
+class ListFilesCommandInterpreter(
     val directoryPath: String? = null,
     val directoryId: Int? = null
 ) : WorkspaceCommandInterpreter {

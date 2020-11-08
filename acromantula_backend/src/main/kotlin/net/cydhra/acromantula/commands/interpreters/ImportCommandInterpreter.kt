@@ -15,7 +15,7 @@ import java.net.URL
  * @param directoryPath optional. the path of the directory in workspace
  * @param fileUrl URL pointing to the file
  */
-class ImportCommandInterpreter private constructor(
+class ImportCommandInterpreter(
     val directory: Int? = null,
     val directoryPath: String? = null,
     val fileUrl: String
