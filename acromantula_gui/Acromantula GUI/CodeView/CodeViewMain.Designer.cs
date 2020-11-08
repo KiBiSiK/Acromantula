@@ -28,15 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CodeViewMain));
             this.editorContainer = new System.Windows.Forms.Panel();
             this.searchResults = new ScintillaNET_FindReplaceDialog.FindAllResults.FindAllResultsPanel();
             this.SuspendLayout();
             // 
             // editorContainer
             // 
-            this.editorContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.editorContainer.Anchor = ((System.Windows.Forms.AnchorStyles) ((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.editorContainer.Location = new System.Drawing.Point(0, 0);
             this.editorContainer.Name = "editorContainer";
             this.editorContainer.Size = new System.Drawing.Size(686, 339);
@@ -44,8 +43,7 @@
             // 
             // searchResults
             // 
-            this.searchResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.searchResults.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.searchResults.Location = new System.Drawing.Point(0, 345);
             this.searchResults.Name = "searchResults";
             this.searchResults.Scintilla = null;
@@ -59,11 +57,11 @@
             this.ClientSize = new System.Drawing.Size(686, 495);
             this.Controls.Add(this.searchResults);
             this.Controls.Add(this.editorContainer);
+            this.Icon = ((System.Drawing.Icon) (resources.GetObject("$this.Icon")));
             this.Name = "CodeViewMain";
             this.Text = "CodeView";
             this.Load += new System.EventHandler(this.CodeViewMain_Load);
             this.ResumeLayout(false);
-
         }
 
         #endregion
