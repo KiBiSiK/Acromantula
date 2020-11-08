@@ -3,7 +3,8 @@ package net.cydhra.acromantula.commands
 import com.xenomachina.argparser.ArgParser
 import kotlinx.coroutines.Job
 import net.cydhra.acromantula.bus.Service
-import net.cydhra.acromantula.commands.impl.*
+import net.cydhra.acromantula.cli.WorkspaceCommandArgs
+import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 

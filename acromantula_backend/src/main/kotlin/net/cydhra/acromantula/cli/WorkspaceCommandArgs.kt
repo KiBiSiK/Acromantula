@@ -1,4 +1,6 @@
-package net.cydhra.acromantula.commands
+package net.cydhra.acromantula.cli
+
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 
 /**
  * Interface for command argument parsers

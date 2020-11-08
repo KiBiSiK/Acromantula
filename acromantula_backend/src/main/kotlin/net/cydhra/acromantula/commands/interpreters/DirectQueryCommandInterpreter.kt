@@ -1,8 +1,6 @@
-package net.cydhra.acromantula.commands.impl
+package net.cydhra.acromantula.commands.interpreters
 
-import com.xenomachina.argparser.ArgParser
 import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommandArgs
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -24,9 +22,3 @@ data class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandIn
     }
 }
 
-class DirectQueryArgs(argParser: ArgParser) : WorkspaceCommandArgs {
-
-    val query by argParser.positionalList("QUERY", help = "a raw SQL query")
-
-    override fun build() = DirectQueryCommandInterpreter(this.query.joinToString(" "))
-}

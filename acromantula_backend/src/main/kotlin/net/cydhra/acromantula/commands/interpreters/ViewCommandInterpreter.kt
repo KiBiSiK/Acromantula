@@ -1,10 +1,8 @@
-package net.cydhra.acromantula.commands.impl
+package net.cydhra.acromantula.commands.interpreters
 
-import com.xenomachina.argparser.ArgParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommandArgs
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -60,11 +58,3 @@ data class ViewCommandInterpreter private constructor(
     }
 }
 
-class ViewCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
-    val filePath by parser.positional("FILE", help = "file in workspace to export")
-
-    val type by parser.positional("TYPE", help = "how to generate the view")
-
-    override fun build() = ViewCommandInterpreter(filePath, type)
-
-}
