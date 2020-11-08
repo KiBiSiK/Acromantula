@@ -30,12 +30,13 @@ object CommandLineService : Service {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
 
-        registerCommandParser("import", ::ImportCommandCommandParser)
-        registerCommandParser("export", ::ExportCommandCommandParser)
-        registerCommandParser("ls", ::ListFilesCommandParser)
-        registerCommandParser("query", ::DirectQueryCommandParser)
-        registerCommandParser("view", ::ViewCommandCommandParser)
-        registerCommandParser("exportview", ::ExportViewCommandCommandParser)
+        registerCommandParser(::ImportCommandCommandParser, "import")
+        registerCommandParser(::ExportCommandCommandParser, "export")
+        registerCommandParser(::ListFilesCommandParser, "ls")
+        registerCommandParser(::DirectQueryCommandParser, "query")
+        registerCommandParser(::ViewCommandCommandParser, "view")
+        registerCommandParser(::ExportViewCommandCommandParser, "exportview")
+        registerCommandParser(::QuitCommandParser, "quit", "exit")
     }
 
     @Suppress("RedundantSuspendModifier")
@@ -56,11 +57,7 @@ object CommandLineService : Service {
                 logger.info("command input: \"$command\"...")
 
                 try {
-                    if (command == "quit") {
-                        EventBroker.fireEvent(ApplicationShutdownEvent())
-                    } else {
-                        dispatchCommand(command)
-                    }
+                    dispatchCommand(command)
                 } catch (e: IllegalStateException) {
                     logger.error("cannot dispatch command: ${e.message}")
                 } catch (e: Exception) {
@@ -78,11 +75,13 @@ object CommandLineService : Service {
     private val registeredCommandParsers = mutableMapOf<String, (ArgParser) -> WorkspaceCommandParser>()
 
     /**
-     * Register a command handler and an argument parser for a given name
+     * Register a command handler and an argument parser for a set of aliases used to invoke them from command line
      */
-    fun registerCommandParser(command: String, argumentParser: (ArgParser) -> WorkspaceCommandParser) {
-        logger.trace("registering command parser for $command: [${argumentParser.javaClass.simpleName}]")
-        registeredCommandParsers[command] = argumentParser
+    fun registerCommandParser(argumentParser: (ArgParser) -> WorkspaceCommandParser, vararg aliases: String) {
+        aliases.forEach { command ->
+            logger.trace("registering command parser for $command: [${argumentParser.javaClass.simpleName}]")
+            registeredCommandParsers[command] = argumentParser
+        }
     }
 
 
