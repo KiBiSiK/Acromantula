@@ -2,7 +2,6 @@ package net.cydhra.acromantula.commands.interpreters
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.exporter.ExporterFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -15,9 +14,7 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  * @param exporterName name of the exporter strategy to use
  * @param targetFileName path of target file
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ExportCommandInterpreter private constructor(
+class ExportCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val exporterName: String,

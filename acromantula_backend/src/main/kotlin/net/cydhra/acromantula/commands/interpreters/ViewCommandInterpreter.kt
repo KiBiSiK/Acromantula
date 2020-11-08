@@ -2,7 +2,6 @@ package net.cydhra.acromantula.commands.interpreters
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -15,9 +14,7 @@ import org.apache.logging.log4j.LogManager
  * @param filePath optional. the path of the directory in workspace
  * @param type name of the generator strategy to use
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ViewCommandInterpreter private constructor(
+class ViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val type: String

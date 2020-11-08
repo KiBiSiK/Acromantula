@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.serialization.Serializable
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 
@@ -10,9 +9,7 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  * @param directoryPath directory path. If null, either `directoryId` must be set, or the root directory is referred
  * @param directoryId directory id. If null, either `directory` must be set, or the root directory is referred
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ListFilesCommandInterpreter private constructor(
+class ListFilesCommandInterpreter private constructor(
     val directoryPath: String? = null,
     val directoryId: Int? = null
 ) : WorkspaceCommandInterpreter {

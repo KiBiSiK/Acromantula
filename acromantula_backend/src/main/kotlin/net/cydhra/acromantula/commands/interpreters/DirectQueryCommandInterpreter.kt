@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.serialization.Serializable
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -9,8 +8,7 @@ import org.apache.logging.log4j.LogManager
  * A command to directly query the workspace database. This is meant as a debug command to look at the current
  * database layout. This should not be available in a production build
  */
-@Serializable
-data class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpreter {
+class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpreter {
     companion object {
         private val logger = LogManager.getLogger()
     }

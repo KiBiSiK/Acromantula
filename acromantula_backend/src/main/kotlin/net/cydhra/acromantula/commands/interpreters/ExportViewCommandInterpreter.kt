@@ -2,7 +2,6 @@ package net.cydhra.acromantula.commands.interpreters
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -21,9 +20,7 @@ import java.util.zip.ZipOutputStream
  * @param includeIncompatible whether to include files in the directory that are incompatible with the exporter
  * @param targetFileName path of target file
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ExportViewCommandInterpreter private constructor(
+class ExportViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val viewType: String,
