@@ -7,10 +7,8 @@ import net.cydhra.acromantula.cli.CommandLineService
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.config.ConfigurationService
 import net.cydhra.acromantula.plugins.PluginService
+import net.cydhra.acromantula.rpc.RemoteProcedureService
 import net.cydhra.acromantula.workspace.WorkspaceService
-import org.apache.logging.log4j.LogManager
-
-private val logger = LogManager.getLogger("CLI")
 
 fun main() {
     runBlocking {
@@ -19,6 +17,7 @@ fun main() {
         EventBroker.registerService(PluginService)
         EventBroker.registerService(WorkspaceService)
         EventBroker.registerService(CommandDispatcherService)
+        EventBroker.registerService(RemoteProcedureService)
         EventBroker.registerService(CommandLineService)
 
         EventBroker.fireEvent(ApplicationStartupEvent())
