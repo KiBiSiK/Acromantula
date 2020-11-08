@@ -33,9 +33,9 @@ object CommandDispatcherService : Service {
      * Dispatch a command that originates from anywhere at the workspace. Dispatching it will schedule the command to
      * the worker pool and generate a status code, that can be used to request status information about the command.
      */
-    fun dispatchCommand(command: WorkspaceCommand): Job {
-        logger.trace("launching command handler task for $command")
-        return WorkspaceService.getWorkerPool().launchTask { command.evaluate() }
+    fun dispatchCommand(commandInterpreter: WorkspaceCommandInterpreter): Job {
+        logger.trace("launching command handler task for $commandInterpreter")
+        return WorkspaceService.getWorkerPool().launchTask { commandInterpreter.evaluate() }
     }
 
     /**

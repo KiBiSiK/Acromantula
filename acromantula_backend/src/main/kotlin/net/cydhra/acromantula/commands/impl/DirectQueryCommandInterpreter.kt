@@ -2,8 +2,8 @@ package net.cydhra.acromantula.commands.impl
 
 import com.xenomachina.argparser.ArgParser
 import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
 import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 
@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager
  * database layout. This should not be available in a production build
  */
 @Serializable
-data class DirectQueryCommand(val query: String) : WorkspaceCommand {
+data class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpreter {
     companion object {
         private val logger = LogManager.getLogger()
     }
@@ -28,5 +28,5 @@ class DirectQueryArgs(argParser: ArgParser) : WorkspaceCommandArgs {
 
     val query by argParser.positionalList("QUERY", help = "a raw SQL query")
 
-    override fun build() = DirectQueryCommand(this.query.joinToString(" "))
+    override fun build() = DirectQueryCommandInterpreter(this.query.joinToString(" "))
 }

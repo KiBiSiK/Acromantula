@@ -5,8 +5,8 @@ import com.xenomachina.argparser.default
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
 import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -26,14 +26,14 @@ import java.util.zip.ZipOutputStream
  */
 @Suppress("DataClassPrivateConstructor")
 @Serializable
-data class ExportViewCommand private constructor(
+data class ExportViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val viewType: String,
     val recursive: Boolean,
     val includeIncompatible: Boolean,
     val targetFileName: String
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -117,5 +117,5 @@ class ExportViewCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
     )
         .default(false)
 
-    override fun build() = ExportViewCommand(filePath, type, recursive, incompatible, targetFileName)
+    override fun build() = ExportViewCommandInterpreter(filePath, type, recursive, incompatible, targetFileName)
 }

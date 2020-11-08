@@ -5,8 +5,8 @@ import com.xenomachina.argparser.default
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
 import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.importer.ImporterFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 import java.net.MalformedURLException
@@ -21,11 +21,11 @@ import java.net.URL
  */
 @Suppress("DataClassPrivateConstructor")
 @Serializable
-data class ImportCommand private constructor(
+data class ImportCommandInterpreter private constructor(
     val directory: Int? = null,
     val directoryPath: String? = null,
     val fileUrl: String
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     /**
      * Command to import files into workspace.
@@ -73,6 +73,6 @@ class ImportCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
 
     val fileUrl by parser.positional("URL", help = "URL pointing to the file")
 
-    override fun build() = ImportCommand(directory, fileUrl)
+    override fun build() = ImportCommandInterpreter(directory, fileUrl)
 
 }

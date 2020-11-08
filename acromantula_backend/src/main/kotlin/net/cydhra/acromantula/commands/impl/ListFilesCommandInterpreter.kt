@@ -3,8 +3,8 @@ package net.cydhra.acromantula.commands.impl
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
 import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 
 /**
@@ -15,10 +15,10 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  */
 @Suppress("DataClassPrivateConstructor")
 @Serializable
-data class ListFilesCommand private constructor(
+data class ListFilesCommandInterpreter private constructor(
     val directoryPath: String? = null,
     val directoryId: Int? = null
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     /**
      * List files in the directory denoted by the given path
@@ -50,9 +50,9 @@ class ListFilesParser(parser: ArgParser) : WorkspaceCommandArgs {
         help = "directory identifier",
         transform = { toInt() }).default(null)
 
-    override fun build(): WorkspaceCommand =
+    override fun build(): WorkspaceCommandInterpreter =
         if (directoryPath != null)
-            ListFilesCommand(directoryPath)
+            ListFilesCommandInterpreter(directoryPath)
         else
-            ListFilesCommand(directoryId)
+            ListFilesCommandInterpreter(directoryId)
 }

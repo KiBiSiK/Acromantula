@@ -4,8 +4,8 @@ import com.xenomachina.argparser.ArgParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
 import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -19,11 +19,11 @@ import org.apache.logging.log4j.LogManager
  */
 @Suppress("DataClassPrivateConstructor")
 @Serializable
-data class ViewCommand private constructor(
+data class ViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val type: String
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     /**
      * Command to import files into workspace.
@@ -65,6 +65,6 @@ class ViewCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
 
     val type by parser.positional("TYPE", help = "how to generate the view")
 
-    override fun build() = ViewCommand(filePath, type)
+    override fun build() = ViewCommandInterpreter(filePath, type)
 
 }
