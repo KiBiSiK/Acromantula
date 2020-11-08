@@ -30,43 +30,62 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CodeViewMain));
             this.editorContainer = new System.Windows.Forms.Panel();
-            this.searchResults = new ScintillaNET_FindReplaceDialog.FindAllResults.FindAllResultsPanel();
+            this.tabs = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabs.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.SuspendLayout();
             // 
             // editorContainer
             // 
-            this.editorContainer.Anchor = ((System.Windows.Forms.AnchorStyles) ((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.editorContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.editorContainer.Location = new System.Drawing.Point(0, 0);
             this.editorContainer.Name = "editorContainer";
-            this.editorContainer.Size = new System.Drawing.Size(686, 339);
+            this.editorContainer.Size = new System.Drawing.Size(680, 471);
             this.editorContainer.TabIndex = 0;
             // 
-            // searchResults
+            // tabs
             // 
-            this.searchResults.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
-            this.searchResults.Location = new System.Drawing.Point(0, 345);
-            this.searchResults.Name = "searchResults";
-            this.searchResults.Scintilla = null;
-            this.searchResults.Size = new System.Drawing.Size(686, 151);
-            this.searchResults.TabIndex = 1;
+            this.tabs.Controls.Add(this.tabPage1);
+            this.tabs.Location = new System.Drawing.Point(-1, -1);
+            this.tabs.Name = "tabs";
+            this.tabs.SelectedIndex = 0;
+            this.tabs.Size = new System.Drawing.Size(688, 497);
+            this.tabs.TabIndex = 1;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.editorContainer);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(680, 471);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Code";
+            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // CodeViewMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(686, 495);
-            this.Controls.Add(this.searchResults);
-            this.Controls.Add(this.editorContainer);
-            this.Icon = ((System.Drawing.Icon) (resources.GetObject("$this.Icon")));
+            this.Controls.Add(this.tabs);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "CodeViewMain";
             this.Text = "CodeView";
             this.Load += new System.EventHandler(this.CodeViewMain_Load);
+            this.tabs.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
         #endregion
 
         private System.Windows.Forms.Panel editorContainer;
-        private ScintillaNET_FindReplaceDialog.FindAllResults.FindAllResultsPanel searchResults;
+        private System.Windows.Forms.TabControl tabs;
+        private System.Windows.Forms.TabPage tabPage1;
     }
 }

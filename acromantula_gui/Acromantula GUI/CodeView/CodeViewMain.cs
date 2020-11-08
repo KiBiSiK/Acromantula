@@ -56,7 +56,6 @@ namespace Acromantula_GUI.CodeView
 
             Finder.Scintilla = Scintilla;
             Finder.KeyPressed += Finder_KeyPressed;
-            Finder.FindAllResults += Finder_FindAllResults;
         }
 
         #endregion
@@ -66,11 +65,6 @@ namespace Acromantula_GUI.CodeView
         private void Finder_KeyPressed(object sender, KeyEventArgs e)
         {
             OnHotkey(sender, e);
-        }
-
-        private void Finder_FindAllResults(object sender, FindResultsEventArgs findAllResults)
-        {
-            searchResults.UpdateFindAllResults(findAllResults.FindReplace, findAllResults.FindAllResults);
         }
 
         #endregion
@@ -178,13 +172,13 @@ namespace Acromantula_GUI.CodeView
             var line = Scintilla.Lines[Scintilla.LineFromPosition(Scintilla.CurrentPosition)];
             var startPos = Scintilla.Lines[Scintilla.LineFromPosition(Scintilla.CurrentPosition)].Position;
             var endPos = e.Position;
-                
+
             var curLineText = Scintilla.GetTextRange(startPos, endPos - startPos);
-                    
+
             var indent = Regex.Match(curLineText, "^[ \\t]*");
-                
+
             e.Text += indent.Value;
-                
+
             if (Regex.IsMatch(curLineText, "{\\s*$") && !line.Text.Trim().EndsWith("}"))
             {
                 e.Text += "\t";
@@ -314,13 +308,19 @@ namespace Acromantula_GUI.CodeView
             switch (e.Char)
             {
                 case '(':
-                    if (charNextIsCharOrString) return;
+                    if (charNextIsCharOrString)
+                    {
+                        return;
+                    }
 
                     Scintilla.InsertText(caretPos, ")");
 
                     break;
                 case '{':
-                    if (charNextIsCharOrString) return;
+                    if (charNextIsCharOrString)
+                    {
+                        return;
+                    }
 
                     if (isEnclosed)
                     {
@@ -333,7 +333,10 @@ namespace Acromantula_GUI.CodeView
 
                     break;
                 case '[':
-                    if (charNextIsCharOrString) return;
+                    if (charNextIsCharOrString)
+                    {
+                        return;
+                    }
 
                     if (isEnclosed)
                     {
@@ -346,8 +349,7 @@ namespace Acromantula_GUI.CodeView
 
                     break;
                 case '"':
-                    // 0x22 = "
-                    if (charPrev == 0x22 && charNext == 0x22)
+                    if (charPrev == '\"' && charNext == '\"')
                     {
                         Scintilla.DeleteRange(caretPos, 1);
                         Scintilla.GotoPosition(caretPos);
@@ -355,19 +357,25 @@ namespace Acromantula_GUI.CodeView
                     }
 
                     if (isCharOrString)
+                    {
                         Scintilla.InsertText(caretPos, "\"");
+                    }
+
                     break;
                 case '\'':
-                    // 0x27 = '
-                    if (charPrev == 0x27 && charNext == 0x27)
+                    if (charPrev == '\'' && charNext == '\'')
                     {
                         Scintilla.DeleteRange(caretPos, 1);
                         Scintilla.GotoPosition(caretPos);
+
                         return;
                     }
 
                     if (isCharOrString)
+                    {
                         Scintilla.InsertText(caretPos, "'");
+                    }
+
                     break;
             }
         }
@@ -378,12 +386,12 @@ namespace Acromantula_GUI.CodeView
 
         private const int ColorBack = 0xEFEFEF;
         private const int ColorFore = 0x111111;
+        
         private const int NumberMargin = 1;
         private const int BookmarkMargin = 2;
         private const int BookmarkMarker = 2;
         private const int FoldingMargin = 3;
 
-        private const bool CodefoldingCircular = false;
 
         private void InitNumberMargin()
         {
@@ -403,14 +411,12 @@ namespace Acromantula_GUI.CodeView
 
         private void InitBookmarkMargin()
         {
-            //scintilla.SetFoldMarginColor(true, IntToColor(BACK_COLOR));
-
             var margin = Scintilla.Margins[BookmarkMargin];
             margin.Width = 20;
             margin.Sensitive = true;
             margin.Type = MarginType.Symbol;
-            margin.Mask = (1 << BookmarkMarker);
-            //margin.Cursor = MarginCursor.Arrow;
+            margin.Mask = 1 << BookmarkMarker;
+            margin.Cursor = MarginCursor.Arrow;
 
             var marker = Scintilla.Markers[BookmarkMarker];
             marker.Symbol = MarkerSymbol.Circle;
@@ -424,48 +430,42 @@ namespace Acromantula_GUI.CodeView
             Scintilla.SetFoldMarginColor(true, IntToColor(ColorBack));
             Scintilla.SetFoldMarginHighlightColor(true, IntToColor(ColorBack));
 
-            // Enable code folding
             Scintilla.SetProperty("fold", "1");
             Scintilla.SetProperty("fold.compact", "1");
 
-            // Configure a margin to display folding symbols
             Scintilla.Margins[FoldingMargin].Type = MarginType.Symbol;
             Scintilla.Margins[FoldingMargin].Mask = Marker.MaskFolders;
             Scintilla.Margins[FoldingMargin].Sensitive = true;
             Scintilla.Margins[FoldingMargin].Width = 20;
 
-            // Set colors for all folding markers
             for (var i = 25; i <= 31; i++)
             {
-                Scintilla.Markers[i].SetForeColor(IntToColor(ColorBack)); // styles for [+] and [-]
-                Scintilla.Markers[i].SetBackColor(IntToColor(ColorFore)); // styles for [+] and [-]
+                Scintilla.Markers[i].SetForeColor(IntToColor(ColorBack));
+                Scintilla.Markers[i].SetBackColor(IntToColor(ColorFore));
             }
 
-            // Configure folding markers with respective symbols
-            Scintilla.Markers[Marker.Folder].Symbol =
-                CodefoldingCircular ? MarkerSymbol.CirclePlus : MarkerSymbol.BoxPlus;
-            Scintilla.Markers[Marker.FolderOpen].Symbol =
-                CodefoldingCircular ? MarkerSymbol.CircleMinus : MarkerSymbol.BoxMinus;
-            Scintilla.Markers[Marker.FolderEnd].Symbol =
-                CodefoldingCircular ? MarkerSymbol.CirclePlusConnected : MarkerSymbol.BoxPlusConnected;
+            Scintilla.Markers[Marker.Folder].Symbol = MarkerSymbol.BoxPlus;
+            Scintilla.Markers[Marker.FolderOpen].Symbol = MarkerSymbol.BoxMinus;
+            Scintilla.Markers[Marker.FolderEnd].Symbol = MarkerSymbol.BoxPlusConnected;
             Scintilla.Markers[Marker.FolderMidTail].Symbol = MarkerSymbol.TCorner;
-            Scintilla.Markers[Marker.FolderOpenMid].Symbol = CodefoldingCircular
-                ? MarkerSymbol.CircleMinusConnected
-                : MarkerSymbol.BoxMinusConnected;
+            Scintilla.Markers[Marker.FolderOpenMid].Symbol = MarkerSymbol.BoxMinusConnected;
             Scintilla.Markers[Marker.FolderSub].Symbol = MarkerSymbol.VLine;
             Scintilla.Markers[Marker.FolderTail].Symbol = MarkerSymbol.LCorner;
 
-            // Enable automatic folding
-            Scintilla.AutomaticFold = (AutomaticFold.Show | AutomaticFold.Click | AutomaticFold.Change);
+            Scintilla.AutomaticFold = AutomaticFold.Show | AutomaticFold.Click | AutomaticFold.Change;
         }
 
         private void scintilla_MarginClick(object sender, MarginClickEventArgs e)
         {
-            if (e.Margin != BookmarkMargin) return;
+            if (e.Margin != BookmarkMargin)
+            {
+                return;
+            }
 
-            // Do we have a marker for this line?
             const uint mask = (1 << BookmarkMarker);
+            
             var line = Scintilla.Lines[Scintilla.LineFromPosition(e.Position)];
+            
             if ((line.MarkerGet() & mask) > 0)
             {
                 line.MarkerDelete(BookmarkMarker);
@@ -489,6 +489,7 @@ namespace Acromantula_GUI.CodeView
         {
             return Color.FromArgb(255, (byte) (rgb >> 16), (byte) (rgb >> 8), (byte) rgb);
         }
+
         #endregion
     }
 }
