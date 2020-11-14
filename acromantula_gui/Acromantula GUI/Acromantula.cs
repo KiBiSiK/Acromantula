@@ -15,6 +15,7 @@ namespace Acromantula_GUI
             InitializeComponent();
 
             DockPanel.Dock = DockStyle.Fill;
+            DockPanel.Theme = new VS2015LightTheme();
             Controls.Add(DockPanel);
             DockPanel.BringToFront();
         }
