@@ -1,12 +1,8 @@
-package net.cydhra.acromantula.commands.impl
+package net.cydhra.acromantula.commands.interpreters
 
-import com.xenomachina.argparser.ArgParser
-import com.xenomachina.argparser.default
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
-import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.importer.ImporterFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 import java.net.MalformedURLException
@@ -19,13 +15,11 @@ import java.net.URL
  * @param directoryPath optional. the path of the directory in workspace
  * @param fileUrl URL pointing to the file
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ImportCommand private constructor(
+class ImportCommandInterpreter(
     val directory: Int? = null,
     val directoryPath: String? = null,
     val fileUrl: String
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     /**
      * Command to import files into workspace.
@@ -63,16 +57,3 @@ data class ImportCommand private constructor(
     }
 }
 
-class ImportCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
-    val directory by parser
-        .storing(
-            "-d", "--directory",
-            help = "path where to place the file in the workspace file tree. leave empty for workspace root.",
-        )
-        .default(null)
-
-    val fileUrl by parser.positional("URL", help = "URL pointing to the file")
-
-    override fun build() = ImportCommand(directory, fileUrl)
-
-}

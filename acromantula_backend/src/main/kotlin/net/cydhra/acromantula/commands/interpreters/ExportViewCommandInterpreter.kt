@@ -1,12 +1,8 @@
-package net.cydhra.acromantula.commands.impl
+package net.cydhra.acromantula.commands.interpreters
 
-import com.xenomachina.argparser.ArgParser
-import com.xenomachina.argparser.default
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
-import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -24,16 +20,14 @@ import java.util.zip.ZipOutputStream
  * @param includeIncompatible whether to include files in the directory that are incompatible with the exporter
  * @param targetFileName path of target file
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ExportViewCommand private constructor(
+class ExportViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val viewType: String,
     val recursive: Boolean,
     val includeIncompatible: Boolean,
     val targetFileName: String
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -101,21 +95,3 @@ data class ExportViewCommand private constructor(
     }
 }
 
-class ExportViewCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
-    val filePath by parser.positional("FILE", help = "file in workspace to export")
-
-    val targetFileName by parser.positional("TARGET", help = "path of the target file")
-
-    val type by parser.positional("TYPE", help = "view type to export")
-
-    val recursive by parser.flagging("-r", "--recursive", help = "whether to export a directory recursively")
-        .default(false)
-
-    val incompatible by parser.flagging(
-        "-i", "--include-incompatible",
-        help = "whether to also export incompatible files in the directory (if -r is set)"
-    )
-        .default(false)
-
-    override fun build() = ExportViewCommand(filePath, type, recursive, incompatible, targetFileName)
-}

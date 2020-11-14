@@ -1,12 +1,8 @@
-package net.cydhra.acromantula.commands.impl
+package net.cydhra.acromantula.commands.interpreters
 
-import com.xenomachina.argparser.ArgParser
-import com.xenomachina.argparser.default
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
-import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.exporter.ExporterFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 
@@ -18,14 +14,12 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  * @param exporterName name of the exporter strategy to use
  * @param targetFileName path of target file
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ExportCommand private constructor(
+class ExportCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val exporterName: String,
     val targetFileName: String
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     /**
      * Command to import files into workspace.
@@ -65,15 +59,3 @@ data class ExportCommand private constructor(
     }
 }
 
-class ExportCommandArgs(parser: ArgParser) : WorkspaceCommandArgs {
-    val filePath by parser.positional("FILE", help = "file in workspace to export")
-
-    val targetFileName by parser.positional("TARGET", help = "path of the target file")
-
-    val exporter by parser.storing(
-        "-e", "--exporter", help = "exporter to use. defaults to \"generic\""
-    ).default("generic")
-
-    override fun build() = ExportCommand(filePath, exporter, targetFileName)
-
-}

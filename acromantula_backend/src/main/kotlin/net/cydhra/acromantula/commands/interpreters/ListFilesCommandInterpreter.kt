@@ -1,10 +1,6 @@
-package net.cydhra.acromantula.commands.impl
+package net.cydhra.acromantula.commands.interpreters
 
-import com.xenomachina.argparser.ArgParser
-import com.xenomachina.argparser.default
-import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
-import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 
 /**
@@ -13,12 +9,10 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  * @param directoryPath directory path. If null, either `directoryId` must be set, or the root directory is referred
  * @param directoryId directory id. If null, either `directory` must be set, or the root directory is referred
  */
-@Suppress("DataClassPrivateConstructor")
-@Serializable
-data class ListFilesCommand private constructor(
+class ListFilesCommandInterpreter(
     val directoryPath: String? = null,
     val directoryId: Int? = null
-) : WorkspaceCommand {
+) : WorkspaceCommandInterpreter {
 
     /**
      * List files in the directory denoted by the given path
@@ -42,17 +36,3 @@ data class ListFilesCommand private constructor(
     }
 }
 
-class ListFilesParser(parser: ArgParser) : WorkspaceCommandArgs {
-
-    val directoryPath by parser.storing("-d", "-p", "--path", help = "directory path").default(null)
-
-    val directoryId by parser.storing("-i", "--identifier",
-        help = "directory identifier",
-        transform = { toInt() }).default(null)
-
-    override fun build(): WorkspaceCommand =
-        if (directoryPath != null)
-            ListFilesCommand(directoryPath)
-        else
-            ListFilesCommand(directoryId)
-}

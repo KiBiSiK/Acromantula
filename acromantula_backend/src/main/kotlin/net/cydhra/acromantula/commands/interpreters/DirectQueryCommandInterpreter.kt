@@ -1,9 +1,6 @@
-package net.cydhra.acromantula.commands.impl
+package net.cydhra.acromantula.commands.interpreters
 
-import com.xenomachina.argparser.ArgParser
-import kotlinx.serialization.Serializable
-import net.cydhra.acromantula.commands.WorkspaceCommand
-import net.cydhra.acromantula.commands.WorkspaceCommandArgs
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 
@@ -11,8 +8,7 @@ import org.apache.logging.log4j.LogManager
  * A command to directly query the workspace database. This is meant as a debug command to look at the current
  * database layout. This should not be available in a production build
  */
-@Serializable
-data class DirectQueryCommand(val query: String) : WorkspaceCommand {
+class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpreter {
     companion object {
         private val logger = LogManager.getLogger()
     }
@@ -24,9 +20,3 @@ data class DirectQueryCommand(val query: String) : WorkspaceCommand {
     }
 }
 
-class DirectQueryArgs(argParser: ArgParser) : WorkspaceCommandArgs {
-
-    val query by argParser.positionalList("QUERY", help = "a raw SQL query")
-
-    override fun build() = DirectQueryCommand(this.query.joinToString(" "))
-}
