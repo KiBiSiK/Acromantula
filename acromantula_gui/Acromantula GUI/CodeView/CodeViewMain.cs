@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -9,30 +8,18 @@ using VPKSoft.ScintillaLexers;
 
 namespace Acromantula_GUI.CodeView
 {
-    public partial class CodeViewMain : Form
+    public class CodeViewMain
     {
         #region Props
 
-        private Scintilla Scintilla { get; } = new Scintilla();
+        public Scintilla Scintilla { get; } = new Scintilla();
         private FindReplace Finder { get; } = new FindReplace();
 
         #endregion
 
         #region Constructor
-
         public CodeViewMain()
         {
-            InitializeComponent();
-        }
-
-        #endregion
-
-        #region Load
-
-        private void CodeViewMain_Load(object sender, EventArgs e)
-        {
-            editorContainer.Controls.Add(Scintilla);
-
             Scintilla.Dock = DockStyle.Fill;
 
             Scintilla.MultipleSelection = true;
@@ -57,7 +44,6 @@ namespace Acromantula_GUI.CodeView
             Finder.Scintilla = Scintilla;
             Finder.KeyPressed += Finder_KeyPressed;
         }
-
         #endregion
 
         #region Finder
@@ -100,7 +86,7 @@ namespace Acromantula_GUI.CodeView
             }
             else if (e.Control && e.KeyCode == Keys.G)
             {
-                new GoTo((Scintilla) sender).ShowGoToDialog();
+                new GoTo((Scintilla)sender).ShowGoToDialog();
                 e.SuppressKeyPress = true;
             }
         }
@@ -108,7 +94,6 @@ namespace Acromantula_GUI.CodeView
         #endregion
 
         #region Init
-
         private void InitColors()
         {
             Scintilla.SetSelectionBackColor(true, Color.DarkGray);
@@ -244,14 +229,14 @@ namespace Acromantula_GUI.CodeView
             switch (e.Char)
             {
                 case '.':
-                {
-                    var list = new List<string> {"out", "in", "println", "currentTimeMillis"};
-                    list.Sort();
-                    Scintilla.AutoCShow(
-                        Scintilla.CurrentPosition - Scintilla.WordStartPosition(Scintilla.CurrentPosition, true),
-                        string.Join(" ", list));
-                    break;
-                }
+                    {
+                        var list = new List<string> { "out", "in", "println", "currentTimeMillis" };
+                        list.Sort();
+                        Scintilla.AutoCShow(
+                            Scintilla.CurrentPosition - Scintilla.WordStartPosition(Scintilla.CurrentPosition, true),
+                            string.Join(" ", list));
+                        break;
+                    }
                 case '}':
                     if (Scintilla.Lines[currentLineIndex].Text.Trim() == "}")
                     {
@@ -386,7 +371,7 @@ namespace Acromantula_GUI.CodeView
 
         private const int ColorBack = 0xEFEFEF;
         private const int ColorFore = 0x111111;
-        
+
         private const int NumberMargin = 1;
         private const int BookmarkMargin = 2;
         private const int BookmarkMarker = 2;
@@ -463,9 +448,9 @@ namespace Acromantula_GUI.CodeView
             }
 
             const uint mask = (1 << BookmarkMarker);
-            
+
             var line = Scintilla.Lines[Scintilla.LineFromPosition(e.Position)];
-            
+
             if ((line.MarkerGet() & mask) > 0)
             {
                 line.MarkerDelete(BookmarkMarker);
@@ -487,7 +472,7 @@ namespace Acromantula_GUI.CodeView
 
         private static Color IntToColor(int rgb)
         {
-            return Color.FromArgb(255, (byte) (rgb >> 16), (byte) (rgb >> 8), (byte) rgb);
+            return Color.FromArgb(255, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
         }
 
         #endregion
