@@ -108,6 +108,7 @@ namespace Acromantula_GUI.CodeView
             Scintilla.ClearCmdKey(Keys.Control | Keys.H);
             Scintilla.ClearCmdKey(Keys.Control | Keys.L);
             Scintilla.ClearCmdKey(Keys.Control | Keys.U);
+            Scintilla.ClearCmdKey(Keys.Control | Keys.S);
         }
 
         private void InitSyntaxColoring()
