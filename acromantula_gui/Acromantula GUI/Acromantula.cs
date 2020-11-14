@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using Acromantula_GUI.CodeView;
-using Crom.Controls;
 
 namespace Acromantula_GUI
 {
