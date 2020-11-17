@@ -264,6 +264,18 @@ object WorkspaceService : Service {
         }
     }
 
+    fun getDirectoryContent(directory: FileEntity?): List<FileEntity> {
+        val content = workspaceClient.databaseClient.transaction {
+            if (directory == null) {
+                FileEntity.find { FileTable.parent.isNull() }
+            } else {
+                FileEntity.find { FileTable.parent eq directory.id }
+            }
+        }
+
+        return content.toList()
+    }
+
     /**
      * A debug function to directly execute a raw, unprepared SQL query on the workspace database. This function
      * should not be called in production builds, but is only meant for debugging the database from the CLI
