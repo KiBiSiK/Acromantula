@@ -30,7 +30,7 @@ class ListFilesCommandInterpreter(
             directoryPath != null -> WorkspaceService.queryPath(directoryPath)
             else -> null
         }
-        WorkspaceService.listFiles(root = directory).forEach {
+        WorkspaceService.listFilesRecursively(root = directory).forEach {
             println(it.name)
         }
     }

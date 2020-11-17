@@ -226,7 +226,7 @@ object WorkspaceService : Service {
      * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
      * repository root is used.
      */
-    fun listFiles(root: FileEntity? = null): List<FileEntity> {
+    fun listFilesRecursively(root: FileEntity? = null): List<FileEntity> {
         return this.workspaceClient.databaseClient.transaction {
             val con = TransactionManager.current().connection
 
