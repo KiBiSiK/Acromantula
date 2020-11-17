@@ -13,6 +13,7 @@ object ExporterFeature {
 
     init {
         registerExporterStrategy(GenericExporterStrategy())
+        registerExporterStrategy(ZipExporterStrategy())
     }
 
     /**
