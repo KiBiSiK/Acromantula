@@ -265,15 +265,15 @@ object WorkspaceService : Service {
     }
 
     fun getDirectoryContent(directory: FileEntity?): List<FileEntity> {
-        val content = workspaceClient.databaseClient.transaction {
-            if (directory == null) {
+        return workspaceClient.databaseClient.transaction {
+            val content = if (directory == null) {
                 FileEntity.find { FileTable.parent.isNull() }
             } else {
                 FileEntity.find { FileTable.parent eq directory.id }
             }
-        }
 
-        return content.toList()
+            content.toList()
+        }
     }
 
     /**
