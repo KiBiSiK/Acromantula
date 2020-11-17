@@ -5,7 +5,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
 
-const val MAX_FILE_NAME = Short.MAX_VALUE
+const val MAX_FILE_NAME = Short.MAX_VALUE.toInt()
 
 internal object ArchiveTable : IntIdTable("TreeArchives") {
 
