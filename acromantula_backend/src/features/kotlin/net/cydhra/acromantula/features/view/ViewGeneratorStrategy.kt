@@ -2,6 +2,7 @@ package net.cydhra.acromantula.features.view
 
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.FileType
 
 /**
  * A strategy to interpret a certain type of files using a specific parsing method and generate a human readable
@@ -15,6 +16,11 @@ interface ViewGeneratorStrategy {
      * A unique identifier for this view strategy, so generated views can be reused instead of being freshly generated.
      */
     val viewType: String
+
+    /**
+     * The file type that this view generates.
+     */
+    val fileType: FileType
 
     /**
      * Returns true, if this view generator is able to generate a view from the given file. False, if this strategy
