@@ -18,7 +18,8 @@ object GenerateViewFeature {
 
     /**
      * Generate a representation for [fileEntity] using the strategy identified by [viewType]. If no view can be
-     * generated for the file, because the strategy does not handle this file, `null` is returned.
+     * generated for the file, because the strategy does not handle this file, `null` is returned. This does also
+     * happen, if an exception is thrown during generation.
      */
     fun generateView(fileEntity: FileEntity, viewType: String): FileRepresentation? {
         val representation = WorkspaceService.queryRepresentation(fileEntity, viewType)
@@ -33,7 +34,12 @@ object GenerateViewFeature {
             return null
 
         logger.info("creating representation for \"${fileEntity.name}\"")
-        return registeredGenerators[viewType]!!.generateView(fileEntity)
+        return try {
+            registeredGenerators[viewType]!!.generateView(fileEntity)
+        } catch (t: Throwable) {
+            logger.error("error while generating representation for ${fileEntity.name}", t)
+            null
+        }
     }
 
     /**
