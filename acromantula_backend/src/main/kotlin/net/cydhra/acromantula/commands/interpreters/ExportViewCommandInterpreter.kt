@@ -7,6 +7,7 @@ import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 import java.io.FileOutputStream
+import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 /**
@@ -78,7 +79,24 @@ class ExportViewCommandInterpreter private constructor(
 
         withContext(Dispatchers.IO) {
             if (recursive) {
-                ZipOutputStream(FileOutputStream(targetFileName))
+                val outputStream = ZipOutputStream(FileOutputStream(targetFileName))
+                val files = WorkspaceService.getDirectoryContent(file)
+                // TODO recursion
+                for (subFile in files) {
+                    val representation =
+                        GenerateViewFeature.generateView(subFile, viewType)
+
+                    if (representation == null) {
+                        logger.error("cannot create view of \"${subFile.name}\"")
+                    } else {
+                        outputStream.putNextEntry(ZipEntry(subFile.name))
+                        GenerateViewFeature.exportView(representation, outputStream)
+                        logger.info("exported view \"$targetFileName\" of \"${subFile.name}\"")
+                        outputStream.closeEntry()
+                    }
+                }
+
+                outputStream.close()
             } else {
                 val representation = GenerateViewFeature.generateView(file, viewType)
                 if (representation == null) {
