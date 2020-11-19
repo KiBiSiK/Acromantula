@@ -3,9 +3,13 @@ package net.cydhra.acromantula.commands.interpreters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
+import net.cydhra.acromantula.features.exporter.ExporterFeature
+import net.cydhra.acromantula.features.exporter.GENERIC_EXPORTER_STRATEGY
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
+import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -81,21 +85,7 @@ class ExportViewCommandInterpreter private constructor(
             if (recursive) {
                 val outputStream = ZipOutputStream(FileOutputStream(targetFileName))
                 val files = WorkspaceService.getDirectoryContent(file)
-                // TODO recursion
-                for (subFile in files) {
-                    val representation =
-                        GenerateViewFeature.generateView(subFile, viewType)
-
-                    if (representation == null) {
-                        logger.error("cannot create view of \"${subFile.name}\"")
-                    } else {
-                        outputStream.putNextEntry(ZipEntry(subFile.name))
-                        GenerateViewFeature.exportView(representation, outputStream)
-                        logger.info("exported view \"$targetFileName\" of \"${subFile.name}\"")
-                        outputStream.closeEntry()
-                    }
-                }
-
+                appendRepresentations(files, "", outputStream)
                 outputStream.close()
             } else {
                 val representation = GenerateViewFeature.generateView(file, viewType)
@@ -107,6 +97,46 @@ class ExportViewCommandInterpreter private constructor(
                         GenerateViewFeature.exportView(representation, stream)
                     }
                     logger.info("exported view \"$targetFileName\" of \"${file.name}\"")
+                }
+            }
+        }
+    }
+
+    /**
+     * Append the representations of all given files to an output stream. If any given file is a directory, its
+     * contents will be added recursively. If [includeIncompatible] is true, incompatible files will be exported
+     * directly into the output stream.
+     *
+     * @param files a representation of all those files, and any children (of directories) will be exported
+     * @param prefix path prefix to the files. Use empty string for calling the method
+     * @param outputStream the zip file where to export everything
+     */
+    private fun appendRepresentations(files: List<FileEntity>, prefix: String, outputStream: ZipOutputStream) {
+        for (subFile in files) {
+            val zipEntryName = if (prefix.isNotEmpty()) prefix + File.pathSeparatorChar + subFile.name else subFile.name
+
+            if (subFile.isDirectory) {
+                outputStream.putNextEntry(ZipEntry(zipEntryName))
+                outputStream.closeEntry()
+
+                appendRepresentations(WorkspaceService.getDirectoryContent(subFile), zipEntryName, outputStream)
+            } else {
+                val representation =
+                    GenerateViewFeature.generateView(subFile, viewType)
+
+                if (representation == null) {
+                    logger.error("cannot create view of \"${subFile.name}\"")
+
+                    if (includeIncompatible) {
+                        outputStream.putNextEntry(ZipEntry(subFile.name))
+                        ExporterFeature.exportFile(subFile, GENERIC_EXPORTER_STRATEGY, outputStream)
+                        outputStream.closeEntry()
+                        logger.info("exported content of \"${subFile.name}\" instead")
+                    }
+                } else {
+                    outputStream.putNextEntry(ZipEntry(subFile.name))
+                    GenerateViewFeature.exportView(representation, outputStream)
+                    logger.info("exported view \"$targetFileName\" of \"${subFile.name}\"")
                 }
             }
         }
