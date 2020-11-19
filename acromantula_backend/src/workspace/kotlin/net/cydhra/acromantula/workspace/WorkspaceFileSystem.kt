@@ -4,10 +4,12 @@ import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
 import net.cydhra.acromantula.workspace.filesystem.events.DeletedResourceEvent
 import net.cydhra.acromantula.workspace.filesystem.events.UpdatedResourceEvent
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.File
@@ -145,9 +147,16 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
             channel.write(newContent)
         }
 
-        // TODO delete representations
-
         channel.close()
+
+        // delete cached representations as they are now invalid
+        transaction {
+            FileRepresentation.find { FileRepresentationTable.file eq id }.forEach { fileRepresentation ->
+                File(resourceDirectory, fileRepresentation.resource.toString()).delete()
+            }
+
+            FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq id }
+        }
 
         EventBroker.fireEvent(UpdatedResourceEvent(file))
     }
@@ -162,15 +171,22 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
             file.resource
         }
 
-        // TODO do the transaction first and then delete the file. Rollback the transaction if the deletion fails.
         if (id != null) {
-            File(resourceDirectory, id.toString()).delete()
-
             transaction {
+                File(resourceDirectory, id.toString()).delete()
+
+                // set resource of file entity to null, the file entity is not deleted
                 file.resource = null
+
+                // delete cached representations as they are now invalid
+                FileRepresentation.find { FileRepresentationTable.file eq id }.forEach { fileRepresentation ->
+                    File(resourceDirectory, fileRepresentation.resource.toString()).delete()
+                }
+
+                // delete representations from database
+                FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq id }
             }
 
-            // TODO delete representations
         }
         EventBroker.fireEvent(DeletedResourceEvent(file))
     }
