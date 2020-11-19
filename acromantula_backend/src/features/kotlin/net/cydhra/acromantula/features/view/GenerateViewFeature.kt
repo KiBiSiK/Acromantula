@@ -50,6 +50,33 @@ object GenerateViewFeature {
     }
 
     /**
+     * Whether the given [viewType] supports reconstruction from representation data.
+     *
+     * @see ViewGeneratorStrategy.supportsReconstruction
+     */
+    fun canReconstructFromView(viewType: String): Boolean {
+        return this.registeredGenerators[viewType]?.supportsReconstruction
+            ?: throw IllegalArgumentException("view type \"$viewType\" is unknown")
+    }
+
+    /**
+     * Reconstruct a file from representation data. This way the user can change data in human-readable
+     * representations and change files this way, instead of open-heart operations on the raw binary file.
+     * This does only work if the given [viewType] supports reconstruction, which can be checked using
+     * [canReconstructFromView].
+     *
+     * @param fileEntity the file entity to change
+     * @param viewType the view type that is being converted into the file
+     * @param buffer the raw binary data of the view, that is being converted back
+     *
+     * @see ViewGeneratorStrategy.supportsReconstruction
+     */
+    fun reconstructFromView(fileEntity: FileEntity, viewType: String, buffer: ByteArray) {
+        this.registeredGenerators[viewType]?.reconstructFromView(fileEntity, buffer)
+            ?: throw IllegalArgumentException("view type \"$viewType\" is unknown")
+    }
+
+    /**
      * Get the file extension of a specific view type or `null`, if this type does not exist or does not have an
      * extension specified
      */
