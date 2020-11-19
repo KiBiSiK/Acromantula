@@ -50,6 +50,14 @@ object GenerateViewFeature {
     }
 
     /**
+     * Get the file extension of a specific view type or `null`, if this type does not exist or does not have an
+     * extension specified
+     */
+    fun getFileExtension(viewType: String): String? {
+        return registeredGenerators[viewType]?.fileType?.fileExtension
+    }
+
+    /**
      * Register a [ViewGeneratorStrategy] at this feature
      */
     fun registerViewGenerator(viewGeneratorStrategy: ViewGeneratorStrategy) {

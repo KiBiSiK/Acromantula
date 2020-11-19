@@ -134,7 +134,13 @@ class ExportViewCommandInterpreter private constructor(
                         logger.info("exported content of \"${subFile.name}\" instead")
                     }
                 } else {
-                    outputStream.putNextEntry(ZipEntry(subFile.name))
+                    var fileName = zipEntryName
+                    val extension = GenerateViewFeature.getFileExtension(viewType)
+                    if (extension != null) {
+                        fileName += ".$extension"
+                    }
+
+                    outputStream.putNextEntry(ZipEntry(fileName))
                     GenerateViewFeature.exportView(representation, outputStream)
                     logger.info("exported view \"$targetFileName\" of \"${subFile.name}\"")
                 }
