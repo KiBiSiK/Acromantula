@@ -72,6 +72,7 @@ object GenerateViewFeature {
      * @see ViewGeneratorStrategy.supportsReconstruction
      */
     fun reconstructFromView(fileEntity: FileEntity, viewType: String, buffer: ByteArray) {
+        logger.info("reconstructing \"${fileEntity.name}\" from view of type \"$viewType\"")
         this.registeredGenerators[viewType]?.reconstructFromView(fileEntity, buffer)
             ?: throw IllegalArgumentException("view type \"$viewType\" is unknown")
     }

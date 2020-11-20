@@ -189,7 +189,11 @@ object WorkspaceService : Service {
      * Update content of a file with new content
      */
     fun updateFileEntry(fileEntity: FileEntity, byteArray: ByteArray) {
-        this.workspaceClient.updateFile(fileEntity, byteArray)
+        workspaceClient.databaseClient.transaction {
+            fileEntity.refresh()
+            logger.trace("updating file content for: \"${fileEntity.name}\"")
+            workspaceClient.updateFile(fileEntity, byteArray)
+        }
     }
 
     /**
