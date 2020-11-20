@@ -18,6 +18,10 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         this.workspaceFileSystem.addResource(fileEntity, content)
     }
 
+    override fun updateFile(fileEntity: FileEntity, content: ByteArray) {
+        this.workspaceFileSystem.updateResource(fileEntity, content)
+    }
+
     override fun downloadFile(fileEntity: FileEntity): InputStream {
         return this.workspaceFileSystem.openResource(fileEntity)
     }

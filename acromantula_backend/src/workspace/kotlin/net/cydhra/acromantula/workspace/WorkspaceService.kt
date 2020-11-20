@@ -185,6 +185,16 @@ object WorkspaceService : Service {
         return fileEntity
     }
 
+    /**
+     * Update content of a file with new content
+     */
+    fun updateFileEntry(fileEntity: FileEntity, byteArray: ByteArray) {
+        this.workspaceClient.updateFile(fileEntity, byteArray)
+    }
+
+    /**
+     * Get a [FileEntity] instance by a unique path in workspace.
+     */
     fun queryPath(path: String): FileEntity {
         return this.workspaceClient.databaseClient.transaction {
             val results = FileEntity.find { FileTable.name like "%$path" }
@@ -198,6 +208,9 @@ object WorkspaceService : Service {
         }
     }
 
+    /**
+     * Get a [FileEntity] instance by a file id.
+     */
     fun queryPath(id: Int): FileEntity {
         return this.workspaceClient.databaseClient.transaction {
             FileEntity.find { FileTable.id eq id }.firstOrNull()

@@ -55,6 +55,11 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     abstract fun uploadFile(fileEntity: FileEntity, content: ByteArray)
 
     /**
+     * Update binary content of a file
+     */
+    abstract fun updateFile(fileEntity: FileEntity, content: ByteArray)
+
+    /**
      * Download a file from the workspace. Returns the binary contents of the file as an input stream
      */
     abstract fun downloadFile(fileEntity: FileEntity): InputStream
