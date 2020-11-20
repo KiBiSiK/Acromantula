@@ -37,6 +37,7 @@ object CommandLineService : Service {
         registerCommandParser(::ViewCommandCommandParser, "view")
         registerCommandParser(::ExportViewCommandCommandParser, "exportview")
         registerCommandParser(::QuitCommandParser, "quit", "exit")
+        registerCommandParser(::ReconstructCommandParser, "reconstruct")
     }
 
     @Suppress("RedundantSuspendModifier")
