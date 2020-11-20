@@ -12,14 +12,14 @@ class ReconstructCommandParser(parser: ArgParser) : WorkspaceCommandParser {
         help = "path of a file in workspace to replace by a reconstruction of a view"
     )
 
-    val viewType by parser.positional(
-        "TYPE",
-        help = "representation type to reconstruct into a file"
-    )
-
     val representationSource by parser.positional(
         "URL",
         help = "URL pointing to the representation file to reconstruct"
+    )
+
+    val viewType by parser.positional(
+        "TYPE",
+        help = "representation type to reconstruct into a file"
     )
 
     override fun build(): ReconstructCommandInterpreter {
