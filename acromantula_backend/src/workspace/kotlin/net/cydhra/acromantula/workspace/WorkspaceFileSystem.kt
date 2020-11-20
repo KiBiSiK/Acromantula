@@ -153,11 +153,11 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
 
         // delete cached representations as they are now invalid
         transaction {
-            FileRepresentation.find { FileRepresentationTable.file eq id }.forEach { fileRepresentation ->
+            FileRepresentation.find { FileRepresentationTable.file eq file.id.value }.forEach { fileRepresentation ->
                 File(resourceDirectory, fileRepresentation.resource.toString()).delete()
             }
 
-            FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq id }
+            FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq file.id.value }
         }
 
         EventBroker.fireEvent(UpdatedResourceEvent(file))
@@ -181,12 +181,12 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
                 file.resource = null
 
                 // delete cached representations as they are now invalid
-                FileRepresentation.find { FileRepresentationTable.file eq id }.forEach { fileRepresentation ->
-                    File(resourceDirectory, fileRepresentation.resource.toString()).delete()
+                FileRepresentation.find { FileRepresentationTable.file eq file.id.value }.forEach { repr ->
+                    File(resourceDirectory, repr.resource.toString()).delete()
                 }
 
                 // delete representations from database
-                FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq id }
+                FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq file.id.value }
             }
 
         }
