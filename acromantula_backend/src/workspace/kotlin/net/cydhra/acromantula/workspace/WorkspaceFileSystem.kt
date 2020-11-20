@@ -131,7 +131,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      * @param file the resource to update
      * @param newContent the new resource content
      */
-    fun updateResource(file: FileEntity, newContent: ByteBuffer) {
+    fun updateResource(file: FileEntity, newContent: ByteArray) {
         val id = this.databaseClient.transaction {
             require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
             file.resource!!
@@ -143,8 +143,10 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
             .outputStream()
             .channel
 
-        while (newContent.remaining() > 0) {
-            channel.write(newContent)
+        val contentBuffer = ByteBuffer.wrap(newContent)
+
+        while (contentBuffer.remaining() > 0) {
+            channel.write(contentBuffer)
         }
 
         channel.close()
