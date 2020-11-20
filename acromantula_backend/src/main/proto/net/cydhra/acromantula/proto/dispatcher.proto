@@ -21,9 +21,9 @@ service RemoteDispatcher {
 }
 
 message ExportCommand {
-  int32 file_id = 1;
-  string file_path = 2;
-  string target_path = 3;
+  int32 fileId = 1;
+  string filePath = 2;
+  string targetPath = 3;
   string exporter = 4;
 }
 
@@ -32,12 +32,12 @@ message ExportResponse {
 }
 
 message ExportViewCommand {
-  int32 file_id = 1;
-  string file_path = 2;
-  string target_path = 3;
+  int32 fileId = 1;
+  string filePath = 2;
+  string targetPath = 3;
   string type = 4;
   bool recursive = 5;
-  bool include_incompatible = 6;
+  bool includeIncompatible = 6;
 }
 
 message ExportViewResponse {
@@ -45,9 +45,9 @@ message ExportViewResponse {
 }
 
 message ImportCommand {
-  int32 directory_id = 1;
-  string directory_path = 2;
-  string file_url = 3;
+  int32 directoryId = 1;
+  string directoryPath = 2;
+  string fileUrl = 3;
 }
 
 message ImportResponse {
@@ -55,8 +55,8 @@ message ImportResponse {
 }
 
 message ListFilesCommand {
-  int32 file_id = 1;
-  string file_path = 2;
+  int32 fileId = 1;
+  string filePath = 2;
 }
 
 message ListFilesResponse {
@@ -66,13 +66,13 @@ message ListFilesResponse {
 message FileEntity {
   int32 id = 1;
   string name = 2;
-  bool is_directory = 3;
+  bool isDirectory = 3;
   repeated FileEntity children = 4;
 }
 
 message ViewCommand {
-  int32 file_id = 1;
-  string file_path = 2;
+  int32 fileId = 1;
+  string filePath = 2;
   string type = 3;
 }
 
