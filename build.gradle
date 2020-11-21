@@ -2,7 +2,7 @@ buildscript {
     ext {
         kotlin_version = '1.4.10'
         serialization_version = '1.0.0'
-        jvm_target = '13'
+        jvm_target = '1.8'
         junit_version = '5.2.0'
         log4j2_version = '2.11.1'
         asm_version = '8.0.1'
