@@ -3,6 +3,7 @@ package net.cydhra.acromantula.workspace
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
+import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
@@ -84,6 +85,13 @@ object WorkspaceService : Service {
      */
     fun getWorkerPool(): WorkerPool {
         return workspaceClient.workerPool
+    }
+
+    /**
+     * Get the [DatabaseManager] that is responsible for managing content models
+     */
+    fun getDatabaseManager(): DatabaseManager {
+        return workspaceClient.databaseManager
     }
 
     /**
@@ -308,6 +316,9 @@ object WorkspaceService : Service {
         return this.workspaceClient.downloadFile(fileEntity)
     }
 
+    /**
+     * Get an [InputStream] that contains a file representation as binary data.
+     */
     fun getRepresentationContent(representation: FileRepresentation): InputStream {
         return this.workspaceClient.downloadRepresentation(representation)
     }
@@ -318,5 +329,4 @@ object WorkspaceService : Service {
     fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         this.workspaceClient.exportFile(fileEntity, outputStream)
     }
-
 }

@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.database.DatabaseClient
+import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.java.JavaClassParser
@@ -20,6 +21,11 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * A connection to the workspace database
      */
     val databaseClient = DatabaseClient(databaseUrl)
+
+    /**
+     * A manager for database transactions regarding content models
+     */
+    val databaseManager = DatabaseManager(databaseClient)
 
     /**
      * The thread pools used for work related to workspace content
