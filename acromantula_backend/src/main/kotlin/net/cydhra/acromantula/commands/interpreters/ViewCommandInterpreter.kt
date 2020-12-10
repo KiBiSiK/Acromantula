@@ -1,7 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -36,21 +34,19 @@ class ViewCommandInterpreter private constructor(
      */
     constructor(filePath: String? = null, type: String) : this(null, filePath, type)
 
-    override suspend fun evaluate() {
+    override fun evaluate() {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)
             else -> throw IllegalStateException("either the entity id or the path of the file must be present")
         }
 
-        withContext(Dispatchers.IO) {
-            val viewResource = GenerateViewFeature.generateView(file, type)
+        val viewResource = GenerateViewFeature.generateView(file, type)
 
-            if (viewResource == null)
-                LogManager.getLogger().info("cannot create view of type \"$type\" for \"${file.name}\"")
-            else {
-                LogManager.getLogger().info("view available as resource")
-            }
+        if (viewResource == null)
+            LogManager.getLogger().info("cannot create view of type \"$type\" for \"${file.name}\"")
+        else {
+            LogManager.getLogger().info("view available as resource")
         }
     }
 }

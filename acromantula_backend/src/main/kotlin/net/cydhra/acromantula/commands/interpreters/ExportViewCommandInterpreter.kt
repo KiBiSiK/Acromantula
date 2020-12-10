@@ -1,7 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.exporter.ExporterFeature
 import net.cydhra.acromantula.features.exporter.GENERIC_EXPORTER_STRATEGY
@@ -74,30 +72,28 @@ class ExportViewCommandInterpreter private constructor(
         targetFileName: String
     ) : this(null, filePath, viewType, recursive, includeIncompatible, targetFileName)
 
-    override suspend fun evaluate() {
+    override fun evaluate() {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)
             else -> throw IllegalStateException("either the entity id or the path of the file must be present")
         }
 
-        withContext(Dispatchers.IO) {
-            if (recursive) {
-                val outputStream = ZipOutputStream(FileOutputStream(targetFileName))
-                val files = WorkspaceService.getDirectoryContent(file)
-                appendRepresentations(files, "", outputStream)
-                outputStream.close()
+        if (recursive) {
+            val outputStream = ZipOutputStream(FileOutputStream(targetFileName))
+            val files = WorkspaceService.getDirectoryContent(file)
+            appendRepresentations(files, "", outputStream)
+            outputStream.close()
+        } else {
+            val representation = GenerateViewFeature.generateView(file, viewType)
+            if (representation == null) {
+                logger.error("cannot create view of \"${file.name}\"")
             } else {
-                val representation = GenerateViewFeature.generateView(file, viewType)
-                if (representation == null) {
-                    logger.error("cannot create view of \"${file.name}\"")
-                } else {
-                    val outputFileStream = FileOutputStream(targetFileName)
-                    outputFileStream.use { stream ->
-                        GenerateViewFeature.exportView(representation, stream)
-                    }
-                    logger.info("exported view \"$targetFileName\" of \"${file.name}\"")
+                val outputFileStream = FileOutputStream(targetFileName)
+                outputFileStream.use { stream ->
+                    GenerateViewFeature.exportView(representation, stream)
                 }
+                logger.info("exported view \"$targetFileName\" of \"${file.name}\"")
             }
         }
     }

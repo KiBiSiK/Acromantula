@@ -3,13 +3,13 @@ package net.cydhra.acromantula.workspace
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
+import net.cydhra.acromantula.pool.WorkerPool
 import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
-import net.cydhra.acromantula.workspace.worker.WorkerPool
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.lookup.StrSubstitutor
 import org.jetbrains.exposed.sql.ResultRow

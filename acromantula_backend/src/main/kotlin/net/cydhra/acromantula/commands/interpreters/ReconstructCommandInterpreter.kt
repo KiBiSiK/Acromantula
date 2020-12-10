@@ -22,7 +22,7 @@ class ReconstructCommandInterpreter(
         private val logger = LogManager.getLogger()
     }
 
-    override suspend fun evaluate() {
+    override fun evaluate() {
         val file = WorkspaceService.queryPath(fileEntityId)
         GenerateViewFeature.reconstructFromView(file, viewType, dataBuffer)
     }

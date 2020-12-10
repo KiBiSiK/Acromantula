@@ -1,6 +1,12 @@
-package net.cydhra.acromantula.workspace.worker
+package net.cydhra.acromantula.pool
 
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
+import net.cydhra.acromantula.bus.EventBroker
+import net.cydhra.acromantula.pool.event.TaskFinishedEvent
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -15,13 +21,7 @@ class WorkerPool {
     /**
      * A cached thread pool for low-utilisation/long-running or asymmetrical work load.
      */
-    private val cachedThreadPool = Executors.newCachedThreadPool()
-
-    /**
-     * A thread pool with an unlimited number of threads. Use this for threads that do not perform heavy-duty tasks
-     * or if it is unclear how many threads of its type are scheduled. Do not this to perform actual work on data
-     */
-    private val unboundedCoroutineScope = CoroutineScope(cachedThreadPool.asCoroutineDispatcher())
+    private val cachedThreadPool = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
 
     /**
      * A work-stealing pool that is used for heavy-duty worker threads
@@ -35,6 +35,16 @@ class WorkerPool {
     private val workerCoroutineScope = CoroutineScope(workerPool.asCoroutineDispatcher())
 
     /**
+     * A list of tasks registered and not yet collected. They might have finished their work.
+     */
+    private val registeredTasks = mutableListOf<Task>()
+
+    /**
+     * Unique id counter.
+     */
+    private var id: Int = 0
+
+    /**
      * Submit a heavy duty task and return a deferred promise. The task is scheduled in a work stealing threadpool.
      */
     fun <T> submit(worker: suspend CoroutineScope.() -> T): Deferred<T> {
@@ -45,16 +55,49 @@ class WorkerPool {
     /**
      * Launch a potentially long running task in an unbounded pool of threads. This should not perform heavy duty
      * work, because that might starve the actual worker threads.
+     *
+     * @param initialStatus initial [Task.status]
+     * @param autoReap automatically reap the job upon completion. Use this for fire-and-forget jobs
+     * @param runnable the task method
      */
-    fun launchTask(task: suspend CoroutineScope.() -> Unit): Job {
+    fun launchTask(
+        initialStatus: String = "job scheduled",
+        autoReap: Boolean = false,
+        runnable: () -> Unit
+    ): Task {
         logger.trace("launching task in unbounded thread pool...")
-        return unboundedCoroutineScope.launch {
-            try {
-                this.task()
-            } catch (t: Throwable) {
-                logger.error("job failed", t)
+        val future = cachedThreadPool.submit(runnable)
+
+        @Suppress("UNCHECKED_CAST")
+        val task = Task(id++, future as ListenableFuture<Unit>, initialStatus)
+        this.registeredTasks += task
+
+        // task finished event listener
+        Futures.addCallback(future, object : FutureCallback<Unit> {
+            override fun onSuccess(result: Unit?) {
+                EventBroker.fireEvent(TaskFinishedEvent(task.id))
             }
+
+            override fun onFailure(t: Throwable) {
+                EventBroker.fireEvent(TaskFinishedEvent(task.id))
+            }
+        }, this.cachedThreadPool)
+
+        if (autoReap) {
+            // auto reap listener
+            Futures.addCallback(future, object : FutureCallback<Unit> {
+                override fun onSuccess(result: Unit?) {
+                    logger.debug("reaped task ${task.id} (exit status: \"${task.status}\")")
+                    this@WorkerPool.registeredTasks.remove(task)
+                }
+
+                override fun onFailure(t: Throwable) {
+                    logger.error("auto-reap task failed:", t)
+                }
+            }, this.cachedThreadPool)
         }
+
+        return task
     }
 
     fun shutdown() {

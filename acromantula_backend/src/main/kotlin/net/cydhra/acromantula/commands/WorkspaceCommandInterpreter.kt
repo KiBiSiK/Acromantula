@@ -9,5 +9,5 @@ interface WorkspaceCommandInterpreter {
     /**
      * Evaluate the command. This function is suspendable and should be launched in a cached thread pool.
      */
-    suspend fun evaluate()
+    fun evaluate()
 }

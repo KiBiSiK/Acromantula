@@ -13,7 +13,7 @@ class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpr
         private val logger = LogManager.getLogger()
     }
 
-    override suspend fun evaluate() {
+    override fun evaluate() {
         val resultSet = WorkspaceService.directQuery(this.query)
         resultSet.forEach(::println)
         logger.debug("finished SQL query")

@@ -24,7 +24,7 @@ class ListFilesCommandInterpreter(
      */
     constructor(directoryId: Int? = null) : this(null, directoryId)
 
-    override suspend fun evaluate() {
+    override fun evaluate() {
         val directory = when {
             directoryId != null -> WorkspaceService.queryPath(directoryId)
             directoryPath != null -> WorkspaceService.queryPath(directoryPath)

@@ -1,14 +1,13 @@
 package net.cydhra.acromantula.cli
 
 import com.xenomachina.argparser.ArgParser
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.commands.CommandDispatcherService
+import net.cydhra.acromantula.pool.Task
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
@@ -42,7 +41,9 @@ object CommandLineService : Service {
 
     @Suppress("RedundantSuspendModifier")
     private suspend fun onStartUp(@Suppress("UNUSED_PARAMETER") event: ApplicationStartupEvent) {
-        WorkspaceService.getWorkerPool().launchTask { parseCommandLine() }
+        WorkspaceService.getWorkerPool().launchTask(initialStatus = "waiting for input", autoReap = true) {
+            commandLineParser()
+        }
     }
 
     @Suppress("RedundantSuspendModifier")
@@ -50,7 +51,7 @@ object CommandLineService : Service {
         this.running = false
     }
 
-    private suspend fun parseCommandLine() {
+    private fun commandLineParser() {
         val reader = BufferedReader(InputStreamReader(System.`in`))
         while (this.running) {
             if (reader.ready()) {
@@ -65,7 +66,7 @@ object CommandLineService : Service {
                     logger.error("command dispatch failed for unexpected reasons", e)
                 }
             } else {
-                delay(5L)
+                Thread.sleep(5L)
             }
         }
     }
@@ -91,7 +92,7 @@ object CommandLineService : Service {
      * escaped by double-quotes are not possible using this method. Dispatching it will schedule the command to
      * the worker pool and generate a status code, that can be used to request status information about the command.
      */
-    fun dispatchCommand(command: String): Job {
+    fun dispatchCommand(command: String): Task {
         val arguments = command.split(" ")
         val parser = registeredCommandParsers[arguments[0]] ?: error("\"${arguments[0]}\" is not a valid command")
         return CommandDispatcherService.dispatchCommand(

@@ -1,11 +1,11 @@
 package net.cydhra.acromantula.workspace
 
+import net.cydhra.acromantula.pool.WorkerPool
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.java.JavaClassParser
-import net.cydhra.acromantula.workspace.worker.WorkerPool
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URL

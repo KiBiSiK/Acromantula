@@ -1,7 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.exporter.ExporterFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -46,16 +44,14 @@ class ExportCommandInterpreter private constructor(
         targetFileName
     )
 
-    override suspend fun evaluate() {
+    override fun evaluate() {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)
             else -> throw IllegalStateException("either the entity id or the path of the file must be present")
         }
 
-        withContext(Dispatchers.IO) {
-            ExporterFeature.exportFile(file, exporterName, targetFileName)
-        }
+        ExporterFeature.exportFile(file, exporterName, targetFileName)
     }
 }
 
