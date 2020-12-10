@@ -149,7 +149,9 @@ project("acromantula_backend") {
         implementation group: 'com.google.protobuf', name: 'protobuf-java', version: protobuf_version
 
         // grpc
-        implementation 'com.github.googleapis.gax-kotlin:kgax-grpc:master-SNAPSHOT'
+        implementation group: 'com.github.googleapis.gax-kotlin', name: 'kgax-grpc', version: 'master-SNAPSHOT'
+        implementation group: 'io.grpc', name: 'grpc-netty-shaded', version: grpc_version
+        implementation group: 'io.grpc', name: 'grpc-services', version: grpc_version
 
         // utility
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
