@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlin_version = '1.4.10'
+        kotlin_version = '1.4.21'
         serialization_version = '1.0.0'
         jvm_target = '1.8'
         junit_version = '5.2.0'
