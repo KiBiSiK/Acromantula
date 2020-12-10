@@ -6,7 +6,10 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
+import net.cydhra.acromantula.rpc.service.ExportRpcServer
 import net.cydhra.acromantula.rpc.service.ImportRpcServer
+import net.cydhra.acromantula.rpc.service.ViewRpcServer
+import net.cydhra.acromantula.rpc.service.WorkspaceRpcServer
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -26,7 +29,10 @@ object RemoteProcedureService : Service {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
 
         server = ServerBuilder.forPort(26666)
+            .addService(WorkspaceRpcServer())
             .addService(ImportRpcServer())
+            .addService(ExportRpcServer())
+            .addService(ViewRpcServer())
             .addService(ProtoReflectionService.newInstance())
             .build()
     }
