@@ -2,6 +2,7 @@ package net.cydhra.acromantula.rpc
 
 import io.grpc.Server
 import io.grpc.ServerBuilder
+import io.grpc.protobuf.services.ProtoReflectionService
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
@@ -24,7 +25,10 @@ object RemoteProcedureService : Service {
 
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
 
-        server = ServerBuilder.forPort(26666).addService(ImportRpcServer()).build()
+        server = ServerBuilder.forPort(26666)
+            .addService(ImportRpcServer())
+            .addService(ProtoReflectionService.newInstance())
+            .build()
     }
 
     @Suppress("RedundantSuspendModifier")
