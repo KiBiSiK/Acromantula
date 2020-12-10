@@ -35,6 +35,7 @@ allprojects {
     repositories {
         jcenter()
         maven { url 'https://dl.bintray.com/kotlin/exposed/' }
+        maven { url 'https://jitpack.io/' }
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -45,7 +46,6 @@ allprojects {
 }
 
 project("acromantula_backend") {
-    apply plugin: 'java'
     apply plugin: 'com.google.protobuf'
 
     protobuf {
@@ -54,18 +54,21 @@ project("acromantula_backend") {
         }
 
         plugins {
-            grpc {
-                artifact = "io.grpc:protoc-gen-grpc-java:$grpc_version"
+            client {
+                artifact = 'com.github.googleapis:gapic-generator-kotlin:master-SNAPSHOT:core@jar'
             }
-            grpckt {
-                artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpc_kotlin_version:jdk7@jar"
+            grpc {
+                artifact = "io.grpc:protoc-gen-grpc-java:1.20.0"
             }
         }
         generateProtoTasks {
             all().forEach {
                 it.plugins {
-                    grpc
-                    grpckt
+                    // generate client side stuff and message builders
+                    client {}
+
+                    // generate server API
+                    grpc {}
                 }
             }
         }
@@ -121,11 +124,16 @@ project("acromantula_backend") {
 
             java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/java"
             java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpc"
-            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpckt"
+            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/client"
         }
 
         test {
-
+            compileClasspath += sourceSets.bus.runtimeClasspath
+            compileClasspath += sourceSets.workspace.runtimeClasspath
+            compileClasspath += sourceSets.features.runtimeClasspath
+            runtimeClasspath += sourceSets.bus.runtimeClasspath
+            runtimeClasspath += sourceSets.workspace.runtimeClasspath
+            runtimeClasspath += sourceSets.features.runtimeClasspath
         }
     }
 
@@ -141,8 +149,7 @@ project("acromantula_backend") {
         implementation group: 'com.google.protobuf', name: 'protobuf-java', version: protobuf_version
 
         // grpc
-        implementation group: 'io.grpc', name: 'grpc-netty', version: grpc_version
-        implementation group: 'io.grpc', name: 'grpc-kotlin-stub', version: grpc_kotlin_version
+        implementation 'com.github.googleapis.gax-kotlin:kgax-grpc:master-SNAPSHOT'
 
         // utility
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
