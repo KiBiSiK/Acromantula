@@ -24,10 +24,10 @@ class ImportServerTest {
             EventBroker.registerService(CommandDispatcherService)
             EventBroker.fireEvent(ApplicationStartupEvent())
 
-            ServerBuilder.forPort(PORT).addService(ImportRpcServer()).build()
+            val server = ServerBuilder.forPort(PORT).addService(ImportRpcServer()).build().start()
 
             val client = ImportServiceClient.create(
-                channel = ManagedChannelBuilder.forAddress("localhost", 26666)
+                channel = ManagedChannelBuilder.forAddress("localhost", PORT)
                     .usePlaintext()
                     .build()
             )
@@ -40,6 +40,7 @@ class ImportServerTest {
             println(request)
 
             client.shutdownChannel()
+            server.shutdown()
         }
     }
 }
