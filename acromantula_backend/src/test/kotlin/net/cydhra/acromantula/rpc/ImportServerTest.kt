@@ -10,7 +10,7 @@ import net.cydhra.acromantula.proto.ImportServiceClient
 import net.cydhra.acromantula.proto.importCommand
 import net.cydhra.acromantula.rpc.service.ImportRpcServer
 import net.cydhra.acromantula.workspace.WorkspaceService
-import org.junit.jupiter.api.Test
+import org.junit.Test
 
 const val PORT = 26262
 
