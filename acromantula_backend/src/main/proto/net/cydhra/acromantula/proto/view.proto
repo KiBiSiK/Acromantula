@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package net.cydhra.acromantula.proto;
+
+option java_multiple_files = true;
+
+service ViewService {
+  rpc view (ViewCommand) returns (ViewResponse);
+
+  rpc exportView (ExportViewCommand) returns (ExportViewResponse);
+}
+
+message ExportViewCommand {
+  int32 fileId = 1;
+  string filePath = 2;
+  string targetPath = 3;
+  string type = 4;
+  bool recursive = 5;
+  bool includeIncompatible = 6;
+}
+
+message ExportViewResponse {
+
+}
+
+message ViewCommand {
+  int32 fileId = 1;
+  string filePath = 2;
+  string type = 3;
+}
+
+message ViewResponse {
+
+}

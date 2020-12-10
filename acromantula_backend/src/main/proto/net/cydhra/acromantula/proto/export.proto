@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package net.cydhra.acromantula.proto;
+
+option java_multiple_files = true;
+
+service ExportService {
+  rpc exportFile (ExportCommand) returns (ExportResponse);
+}
+
+message ExportCommand {
+  int32 fileId = 1;
+  string filePath = 2;
+  string targetPath = 3;
+  string exporter = 4;
+}
+
+message ExportResponse {
+
+}

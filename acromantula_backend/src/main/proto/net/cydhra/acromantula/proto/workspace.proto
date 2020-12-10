@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package net.cydhra.acromantula.proto;
+
+option java_multiple_files = true;
+
+service WorkspaceService {
+  rpc listFiles (ListFilesCommand) returns (ListFilesResponse);
+}
+
+message ListFilesCommand {
+  int32 fileId = 1;
+  string filePath = 2;
+}
+
+message ListFilesResponse {
+  repeated FileEntity trees = 1;
+}
+
+message FileEntity {
+  int32 id = 1;
+  string name = 2;
+  bool isDirectory = 3;
+  repeated FileEntity children = 4;
+}
