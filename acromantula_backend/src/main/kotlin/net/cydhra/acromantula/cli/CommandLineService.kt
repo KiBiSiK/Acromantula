@@ -40,7 +40,7 @@ object CommandLineService : Service {
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
         EventBroker.registerEventListener(TaskFinishedEvent::class, this::onTaskFinished)
 
-        registerCommandParser(::ImportCommandCommandParser, "import")
+        registerCommandParser(::ImportCommandParser, "import")
         registerCommandParser(::ExportCommandCommandParser, "export")
         registerCommandParser(::ListFilesCommandParser, "ls")
         registerCommandParser(::DirectQueryCommandParser, "query")

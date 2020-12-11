@@ -7,7 +7,7 @@ import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ImportCommandInterpreter
 import java.util.*
 
-class ImportCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
+class ImportCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
     val directory by parser
         .storing(
             "-d", "--directory",
