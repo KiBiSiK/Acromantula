@@ -77,11 +77,14 @@ class WorkerPool {
         Futures.addCallback(future, object : FutureCallback<V> {
             override fun onSuccess(result: V?) {
                 EventBroker.fireEvent(TaskFinishedEvent(task.id))
+                task.finished = true
                 task.result = result?.let { Result.success(it) }?.let { Optional.of(it) } ?: Optional.empty()
             }
 
             override fun onFailure(t: Throwable) {
                 EventBroker.fireEvent(TaskFinishedEvent(task.id))
+                task.finished = true
+                task.result = Optional.of(Result.failure(t))
             }
         }, this.cachedThreadPool)
 
@@ -118,5 +121,20 @@ class WorkerPool {
             this.workerPool.shutdownNow()
         }
         logger.info("worker thread pool terminated.")
+    }
+
+    /**
+     * Remove the task from the task list if it is finished. Returns the task, or null, if the task is still running.
+     */
+    fun reap(taskId: Int): Task<*>? {
+        val task = this.registeredTasks.find { it.id == taskId }
+            ?: throw IllegalArgumentException("this task does not exist")
+
+        if (task.finished) {
+            this.registeredTasks.remove(task)
+            return task
+        }
+
+        return null
     }
 }

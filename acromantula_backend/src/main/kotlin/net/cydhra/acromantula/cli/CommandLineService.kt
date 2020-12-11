@@ -7,6 +7,7 @@ import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.commands.CommandDispatcherService
+import net.cydhra.acromantula.pool.event.TaskFinishedEvent
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
@@ -24,9 +25,20 @@ object CommandLineService : Service {
     @Volatile
     private var running = true
 
+    /**
+     * A map of command names to argument parsers, so commands can be parsed from strings
+     */
+    private val registeredCommandParsers = mutableMapOf<String, (ArgParser) -> WorkspaceCommandParser<*>>()
+
+    /**
+     * A list of task ids that were scheduled by this service.
+     */
+    private val dispatchedCommandTasks = mutableListOf<Pair<Int, WorkspaceCommandParser<*>>>()
+
     override suspend fun initialize() {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
+        EventBroker.registerEventListener(TaskFinishedEvent::class, this::onTaskFinished)
 
         registerCommandParser(::ImportCommandCommandParser, "import")
         registerCommandParser(::ExportCommandCommandParser, "export")
@@ -71,14 +83,9 @@ object CommandLineService : Service {
     }
 
     /**
-     * A map of command names to argument parsers, so commands can be parsed from strings
-     */
-    private val registeredCommandParsers = mutableMapOf<String, (ArgParser) -> WorkspaceCommandParser>()
-
-    /**
      * Register a command handler and an argument parser for a set of aliases used to invoke them from command line
      */
-    fun registerCommandParser(argumentParser: (ArgParser) -> WorkspaceCommandParser, vararg aliases: String) {
+    fun <V> registerCommandParser(argumentParser: (ArgParser) -> WorkspaceCommandParser<V>, vararg aliases: String) {
         aliases.forEach { command ->
             logger.trace("registering command parser for $command: [${argumentParser.javaClass.simpleName}]")
             registeredCommandParsers[command] = argumentParser
@@ -93,9 +100,30 @@ object CommandLineService : Service {
      */
     fun dispatchCommand(command: String) {
         val arguments = command.split(" ")
-        val parser = registeredCommandParsers[arguments[0]] ?: error("\"${arguments[0]}\" is not a valid command")
-        val task = CommandDispatcherService.dispatchCommand(
-            parser.invoke(ArgParser(arguments.subList(1, arguments.size).toTypedArray())).build()
-        )
+        val parserFactory =
+            registeredCommandParsers[arguments[0]] ?: error("\"${arguments[0]}\" is not a valid command")
+        val workspaceParser = parserFactory.invoke(ArgParser(arguments.subList(1, arguments.size).toTypedArray()))
+        val task = CommandDispatcherService.dispatchCommand(workspaceParser.build())
+        dispatchedCommandTasks += Pair(task.id, workspaceParser)
+    }
+
+    private fun onTaskFinished(event: TaskFinishedEvent) {
+        // find the finished task index in the list of tasks scheduled by this service
+        val scheduledParser =
+            dispatchedCommandTasks.withIndex().find { (_, parserPair) -> parserPair.first == event.taskId }
+
+        // if present, handle the finished command
+        if (scheduledParser != null) {
+            val (index, tuple) = scheduledParser
+            val (taskId, parser) = tuple
+            dispatchedCommandTasks.removeAt(index)
+
+            val task = WorkspaceService.getWorkerPool().reap(taskId)!!
+
+            // this works because of the class contract (that parsers produce workspace
+            // commands of the result type they consume. Essentially, I need an existential type here.
+            @Suppress("UNCHECKED_CAST")
+            (parser as WorkspaceCommandParser<Any?>).report(task.result)
+        }
     }
 }

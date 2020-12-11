@@ -5,8 +5,9 @@ import com.xenomachina.argparser.default
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
+import java.util.*
 
-class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser {
+class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
 
     val directoryPath by parser.storing("-d", "-p", "--path", help = "directory path").default(null)
 
@@ -14,9 +15,13 @@ class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser {
         help = "directory identifier",
         transform = { toInt() }).default(null)
 
-    override fun build(): WorkspaceCommandInterpreter<*> =
+    override fun build(): WorkspaceCommandInterpreter<Unit> =
         if (directoryPath != null)
             ListFilesCommandInterpreter(directoryPath)
         else
             ListFilesCommandInterpreter(directoryId)
+
+    override fun report(result: Optional<out Result<Unit>>) {
+
+    }
 }

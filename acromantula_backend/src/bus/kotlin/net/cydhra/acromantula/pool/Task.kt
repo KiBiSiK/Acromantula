@@ -18,6 +18,9 @@ class Task<V>(val id: Int, private val future: ListenableFuture<V>, initialStatu
             }
         }
 
+    var finished: Boolean = false
+        internal set
+
     /**
      * The result of the task if ready, or an exception if the task failed
      */
