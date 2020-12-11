@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager
 /**
  * End all tasks, shutdown thread pools, close all resources and then quit the application.
  */
-class QuitCommandInterpreter : WorkspaceCommandInterpreter {
+class QuitCommandInterpreter : WorkspaceCommandInterpreter<Unit> {
 
     companion object {
         private val logger = LogManager.getLogger()

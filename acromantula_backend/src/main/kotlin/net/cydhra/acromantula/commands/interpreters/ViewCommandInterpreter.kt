@@ -16,7 +16,7 @@ class ViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val type: String
-) : WorkspaceCommandInterpreter {
+) : WorkspaceCommandInterpreter<Unit> {
 
     /**
      * Command to import files into workspace.

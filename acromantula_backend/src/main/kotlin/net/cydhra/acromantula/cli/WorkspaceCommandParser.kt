@@ -10,5 +10,5 @@ interface WorkspaceCommandParser {
     /**
      * Build the workspace command from the command args parser
      */
-    fun build(): WorkspaceCommandInterpreter
+    fun build(): WorkspaceCommandInterpreter<*>
 }

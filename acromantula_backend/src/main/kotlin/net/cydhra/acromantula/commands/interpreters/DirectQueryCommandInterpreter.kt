@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager
  * A command to directly query the workspace database. This is meant as a debug command to look at the current
  * database layout. This should not be available in a production build
  */
-class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpreter {
+class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpreter<Unit> {
     companion object {
         private val logger = LogManager.getLogger()
     }

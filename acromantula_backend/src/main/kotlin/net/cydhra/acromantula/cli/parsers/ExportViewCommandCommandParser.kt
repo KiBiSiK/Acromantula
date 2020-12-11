@@ -3,6 +3,7 @@ package net.cydhra.acromantula.cli.parsers
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ExportViewCommandInterpreter
 
 class ExportViewCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser {
@@ -21,5 +22,6 @@ class ExportViewCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser
     )
         .default(false)
 
-    override fun build() = ExportViewCommandInterpreter(filePath, type, recursive, incompatible, targetFileName)
+    override fun build(): WorkspaceCommandInterpreter<*> =
+        ExportViewCommandInterpreter(filePath, type, recursive, incompatible, targetFileName)
 }

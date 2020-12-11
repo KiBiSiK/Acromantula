@@ -12,7 +12,7 @@ import net.cydhra.acromantula.workspace.WorkspaceService
 class ListFilesCommandInterpreter(
     val directoryPath: String? = null,
     val directoryId: Int? = null
-) : WorkspaceCommandInterpreter {
+) : WorkspaceCommandInterpreter<Unit> {
 
     /**
      * List files in the directory denoted by the given path

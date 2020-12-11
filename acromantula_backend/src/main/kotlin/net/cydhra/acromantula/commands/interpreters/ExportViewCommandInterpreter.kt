@@ -30,7 +30,7 @@ class ExportViewCommandInterpreter private constructor(
     val recursive: Boolean,
     val includeIncompatible: Boolean,
     val targetFileName: String
-) : WorkspaceCommandInterpreter {
+) : WorkspaceCommandInterpreter<Unit> {
 
     companion object {
         private val logger = LogManager.getLogger()

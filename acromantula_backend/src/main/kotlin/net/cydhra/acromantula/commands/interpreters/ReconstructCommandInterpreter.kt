@@ -16,7 +16,7 @@ class ReconstructCommandInterpreter(
     val fileEntityId: Int,
     val viewType: String,
     val dataBuffer: ByteArray
-) : WorkspaceCommandInterpreter {
+) : WorkspaceCommandInterpreter<Unit> {
 
     companion object {
         private val logger = LogManager.getLogger()

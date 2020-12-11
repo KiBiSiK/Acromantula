@@ -14,7 +14,7 @@ class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser {
         help = "directory identifier",
         transform = { toInt() }).default(null)
 
-    override fun build(): WorkspaceCommandInterpreter =
+    override fun build(): WorkspaceCommandInterpreter<*> =
         if (directoryPath != null)
             ListFilesCommandInterpreter(directoryPath)
         else

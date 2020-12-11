@@ -17,7 +17,7 @@ class ExportCommandInterpreter private constructor(
     val filePath: String? = null,
     val exporterName: String,
     val targetFileName: String
-) : WorkspaceCommandInterpreter {
+) : WorkspaceCommandInterpreter<Unit> {
 
     /**
      * Command to import files into workspace.

@@ -3,6 +3,7 @@ package net.cydhra.acromantula.cli.parsers
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
+import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ImportCommandInterpreter
 
 class ImportCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser {
@@ -15,6 +16,6 @@ class ImportCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser {
 
     val fileUrl by parser.positional("URL", help = "URL pointing to the file")
 
-    override fun build() = ImportCommandInterpreter(directory, fileUrl)
+    override fun build(): WorkspaceCommandInterpreter<*> = ImportCommandInterpreter(directory, fileUrl)
 
 }

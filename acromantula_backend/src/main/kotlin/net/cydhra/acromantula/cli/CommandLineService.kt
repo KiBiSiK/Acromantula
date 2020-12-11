@@ -7,7 +7,6 @@ import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.commands.CommandDispatcherService
-import net.cydhra.acromantula.pool.Task
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
@@ -92,10 +91,10 @@ object CommandLineService : Service {
      * escaped by double-quotes are not possible using this method. Dispatching it will schedule the command to
      * the worker pool and generate a status code, that can be used to request status information about the command.
      */
-    fun dispatchCommand(command: String): Task {
+    fun dispatchCommand(command: String) {
         val arguments = command.split(" ")
         val parser = registeredCommandParsers[arguments[0]] ?: error("\"${arguments[0]}\" is not a valid command")
-        return CommandDispatcherService.dispatchCommand(
+        val task = CommandDispatcherService.dispatchCommand(
             parser.invoke(ArgParser(arguments.subList(1, arguments.size).toTypedArray())).build()
         )
     }

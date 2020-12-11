@@ -2,12 +2,13 @@ package net.cydhra.acromantula.pool
 
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.pool.event.TaskFinishedEvent
 import org.apache.logging.log4j.LogManager
+import java.util.*
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -37,7 +38,7 @@ class WorkerPool {
     /**
      * A list of tasks registered and not yet collected. They might have finished their work.
      */
-    private val registeredTasks = mutableListOf<Task>()
+    private val registeredTasks = mutableListOf<Task<*>>()
 
     /**
      * Unique id counter.
@@ -60,22 +61,23 @@ class WorkerPool {
      * @param autoReap automatically reap the job upon completion. Use this for fire-and-forget jobs
      * @param runnable the task method
      */
-    fun launchTask(
+    fun <V> launchTask(
         initialStatus: String = "job scheduled",
         autoReap: Boolean = false,
-        runnable: () -> Unit
-    ): Task {
+        runnable: () -> V
+    ): Task<V> {
         logger.trace("launching task in unbounded thread pool...")
-        val future = cachedThreadPool.submit(runnable)
+        val future = cachedThreadPool.submit(Callable(runnable))
 
         @Suppress("UNCHECKED_CAST")
-        val task = Task(id++, future as ListenableFuture<Unit>, initialStatus)
-        this.registeredTasks += task
+        val task = Task(id++, future, initialStatus)
+        this.registeredTasks.add(task)
 
         // task finished event listener
-        Futures.addCallback(future, object : FutureCallback<Unit> {
-            override fun onSuccess(result: Unit?) {
+        Futures.addCallback(future, object : FutureCallback<V> {
+            override fun onSuccess(result: V?) {
                 EventBroker.fireEvent(TaskFinishedEvent(task.id))
+                task.result = result?.let { Result.success(it) }?.let { Optional.of(it) } ?: Optional.empty()
             }
 
             override fun onFailure(t: Throwable) {
@@ -85,8 +87,8 @@ class WorkerPool {
 
         if (autoReap) {
             // auto reap listener
-            Futures.addCallback(future, object : FutureCallback<Unit> {
-                override fun onSuccess(result: Unit?) {
+            Futures.addCallback(future, object : FutureCallback<V> {
+                override fun onSuccess(result: V?) {
                     logger.debug("reaped task ${task.id} (exit status: \"${task.status}\")")
                     this@WorkerPool.registeredTasks.remove(task)
                 }

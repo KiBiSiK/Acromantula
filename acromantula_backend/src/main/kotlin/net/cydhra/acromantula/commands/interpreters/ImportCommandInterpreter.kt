@@ -17,7 +17,7 @@ class ImportCommandInterpreter(
     val directory: Int? = null,
     val directoryPath: String? = null,
     val fileUrl: String
-) : WorkspaceCommandInterpreter {
+) : WorkspaceCommandInterpreter<Unit> {
 
     /**
      * Command to import files into workspace.
