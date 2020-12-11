@@ -30,12 +30,17 @@ object PluginService : Service {
             (pluginsFolder.listFiles() ?: emptyArray())
                 .filter { it.name.endsWith("jar") }
                 .map { it.toURI().toURL() }
-                .toTypedArray()
-            , this.javaClass.classLoader)
+                .toTypedArray(), this.javaClass.classLoader)
         val pluginLoader = ServiceLoader.load(AcromantulaPlugin::class.java, classLoader)
         pluginLoader.iterator().forEach { plugin ->
             loadedPlugins += plugin.apply(AcromantulaPlugin::initialize)
         }
     }
 
+    /**
+     * Get a list of all loaded [AcromantulaPlugin]s
+     */
+    fun listPlugins(): List<AcromantulaPlugin> {
+        return this.loadedPlugins
+    }
 }
