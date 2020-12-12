@@ -15,19 +15,23 @@ class ListViewTypesCommandParser(parser: ArgParser) : WorkspaceCommandParser<Lis
     override fun build() = ListViewTypesCommandInterpreter()
 
     override fun report(result: Optional<out Result<List<Pair<String, String>>>>) {
-        val response = result.get()
-        if (response.isSuccess) {
-            logger.info(
-                "available view generators:\n${
-                    response.getOrThrow().joinToString("\n") { (name, type) ->
-                        "> \"$name\" (generates $type)"
-                    }
-                }"
-            )
+        if (result.isPresent) {
+            val response = result.get()
+            if (response.isSuccess) {
+                logger.info(
+                    "available view generators:\n${
+                        response.getOrThrow().joinToString("\n") { (name, type) ->
+                            "> \"$name\" (generates $type)"
+                        }
+                    }"
+                )
+            } else {
+                logger.error(
+                    "error while listing view generators", response.exceptionOrNull()!!
+                )
+            }
         } else {
-            logger.error(
-                "error while listing view generators", response.exceptionOrNull()!!
-            )
+            logger.info("no view generators present")
         }
     }
 }
