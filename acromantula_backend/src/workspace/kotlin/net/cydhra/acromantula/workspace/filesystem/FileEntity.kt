@@ -7,7 +7,8 @@ import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
 
-internal object FileTable : IntIdTable("TreeFile") {
+// This table is NOT private, so external models can reference files.
+object FileTable : IntIdTable("TreeFile") {
     val name = varchar("name", MAX_FILE_NAME)
     val parent = reference("parent", FileTable).nullable()
     val isDirectory = bool("is_directory").default(false)
