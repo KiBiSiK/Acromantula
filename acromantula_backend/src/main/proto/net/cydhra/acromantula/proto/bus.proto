@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package net.cydhra.acromantula.proto;
+
+import "google/protobuf/empty.proto";
+
+service BusService {
+  rpc getEventStream (google.protobuf.Empty) returns (stream Event);
+}
+
+message Event {
+  oneof event {
+    ApplicationShutdownEvent shutdownEvent = 1;
+    ApplicationStartUpEvent startupEvent = 2;
+    TaskFinishedEvent taskFinishedEvent = 3;
+    TaskStatusChangedEvent taskStatusChangedEvent = 4;
+  }
+}
+
+message ApplicationStartUpEvent {}
+
+message ApplicationShutdownEvent {}
+
+message TaskFinishedEvent {
+  int32 taskId = 1;
+}
+
+message TaskStatusChangedEvent {
+  int32 taskId = 1;
+  string newStatus = 2;
+}
