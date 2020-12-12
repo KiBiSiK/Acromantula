@@ -41,7 +41,7 @@ object CommandLineService : Service {
         EventBroker.registerEventListener(TaskFinishedEvent::class, this::onTaskFinished)
 
         registerCommandParser(::ImportCommandParser, "import")
-        registerCommandParser(::ExportCommandCommandParser, "export")
+        registerCommandParser(::ExportCommandParser, "export")
         registerCommandParser(::ListFilesCommandParser, "ls")
         registerCommandParser(::DirectQueryCommandParser, "query")
         registerCommandParser(::ViewCommandCommandParser, "view")

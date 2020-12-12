@@ -7,7 +7,7 @@ import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ExportCommandInterpreter
 import java.util.*
 
-class ExportCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
+class ExportCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
     val filePath by parser.positional("FILE", help = "file in workspace to export")
 
     val targetFileName by parser.positional("TARGET", help = "path of the target file")
