@@ -2,10 +2,12 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
+import "net/cydhra/acromantula/proto/common.proto";
+
 option java_multiple_files = true;
 
 service ExportService {
-  rpc exportFile (ExportCommand) returns (ExportResponse);
+  rpc exportFile (ExportCommand) returns (CommandResponse);
 }
 
 message ExportCommand {
@@ -13,8 +15,4 @@ message ExportCommand {
   string filePath = 2;
   string targetPath = 3;
   string exporter = 4;
-}
-
-message ExportResponse {
-
 }

@@ -2,12 +2,14 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
+import "net/cydhra/acromantula/proto/common.proto";
+
 option java_multiple_files = true;
 
 service ViewService {
-  rpc view (ViewCommand) returns (ViewResponse);
+  rpc view (ViewCommand) returns (CommandResponse);
 
-  rpc exportView (ExportViewCommand) returns (ExportViewResponse);
+  rpc exportView (ExportViewCommand) returns (CommandResponse);
 }
 
 message ExportViewCommand {
@@ -19,16 +21,8 @@ message ExportViewCommand {
   bool includeIncompatible = 6;
 }
 
-message ExportViewResponse {
-
-}
-
 message ViewCommand {
   int32 fileId = 1;
   string filePath = 2;
   string type = 3;
-}
-
-message ViewResponse {
-
 }

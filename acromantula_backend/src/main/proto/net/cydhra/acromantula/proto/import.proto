@@ -2,18 +2,16 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
+import "net/cydhra/acromantula/proto/common.proto";
+
 option java_multiple_files = true;
 
 service ImportService {
-  rpc importFile (ImportCommand) returns (ImportResponse);
+  rpc importFile (ImportCommand) returns (CommandResponse);
 }
 
 message ImportCommand {
   int32 directoryId = 1;
   string directoryPath = 2;
   string fileUrl = 3;
-}
-
-message ImportResponse {
-
 }
