@@ -1,11 +1,24 @@
 package net.cydhra.acromantula.rpc.service
 
+import com.google.protobuf.Empty
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ExportViewCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ViewCommandInterpreter
+import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.proto.*
 
 class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
+
+    override suspend fun getViewTypes(request: Empty): ViewTypes {
+        return viewTypes {
+            this.types = GenerateViewFeature.getViewTypes().map { (type, fileType) ->
+                viewType {
+                    this.name = type
+                    this.generatedType = fileType
+                }
+            }
+        }
+    }
 
     override suspend fun view(request: ViewCommand): CommandResponse {
         val task = CommandDispatcherService.dispatchCommand(

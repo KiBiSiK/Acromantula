@@ -50,6 +50,7 @@ object CommandLineService : Service {
         registerCommandParser(::ReconstructCommandParser, "reconstruct", "convert")
         registerCommandParser(::ListTasksCommandParser, "tasks", "listtasks")
         registerCommandParser(::ListExportersCommandParser, "exporters", "listexporters")
+        registerCommandParser(::ListViewTypesCommandParser, "views", "viewgenerators", "listviewgenerators")
     }
 
     @Suppress("RedundantSuspendModifier")

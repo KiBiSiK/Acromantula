@@ -3,13 +3,25 @@ syntax = "proto3";
 package net.cydhra.acromantula.proto;
 
 import "common.proto";
+import "google/protobuf/empty.proto";
 
 option java_multiple_files = true;
 
 service ViewService {
+  rpc getViewTypes(google.protobuf.Empty) returns (ViewTypes);
+
   rpc view (ViewCommand) returns (CommandResponse);
 
   rpc exportView (ExportViewCommand) returns (CommandResponse);
+}
+
+message ViewTypes {
+  repeated ViewType types = 1;
+}
+
+message ViewType {
+  string name = 1;
+  string generatedType = 2;
 }
 
 message ExportViewCommand {

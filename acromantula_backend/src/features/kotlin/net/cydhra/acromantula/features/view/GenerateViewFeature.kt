@@ -86,6 +86,17 @@ object GenerateViewFeature {
     }
 
     /**
+     * Get a list of all available view types and their generated file type identifiers.
+     *
+     * @see [net.cydhra.acromantula.workspace.filesystem.FileType]
+     */
+    fun getViewTypes(): List<Pair<String, String>> {
+        return this.registeredGenerators.keys
+            .map { type -> type to registeredGenerators[type]!!.fileType.typeHierarchy }
+            .toList()
+    }
+
+    /**
      * Register a [ViewGeneratorStrategy] at this feature
      */
     fun registerViewGenerator(viewGeneratorStrategy: ViewGeneratorStrategy) {
