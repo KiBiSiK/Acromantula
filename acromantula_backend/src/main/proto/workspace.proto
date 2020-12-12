@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
+import "common.proto";
 import "google/protobuf/empty.proto";
 
 option java_multiple_files = true;
@@ -9,7 +10,7 @@ option java_multiple_files = true;
 service WorkspaceService {
   rpc listTasks (google.protobuf.Empty) returns (TaskListResponse);
 
-  rpc listFiles (ListFilesCommand) returns (ListFilesResponse);
+  rpc listFiles (ListFilesCommand) returns (CommandResponse);
 }
 message TaskListResponse {
   repeated Task tasks = 1;

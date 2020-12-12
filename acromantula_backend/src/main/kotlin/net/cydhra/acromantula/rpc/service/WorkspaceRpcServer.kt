@@ -1,6 +1,8 @@
 package net.cydhra.acromantula.rpc.service
 
 import com.google.protobuf.Empty
+import net.cydhra.acromantula.commands.CommandDispatcherService
+import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
 
@@ -19,7 +21,16 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         }
     }
 
-    override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
-        TODO("not implemented")
+    override suspend fun listFiles(request: ListFilesCommand): CommandResponse {
+        val task = if (request.fileId != -1) {
+            CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.fileId))
+        } else {
+            CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() }))
+        }
+
+        return commandResponse {
+            this.taskId = task.id
+            this.taskStatus = task.status
+        }
     }
 }
