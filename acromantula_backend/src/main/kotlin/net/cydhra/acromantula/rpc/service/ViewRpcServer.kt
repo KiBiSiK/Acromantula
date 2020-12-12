@@ -1,13 +1,13 @@
 package net.cydhra.acromantula.rpc.service
 
-import io.grpc.stub.StreamObserver
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ExportViewCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ViewCommandInterpreter
 import net.cydhra.acromantula.proto.*
 
-class ViewRpcServer : ViewServiceGrpc.ViewServiceImplBase() {
-    override fun view(request: ViewCommand, responseObserver: StreamObserver<CommandResponse>) {
+class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
+
+    override suspend fun view(request: ViewCommand): CommandResponse {
         val task = CommandDispatcherService.dispatchCommand(
             when {
                 request.fileId != -1 -> ViewCommandInterpreter(request.fileId, request.type)
@@ -15,13 +15,13 @@ class ViewRpcServer : ViewServiceGrpc.ViewServiceImplBase() {
                 else -> throw IllegalArgumentException("either fileId or filePath must be defined")
             }
         )
-        responseObserver.onNext(commandResponse {
+        return commandResponse {
             this.taskId = task.id
             this.taskStatus = task.status
-        })
+        }
     }
 
-    override fun exportView(request: ExportViewCommand, responseObserver: StreamObserver<CommandResponse>) {
+    override suspend fun exportView(request: ExportViewCommand): CommandResponse {
         val task = CommandDispatcherService.dispatchCommand(
             when {
                 request.fileId != -1 -> ExportViewCommandInterpreter(
@@ -35,9 +35,10 @@ class ViewRpcServer : ViewServiceGrpc.ViewServiceImplBase() {
                 else -> throw IllegalArgumentException("either fileId or filePath must be defined")
             }
         )
-        responseObserver.onNext(commandResponse {
+
+        return commandResponse {
             this.taskId = task.id
             this.taskStatus = task.status
-        })
+        }
     }
 }

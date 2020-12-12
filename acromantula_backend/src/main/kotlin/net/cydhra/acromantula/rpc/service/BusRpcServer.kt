@@ -1,12 +1,12 @@
 package net.cydhra.acromantula.rpc.service
 
 import com.google.protobuf.Empty
-import io.grpc.stub.StreamObserver
+import kotlinx.coroutines.flow.Flow
 import net.cydhra.acromantula.proto.Bus
-import net.cydhra.acromantula.proto.BusServiceGrpc
+import net.cydhra.acromantula.proto.BusServiceGrpcKt
 
-class BusRpcServer : BusServiceGrpc.BusServiceImplBase() {
-    override fun getEventStream(request: Empty, responseObserver: StreamObserver<Bus.Event>) {
-        TODO("not implemented yet")
+class BusRpcServer : BusServiceGrpcKt.BusServiceCoroutineImplBase() {
+    override fun getEventStream(request: Empty): Flow<Bus.Event> {
+        return super.getEventStream(request)
     }
 }

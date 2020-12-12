@@ -58,7 +58,10 @@ project("acromantula_backend") {
                 artifact = 'com.github.googleapis:gapic-generator-kotlin:master-SNAPSHOT:core@jar'
             }
             grpc {
-                artifact = "io.grpc:protoc-gen-grpc-java:1.20.0"
+                artifact = "io.grpc:protoc-gen-grpc-java:$grpc_version"
+            }
+            grpckt {
+                artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpc_kotlin_version:jdk7@jar"
             }
         }
         generateProtoTasks {
@@ -71,6 +74,7 @@ project("acromantula_backend") {
 
                     // generate server API
                     grpc {}
+                    grpckt {}
                 }
             }
         }
@@ -126,6 +130,7 @@ project("acromantula_backend") {
 
             java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/java"
             java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpc"
+            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpckt"
             java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/client"
         }
 
@@ -156,6 +161,7 @@ project("acromantula_backend") {
         implementation group: 'com.github.googleapis.gax-kotlin', name: 'kgax-grpc', version: 'master-SNAPSHOT'
         implementation group: 'io.grpc', name: 'grpc-netty-shaded', version: grpc_version
         implementation group: 'io.grpc', name: 'grpc-services', version: grpc_version
+        implementation group: 'io.grpc', name: 'grpc-kotlin-stub', version: grpc_kotlin_version
 
         // utility
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
