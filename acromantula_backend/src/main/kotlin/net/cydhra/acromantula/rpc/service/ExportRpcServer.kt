@@ -1,11 +1,10 @@
 package net.cydhra.acromantula.rpc.service
 
+import com.google.protobuf.Empty
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ExportCommandInterpreter
-import net.cydhra.acromantula.proto.CommandResponse
-import net.cydhra.acromantula.proto.ExportCommand
-import net.cydhra.acromantula.proto.ExportServiceGrpcKt
-import net.cydhra.acromantula.proto.commandResponse
+import net.cydhra.acromantula.features.exporter.ExporterFeature
+import net.cydhra.acromantula.proto.*
 
 class ExportRpcServer : ExportServiceGrpcKt.ExportServiceCoroutineImplBase() {
     override suspend fun exportFile(request: ExportCommand): CommandResponse {
@@ -23,6 +22,19 @@ class ExportRpcServer : ExportServiceGrpcKt.ExportServiceCoroutineImplBase() {
         return commandResponse {
             this.taskId = task.id
             this.taskStatus = task.status
+        }
+    }
+
+    override suspend fun getExporters(request: Empty): ExportersList {
+        return exportersList {
+            this.exporters =
+                ExporterFeature.getExporters()
+                    .map { exporter ->
+                        exporter {
+                            this.name = exporter
+                        }
+                    }
+                    .toList()
         }
     }
 }
