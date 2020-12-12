@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
-import "net/cydhra/acromantula/proto/common.proto";
+import "common.proto";
 
 option java_multiple_files = true;
 
