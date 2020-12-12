@@ -37,6 +37,8 @@ object EventBroker : Service {
     /**
      * Work-stealing pool that is used for event handling
      */
+    // uses a fork-join pool in async mode (ideal for small task bursts that are never joined). Threads block when no
+    // tasks are available, freeing up the CPU for the heavy-duty worker threads of the worker pool
     private val eventHandlerPool = Executors.newWorkStealingPool()
 
     /**
