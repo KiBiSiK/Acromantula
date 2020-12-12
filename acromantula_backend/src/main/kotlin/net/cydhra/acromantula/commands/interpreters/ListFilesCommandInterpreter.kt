@@ -2,6 +2,8 @@ package net.cydhra.acromantula.commands.interpreters
 
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.util.TreeNode
 
 /**
  * Command to list all files in a directory.
@@ -12,7 +14,7 @@ import net.cydhra.acromantula.workspace.WorkspaceService
 class ListFilesCommandInterpreter(
     val directoryPath: String? = null,
     val directoryId: Int? = null
-) : WorkspaceCommandInterpreter<Unit> {
+) : WorkspaceCommandInterpreter<List<TreeNode<FileEntity>>> {
 
     /**
      * List files in the directory denoted by the given path
@@ -24,15 +26,13 @@ class ListFilesCommandInterpreter(
      */
     constructor(directoryId: Int? = null) : this(null, directoryId)
 
-    override fun evaluate() {
+    override fun evaluate(): List<TreeNode<FileEntity>> {
         val directory = when {
             directoryId != null -> WorkspaceService.queryPath(directoryId)
             directoryPath != null -> WorkspaceService.queryPath(directoryPath)
             else -> null
         }
-        WorkspaceService.listFilesRecursively(root = directory).forEach {
-            println(it.name)
-        }
+        return WorkspaceService.listFilesRecursively(root = directory)
     }
 }
 
