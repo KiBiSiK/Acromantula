@@ -4,6 +4,7 @@ import com.google.protobuf.Empty
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.runBlocking
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
@@ -51,7 +52,13 @@ class BusRpcServer : BusServiceGrpcKt.BusServiceCoroutineImplBase() {
             EventBroker.registerEventListener(TaskStatusChangedEvent::class, taskStatusChangedListener)
 
             invokeOnClose {
-                // TODO unregister listeners
+                // unregister the listeners of this flow, if the flow is closed (most likely by the client)
+                runBlocking {
+                    EventBroker.unregisterEventListener(ApplicationStartupEvent::class, applicationStartupListener)
+                    EventBroker.unregisterEventListener(ApplicationShutdownEvent::class, applicationShutdownListener)
+                    EventBroker.unregisterEventListener(TaskFinishedEvent::class, taskFinishedListener)
+                    EventBroker.unregisterEventListener(TaskStatusChangedEvent::class, taskStatusChangedListener)
+                }
             }
         }
     }

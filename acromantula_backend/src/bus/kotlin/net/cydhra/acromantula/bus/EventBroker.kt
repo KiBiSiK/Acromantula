@@ -109,6 +109,21 @@ object EventBroker : Service {
         }
     }
 
+    /**
+     * Unregister an event listener that was previously registered.
+     *
+     * @param eventClass the event class that is being listened to
+     * @param listener the reference to the listener that has been registered
+     */
+    suspend fun <T : Event> unregisterEventListener(
+        eventClass: KClass<T>,
+        listener: suspend (T) -> Unit
+    ) {
+        withContext(singleThreadContext) {
+            registeredEventHandlers.remove(eventClass, listener)
+        }
+    }
+
     @Suppress("RedundantSuspendModifier")
     private suspend fun shutdown(@Suppress("UNUSED_PARAMETER") e: ApplicationShutdownEvent) {
         logger.info("shutdown event broker thread")
