@@ -5,7 +5,6 @@ import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.java.JavaClassParser
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URL
@@ -33,11 +32,6 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     val workerPool = WorkerPool()
 
     /**
-     * Parser for java classes
-     */
-    val classParser = JavaClassParser()
-
-    /**
      * Initialize client connections, resources, etc
      */
     open fun initialize() {
@@ -49,7 +43,6 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      */
     open fun shutdown() {
         workerPool.shutdown()
-        classParser.shutdown()
     }
 
     /**

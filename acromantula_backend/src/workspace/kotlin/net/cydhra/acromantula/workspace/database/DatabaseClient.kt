@@ -4,7 +4,6 @@ import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveTable
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.filesystem.IndexMetaDatumTable
-import net.cydhra.acromantula.workspace.java.*
 import org.h2.jdbcx.JdbcDataSource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -43,15 +42,6 @@ internal class DatabaseClient(private val databasePath: String) {
                 FileTable,
                 IndexMetaDatumTable,
                 FileRepresentationTable,
-                JavaIdentifierTable,
-                JavaClassTable,
-                JavaMethodTable,
-                JavaFieldTable,
-                JavaAnnotationTable,
-                JavaModuleTable,
-                JavaParameterTable,
-                JavaSourceFileTable,
-                MemberReferenceTable,
             )
         }
     }

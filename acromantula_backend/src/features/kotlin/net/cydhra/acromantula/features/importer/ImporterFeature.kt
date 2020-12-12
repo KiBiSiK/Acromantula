@@ -32,7 +32,6 @@ object ImporterFeature {
 
     init {
         registerImporterStrategy(ArchiveImporterStrategy())
-        registerImporterStrategy(ClassFileImporterStrategy())
     }
 
     /**

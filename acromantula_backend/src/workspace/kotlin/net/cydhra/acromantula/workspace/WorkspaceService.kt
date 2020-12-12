@@ -170,30 +170,6 @@ object WorkspaceService : Service {
     }
 
     /**
-     * Add a file into workspace and parse its contents as a java class and insert its members into database. The
-     * file is uploaded into the workspace.
-     *
-     * @param name file name
-     * @param parent optional parent directory
-     * @param content file binary content (bytecode)
-     */
-    fun addClassEntry(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
-        val fileEntity = addFileEntry(name, parent, content)
-
-        logger.trace("scheduling class parsing for: \"$name\"")
-        @Suppress("DeferredResultUnused")
-        this.getWorkerPool().submit {
-            workspaceClient.classParser.import(
-                content,
-                this@WorkspaceService.workspaceClient.databaseClient,
-                fileEntity
-            )
-        }
-
-        return fileEntity
-    }
-
-    /**
      * Update content of a file with new content
      */
     fun updateFileEntry(fileEntity: FileEntity, byteArray: ByteArray) {
