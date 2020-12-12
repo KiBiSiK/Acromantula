@@ -2,10 +2,24 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
+import "google/protobuf/empty.proto";
+
 option java_multiple_files = true;
 
 service WorkspaceService {
+  rpc listTasks (google.protobuf.Empty) returns (TaskListResponse);
+
   rpc listFiles (ListFilesCommand) returns (ListFilesResponse);
+}
+message TaskListResponse {
+  repeated Task tasks = 1;
+}
+
+message Task {
+  int32 taskId = 1;
+  string taskTitle = 2;
+  string taskStatus = 3;
+  bool finished = 4;
 }
 
 message ListFilesCommand {
@@ -23,3 +37,4 @@ message FileEntity {
   bool isDirectory = 3;
   repeated FileEntity children = 4;
 }
+

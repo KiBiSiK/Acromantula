@@ -1,12 +1,25 @@
 package net.cydhra.acromantula.rpc.service
 
-import io.grpc.stub.StreamObserver
-import net.cydhra.acromantula.proto.ListFilesCommand
-import net.cydhra.acromantula.proto.ListFilesResponse
-import net.cydhra.acromantula.proto.WorkspaceServiceGrpc
+import com.google.protobuf.Empty
+import net.cydhra.acromantula.proto.*
+import net.cydhra.acromantula.workspace.WorkspaceService
 
-class WorkspaceRpcServer : WorkspaceServiceGrpc.WorkspaceServiceImplBase() {
-    override fun listFiles(request: ListFilesCommand, responseObserver: StreamObserver<ListFilesResponse>) {
-        TODO("not yet implemented")
+class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
+    override suspend fun listTasks(request: Empty): TaskListResponse {
+        return taskListResponse {
+            this.tasks = WorkspaceService.getWorkerPool()
+                .listTasks()
+                .map { task ->
+                    task {
+                        this.taskId = task.id
+                        this.taskStatus = task.status
+                        this.finished = task.finished
+                    }
+                }
+        }
+    }
+
+    override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
+        TODO("not implemented")
     }
 }
