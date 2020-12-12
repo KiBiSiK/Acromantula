@@ -15,9 +15,6 @@
     <codeStyleSettings language="JAVA">
       <option name="WRAP_COMMENTS" value="true" />
     </codeStyleSettings>
-    <codeStyleSettings language="Rust">
-      <option name="RIGHT_MARGIN" value="120" />
-    </codeStyleSettings>
     <codeStyleSettings language="kotlin">
       <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
     </codeStyleSettings>
