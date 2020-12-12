@@ -26,4 +26,8 @@ class Task<V>(val id: Int, private val future: ListenableFuture<V>, initialStatu
      */
     var result = Optional.empty<Result<V>>()
         internal set
+
+    override fun toString(): String {
+        return "Task $id[finished:$finished; status:\"$status\"]"
+    }
 }

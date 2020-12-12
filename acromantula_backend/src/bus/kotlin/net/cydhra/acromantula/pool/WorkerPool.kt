@@ -137,4 +137,12 @@ class WorkerPool {
 
         return null
     }
+
+    /**
+     * Get a list of all tasks currently registered in the pool. It includes running tasks and finished tasks that
+     * were not reaped yet.
+     */
+    fun listTasks(): List<Task<*>> {
+        return this.registeredTasks
+    }
 }
