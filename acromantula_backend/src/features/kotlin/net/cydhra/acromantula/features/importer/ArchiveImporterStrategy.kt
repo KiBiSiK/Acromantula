@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
+import net.cydhra.acromantula.features.util.FileTreeBuilder
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
@@ -12,12 +13,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
     companion object {
         private val logger = LogManager.getLogger()
-
-        private const val LAST_DIRECTORY_PATTERN = "[^\\/]*\\/\$"
-        private val lastDirectoryRegex = LAST_DIRECTORY_PATTERN.toRegex()
     }
-
-    private val directoryMap = mutableMapOf<String, FileEntity>()
 
     override fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
         // TODO maybe search magic bytes idk
@@ -26,7 +22,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
     override fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
         val archive = WorkspaceService.addArchiveEntry(fileName, parent)
-        directoryMap["/"] = archive
+        val treeBuilder = FileTreeBuilder(archive)
 
         val zipInputStream = ZipInputStream(fileContent)
 
@@ -40,8 +36,8 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
             // violates its contract in `ZipInputStream`. So we are a little bit inefficient in our use of streams here.
             val blob = zipInputStream.readBytes()
             if (blob.isNotEmpty()) {
-                val parentDirectory = getParentDirectory(currentEntry.name)
-                val parentDirectoryName = getParentPath(currentEntry.name)
+                val parentDirectory = treeBuilder.getParentDirectory(currentEntry.name)
+                val parentDirectoryName = treeBuilder.getParentPath(currentEntry.name)
                 ImporterFeature.importFile(
                     parent = parentDirectory,
                     fileName = currentEntry.name.removePrefix(parentDirectoryName),
@@ -54,39 +50,5 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
             currentEntry = zipInputStream.nextEntry
         }
-    }
-
-    /**
-     * Return the [DirectoryEntity] that is the parent of the element denoted by [element]. If the directory does not
-     * exist yet, it and its parents are created recursively.
-     */
-    private fun getParentDirectory(element: String): FileEntity {
-        val parentDirectoryPath = getParentPath(element)
-
-        return directoryMap.getOrPut(parentDirectoryPath) {
-            val directoryParent = getParentDirectory(parentDirectoryPath)
-            val directoryParentPath = getParentPath(parentDirectoryPath)
-
-            WorkspaceService.addDirectoryEntry(
-                name = parentDirectoryPath.removePrefix(directoryParentPath),
-                parent = directoryParent
-            )
-        }
-    }
-
-    /**
-     * Parse the path of a archive element's parent element
-     *
-     * @param path the element path
-     *
-     * @return the parent path used in the archive builder maps
-     */
-    private fun getParentPath(path: String): String {
-        return (if (path.endsWith("/"))
-            path.replace(lastDirectoryRegex, "")
-        else
-            path.removeRange(path.lastIndexOf('/').takeIf { it >= 0 }?.let { it + 1 }
-                ?: 0, path.length))
-            .ifEmpty { "/" }
     }
 }
