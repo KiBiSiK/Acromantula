@@ -5,9 +5,13 @@ import com.xenomachina.argparser.default
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ImportCommandInterpreter
-import java.util.*
+import org.apache.logging.log4j.LogManager
 
 class ImportCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
+    companion object {
+        private val logger = LogManager.getLogger()
+    }
+
     val directory by parser
         .storing(
             "-d", "--directory",
@@ -19,7 +23,7 @@ class ImportCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
 
     override fun build(): WorkspaceCommandInterpreter<Unit> = ImportCommandInterpreter(directory, fileUrl)
 
-    override fun report(result: Optional<out Result<Unit>>) {
+    override fun report(result: Result<Unit>) {
 
     }
 }

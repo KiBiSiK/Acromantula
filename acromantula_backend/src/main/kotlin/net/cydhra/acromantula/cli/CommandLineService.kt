@@ -123,10 +123,23 @@ object CommandLineService : Service {
 
             val task = WorkspaceService.getWorkerPool().reap(taskId)!!
 
-            // this works because of the class contract (that parsers produce workspace
-            // commands of the result type they consume. Essentially, I need an existential type here.
-            @Suppress("UNCHECKED_CAST")
-            (parser as WorkspaceCommandParser<Any?>).report(task.result)
+            val resultOptional = task.result
+
+            if (resultOptional.isPresent) {
+                resultOptional.get().onFailure {
+                    logger.error("error during command evaluation", it)
+                }
+
+                // this works because of the class contract (that parsers produce workspace
+                // commands of the result type they consume. Essentially, I need an existential type here.
+                @Suppress("UNCHECKED_CAST")
+                (parser as WorkspaceCommandParser<Any?>).report(resultOptional.get())
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                (parser as WorkspaceCommandParser<Any?>).report(Result.success(null))
+            }
+
+
         }
     }
 }

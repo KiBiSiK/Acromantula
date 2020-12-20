@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.cli
 
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
-import java.util.*
 
 /**
  * Interface for command argument parsers
@@ -16,5 +15,5 @@ interface WorkspaceCommandParser<V> {
     /**
      * Report the command result to the console.
      */
-    fun report(result: Optional<out Result<V>>)
+    fun report(result: Result<V>)
 }

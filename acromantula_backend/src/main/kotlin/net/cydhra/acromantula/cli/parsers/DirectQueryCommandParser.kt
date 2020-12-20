@@ -4,7 +4,6 @@ import com.xenomachina.argparser.ArgParser
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.DirectQueryCommandInterpreter
-import java.util.*
 
 class DirectQueryCommandParser(argParser: ArgParser) : WorkspaceCommandParser<Unit> {
 
@@ -13,7 +12,7 @@ class DirectQueryCommandParser(argParser: ArgParser) : WorkspaceCommandParser<Un
     override fun build(): WorkspaceCommandInterpreter<Unit> =
         DirectQueryCommandInterpreter(this.query.joinToString(" "))
 
-    override fun report(result: Optional<out Result<Unit>>) {
+    override fun report(result: Result<Unit>) {
 
     }
 }

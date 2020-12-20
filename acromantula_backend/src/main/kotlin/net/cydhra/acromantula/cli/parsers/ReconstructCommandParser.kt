@@ -6,7 +6,6 @@ import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ReconstructCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import java.net.URL
-import java.util.*
 
 class ReconstructCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
     val filePath by parser.positional(
@@ -30,7 +29,7 @@ class ReconstructCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit>
         return ReconstructCommandInterpreter(fileId, viewType, buffer)
     }
 
-    override fun report(result: Optional<out Result<Unit>>) {
+    override fun report(result: Result<Unit>) {
 
     }
 

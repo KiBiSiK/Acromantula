@@ -4,7 +4,6 @@ import com.xenomachina.argparser.ArgParser
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ViewCommandInterpreter
-import java.util.*
 
 class ViewCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
     val filePath by parser.positional("FILE", help = "file in workspace to export")
@@ -13,7 +12,7 @@ class ViewCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit>
 
     override fun build(): WorkspaceCommandInterpreter<Unit> = ViewCommandInterpreter(filePath, type)
 
-    override fun report(result: Optional<out Result<Unit>>) {
+    override fun report(result: Result<Unit>) {
 
     }
 }
