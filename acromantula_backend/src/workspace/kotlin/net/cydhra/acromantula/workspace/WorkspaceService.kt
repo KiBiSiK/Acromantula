@@ -183,18 +183,31 @@ object WorkspaceService : Service {
     }
 
     /**
-     * Get a [FileEntity] instance by a unique path in workspace.
+     * Get a [FileEntity] instance by a unique path in workspace. The path does not need to be complete, it only
+     * needs to be a unique path suffix. For example, if two paths exist in the workspace `root/example_1/a` and
+     * `root/example_2/a` then `a` is insufficient, but `example_1/a` is sufficient to identify the file. The path
+     * separator is `/`
      */
     fun queryPath(path: String): FileEntity {
-        return this.workspaceClient.databaseClient.transaction {
-            val results = FileEntity.find { FileTable.name like "%$path" }
+        val folderPath = path.removeSuffix("/").removePrefix("/").split('/')
 
-            when {
-                results.empty() -> error("file with path $path does not exist")
-                results.count() == 1 -> return@transaction results.first()
-                else ->
-                    throw IllegalArgumentException("there exist multiple files with this partial path, please specify")
-            }
+        return this.workspaceClient.databaseClient.transaction {
+            var results = FileEntity.find { FileTable.name eq folderPath.last() }.toList()
+            var currentFolderIndex = folderPath.lastIndex - 1
+
+            do {
+                when {
+                    results.isEmpty() -> error("file with path $path does not exist")
+                    results.count() == 1 -> return@transaction results.first()
+                    currentFolderIndex > -1 -> {
+                        results = results.filter { it.parent?.name?.equals(folderPath[currentFolderIndex]) == true }
+                        currentFolderIndex--
+                    }
+                    else -> error("the specified path was not unique")
+                }
+            } while (currentFolderIndex > -1)
+
+            error("the specified path was not unique")
         }
     }
 
