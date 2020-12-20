@@ -10,14 +10,14 @@ import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
-import net.cydhra.acromantula.workspace.util.TreeNode
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.exposed.sql.SortOrder
+import org.apache.logging.log4j.core.lookup.StrSubstitutor
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.*
 
 /**
  * An SQL query to list a directory tree relative to a starting directory selected by `%clause`
@@ -227,39 +227,41 @@ object WorkspaceService : Service {
      * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
      * repository root is used.
      */
-    fun listFilesRecursively(root: FileEntity? = null): List<TreeNode<FileEntity>> {
-        /**
-         * Recursively add all [children] and their respective children into the list
-         */
-        fun appendChildren(node: TreeNode<FileEntity>) {
-            FileEntity.find { FileTable.parent eq node.value.id }
-                .orderBy(
-                    FileTable.isDirectory to SortOrder.DESC,
-                    FileTable.name to SortOrder.ASC
-                )
-                .map(::TreeNode)
-                .forEach { childNode ->
-                    node.appendChild(childNode)
-                    appendChildren(childNode)
-                }
-        }
-
+    fun listFilesRecursively(root: FileEntity? = null): List<FileEntity> {
         return this.workspaceClient.databaseClient.transaction {
-            if (root != null) {
-                val rootNode = TreeNode(root)
-                appendChildren(rootNode)
-                listOf(rootNode)
+            val con = TransactionManager.current().connection
+
+            val statement = if (root == null) {
+                val substitutor = StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_ROOT_CLAUSE))
+                    .setVariablePrefix("%{")
+                    .setVariableSuffix("}")
+                con.prepareStatement(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
             } else {
-                FileEntity.find { FileTable.parent.isNull() }
-                    .orderBy(
-                        FileTable.isDirectory to SortOrder.DESC,
-                        FileTable.name to SortOrder.ASC
-                    )
-                    .map { file ->
-                        TreeNode(file).also { appendChildren(it) }
-                    }
-                    .toList()
+                val substitutor = StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_RELATIVE_CLAUSE))
+                    .setVariablePrefix("%{")
+                    .setVariableSuffix("}")
+                val statement = con.prepareStatement(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
+                statement.setInt(1, root.id.value)
+                statement
             }
+
+            val rs = statement.executeQuery()
+            val entities = mutableListOf<FileEntity>()
+            while (rs.next()) {
+                entities += FileEntity.wrapRow(
+                    ResultRow.create(
+                        rs, listOf(
+                            FileTable.id,
+                            FileTable.name,
+                            FileTable.parent,
+                            FileTable.isDirectory,
+                            FileTable.type,
+                            FileTable.archive,
+                        )
+                    )
+                )
+            }
+            entities
         }
     }
 
