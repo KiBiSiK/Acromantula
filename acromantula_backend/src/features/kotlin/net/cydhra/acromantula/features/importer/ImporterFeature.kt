@@ -61,7 +61,7 @@ object ImporterFeature {
      * @param fileStream an [InputStream] for the file content
      */
     fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
-        logger.trace("importing \"$fileName\"")
+        logger.info("importing \"$fileName\"")
 
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else
             PushbackInputStream(fileStream, 512)
@@ -69,6 +69,7 @@ object ImporterFeature {
         val importer =
             registeredImporters.firstOrNull { it.handles(fileName, pushbackStream) } ?: genericFileImporterStrategy
         importer.import(parent, fileName, pushbackStream)
+        logger.info("finished importing \"$fileName\"")
     }
 
     /**
