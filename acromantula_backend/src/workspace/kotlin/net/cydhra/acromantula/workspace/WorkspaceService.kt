@@ -252,11 +252,10 @@ object WorkspaceService : Service {
             val rs = statement.executeQuery()
             val rootNodes = mutableListOf<TreeNode<FileEntity>>()
             val parentStack = Stack<TreeNode<FileEntity>>()
-            var currentParent: TreeNode<FileEntity>
             var lastElement: TreeNode<FileEntity>
 
             if (rs.next()) {
-                currentParent = TreeNode(
+                val firstElement = TreeNode(
                     FileEntity.wrapRow(
                         ResultRow.create(
                             rs, listOf(
@@ -270,9 +269,9 @@ object WorkspaceService : Service {
                         )
                     )
                 )
-                lastElement = currentParent
-                parentStack.push(currentParent)
-                rootNodes.add(currentParent)
+                lastElement = firstElement
+                parentStack.push(firstElement)
+                rootNodes.add(firstElement)
             } else {
                 return@transaction emptyList()
             }
@@ -296,14 +295,18 @@ object WorkspaceService : Service {
                 if (currentElement.value.parent == lastElement.value) {
                     parentStack.push(lastElement)
                     lastElement.appendChild(currentElement)
-                } else if (currentElement.value.parent == currentParent.value) {
-                    currentParent.appendChild(currentElement)
+                } else if (currentElement.value.parent == parentStack.peek().value) {
+                    parentStack.peek().appendChild(currentElement)
                 } else {
-                    while (parentStack.isNotEmpty()) {
+                    while (true) {
                         parentStack.pop()
-                        currentParent = parentStack.peek()
-                        if (currentElement.value.parent == currentParent.value) {
-                            currentParent.appendChild(currentElement)
+
+                        if (parentStack.isNotEmpty()) {
+                            if (currentElement.value.parent == parentStack.peek().value) {
+                                parentStack.peek().appendChild(currentElement)
+                                break
+                            }
+                        } else {
                             break
                         }
                     }
@@ -311,7 +314,6 @@ object WorkspaceService : Service {
                     if (parentStack.isEmpty()) {
                         rootNodes.add(currentElement)
                         parentStack.push(currentElement)
-                        currentParent = currentElement
                     }
                 }
 
