@@ -10,6 +10,7 @@ import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
+import net.cydhra.acromantula.workspace.util.TreeNode
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.lookup.StrSubstitutor
 import org.jetbrains.exposed.sql.ResultRow
@@ -18,6 +19,7 @@ import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.*
 
 /**
  * An SQL query to list a directory tree relative to a starting directory selected by `%clause`
@@ -227,8 +229,9 @@ object WorkspaceService : Service {
      * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
      * repository root is used.
      */
-    fun listFilesRecursively(root: FileEntity? = null): List<FileEntity> {
-        return this.workspaceClient.databaseClient.transaction {
+    fun listFilesRecursively(root: FileEntity? = null): List<TreeNode<FileEntity>> {
+        // obtain the entire file tree from database
+        return this.workspaceClient.databaseClient.transaction transaction@{
             val con = TransactionManager.current().connection
 
             val statement = if (root == null) {
@@ -245,23 +248,77 @@ object WorkspaceService : Service {
                 statement
             }
 
+            // linearly construct the result list from the query result
             val rs = statement.executeQuery()
-            val entities = mutableListOf<FileEntity>()
-            while (rs.next()) {
-                entities += FileEntity.wrapRow(
-                    ResultRow.create(
-                        rs, listOf(
-                            FileTable.id,
-                            FileTable.name,
-                            FileTable.parent,
-                            FileTable.isDirectory,
-                            FileTable.type,
-                            FileTable.archive,
+            val rootNodes = mutableListOf<TreeNode<FileEntity>>()
+            val parentStack = Stack<TreeNode<FileEntity>>()
+            var currentParent: TreeNode<FileEntity>
+            var lastElement: TreeNode<FileEntity>
+
+            if (rs.next()) {
+                currentParent = TreeNode(
+                    FileEntity.wrapRow(
+                        ResultRow.create(
+                            rs, listOf(
+                                FileTable.id,
+                                FileTable.name,
+                                FileTable.parent,
+                                FileTable.isDirectory,
+                                FileTable.type,
+                                FileTable.archive,
+                            )
                         )
                     )
                 )
+                lastElement = currentParent
+                parentStack.push(currentParent)
+                rootNodes.add(currentParent)
+            } else {
+                return@transaction emptyList()
             }
-            entities
+
+            while (rs.next()) {
+                val currentElement = TreeNode(
+                    FileEntity.wrapRow(
+                        ResultRow.create(
+                            rs, listOf(
+                                FileTable.id,
+                                FileTable.name,
+                                FileTable.parent,
+                                FileTable.isDirectory,
+                                FileTable.type,
+                                FileTable.archive,
+                            )
+                        )
+                    )
+                )
+
+                if (currentElement.value.parent == lastElement.value) {
+                    parentStack.push(lastElement)
+                    lastElement.appendChild(currentElement)
+                } else if (currentElement.value.parent == currentParent.value) {
+                    currentParent.appendChild(currentElement)
+                } else {
+                    while (parentStack.isNotEmpty()) {
+                        parentStack.pop()
+                        currentParent = parentStack.peek()
+                        if (currentElement.value.parent == currentParent.value) {
+                            currentParent.appendChild(currentElement)
+                            break
+                        }
+                    }
+
+                    if (parentStack.isEmpty()) {
+                        rootNodes.add(currentElement)
+                        parentStack.push(currentElement)
+                        currentParent = currentElement
+                    }
+                }
+
+                lastElement = currentElement
+            }
+
+            rootNodes
         }
     }
 
