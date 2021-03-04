@@ -2,6 +2,7 @@ package net.cydhra.acromantula.rpc.service
 
 import com.google.protobuf.Empty
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.runBlocking
@@ -56,7 +57,7 @@ class BusRpcServer : BusServiceGrpcKt.BusServiceCoroutineImplBase() {
             EventBroker.registerEventListener(TaskFinishedEvent::class, taskFinishedListener)
             EventBroker.registerEventListener(TaskStatusChangedEvent::class, taskStatusChangedListener)
 
-            invokeOnClose {
+            awaitClose {
                 // unregister the listeners of this flow, if the flow is closed (most likely by the client)
                 runBlocking {
                     EventBroker.unregisterEventListener(ApplicationStartupEvent::class, applicationStartupListener)
