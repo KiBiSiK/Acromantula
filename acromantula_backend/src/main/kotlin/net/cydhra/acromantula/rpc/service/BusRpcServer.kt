@@ -2,6 +2,7 @@ package net.cydhra.acromantula.rpc.service
 
 import com.google.protobuf.Empty
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -33,6 +34,7 @@ class BusRpcServer : BusServiceGrpcKt.BusServiceCoroutineImplBase() {
                 offer(bus_Event {
                     this.shutdownEvent = bus_ApplicationShutdownEvent {}
                 })
+                this.cancel("graceful shutdown")
             }
 
             val taskFinishedListener: suspend (TaskFinishedEvent) -> Unit = { event ->
