@@ -91,6 +91,20 @@ object WorkspaceService : Service {
         return workspaceClient.workerPool
     }
 
+    fun loadNewWorkspace(workspaceFile: File) {
+        logger.info("attempting to load new workspace. Shutting down current workspace...")
+        workspaceClient.shutdown()
+
+        logger.info("loading new workspace...")
+        workspaceClient = LocalWorkspaceClient(workspaceFile)
+
+        logger.info("initializing new workspace...")
+        workspaceClient.initialize()
+
+        logger.info("updating database manager...")
+        DatabaseManager.setActiveDatabase(workspaceClient.databaseClient)
+    }
+
     /**
      * Add an archive entry into the workspace file tree. Since the archive is only parent to its content, no actual
      * data is associated with it. It is simply a [FileEntity] that has an [ArchiveEntity] associated

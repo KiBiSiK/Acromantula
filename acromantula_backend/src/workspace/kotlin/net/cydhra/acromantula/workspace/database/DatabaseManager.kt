@@ -17,6 +17,10 @@ object DatabaseManager {
     private val registeredContentMappingSymbolTypes = mutableListOf<ContentMappingSymbolTypeDelegate>()
     private val registeredContentMappingReferenceTypes = mutableListOf<ContentMappingReferenceDelegate>()
 
+    /**
+     * Must be called when a new database is loaded. This is NOT done automatically through event notification. This
+     * will update all content mapping types, so they can be used with the new database.
+     */
     internal fun setActiveDatabase(databaseClient: DatabaseClient) {
         this.databaseClient = databaseClient
 
