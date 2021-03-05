@@ -90,7 +90,7 @@ object CommandLineService : Service {
      */
     fun <V> registerCommandParser(argumentParser: (ArgParser) -> WorkspaceCommandParser<V>, vararg aliases: String) {
         aliases.forEach { command ->
-            logger.trace("registering command parser for $command: [${argumentParser.javaClass.simpleName}]")
+            logger.trace("registering command parser for $command")
             registeredCommandParsers[command] = argumentParser
         }
     }
