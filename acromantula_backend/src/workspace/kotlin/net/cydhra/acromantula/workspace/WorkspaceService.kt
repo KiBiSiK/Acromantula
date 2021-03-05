@@ -4,6 +4,7 @@ import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.pool.WorkerPool
+import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
@@ -72,6 +73,8 @@ object WorkspaceService : Service {
     override suspend fun initialize() {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
+
+        DatabaseManager.setActiveDatabase(workspaceClient.databaseClient)
 
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, ::onShutdown)
     }
