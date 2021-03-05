@@ -4,7 +4,6 @@ import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.pool.WorkerPool
-import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
@@ -87,13 +86,6 @@ object WorkspaceService : Service {
      */
     fun getWorkerPool(): WorkerPool {
         return workspaceClient.workerPool
-    }
-
-    /**
-     * Get the [DatabaseManager] that is responsible for managing content models
-     */
-    fun getDatabaseManager(): DatabaseManager {
-        return workspaceClient.databaseManager
     }
 
     /**
