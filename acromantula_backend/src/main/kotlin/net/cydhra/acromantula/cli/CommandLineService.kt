@@ -111,7 +111,7 @@ object CommandLineService : Service {
         val workspaceParser = parserFactory.invoke(ArgParser(arguments.subList(1, arguments.size).toTypedArray()))
         try {
             val task = CommandDispatcherService.dispatchCommand(workspaceParser.build())
-            dispatchedCommandTasks += Pair(task.id, workspaceParser)
+//            dispatchedCommandTasks += Pair(task.id, workspaceParser)
         } catch (e: ShowHelpException) {
             val wr = StringWriter()
             e.printUserMessage(wr, arguments[0], 120)

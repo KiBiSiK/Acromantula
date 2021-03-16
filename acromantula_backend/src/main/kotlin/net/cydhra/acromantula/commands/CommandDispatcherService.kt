@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.commands
 
+import kotlinx.coroutines.Deferred
 import net.cydhra.acromantula.bus.Service
-import net.cydhra.acromantula.pool.Task
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 
@@ -22,8 +22,8 @@ object CommandDispatcherService : Service {
      * Dispatch a command that originates from anywhere at the workspace. Dispatching it will schedule the command to
      * the worker pool and generate a status code, that can be used to request status information about the command.
      */
-    fun <T> dispatchCommand(commandInterpreter: WorkspaceCommandInterpreter<T>): Task<T> {
+    fun <T> dispatchCommand(commandInterpreter: WorkspaceCommandInterpreter<T>): Deferred<T> {
         logger.trace("launching command handler task for $commandInterpreter")
-        return WorkspaceService.getWorkerPool().launchTask { commandInterpreter.evaluate() }
+        return WorkspaceService.getWorkerPool().submit { commandInterpreter.evaluate() }
     }
 }

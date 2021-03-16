@@ -23,52 +23,36 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         }
     }
 
-    @ExperimentalCoroutinesApi
-    override fun listFiles(request: ListFilesCommand): Flow<ListFilesResponse> {
-        val task = if (request.fileId != -1) {
-            CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.fileId))
-        } else {
-            CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() }))
+    override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
+
+        LogManager.getLogger().warn("dispatching...")
+
+        val results = try {
+            if (request.fileId != -1) {
+                CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.fileId))
+            } else {
+                CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() }))
+            }.await()
+        } catch (e: Exception) {
+            LogManager.getLogger().error(e)
+            TODO()
         }
 
-        return callbackFlow {
-            val taskStatusChangedListener: suspend (TaskStatusChangedEvent) -> Unit = { event ->
-                if (event.taskId == task.id) {
-                    fun mapResultToProto(treeNode: TreeNode<FileEntity>): ProtoFileEntity {
-                        val children = treeNode.childList.map(::mapResultToProto)
-                        return fileEntity {
-                            id = treeNode.value.id.value
-                            name = treeNode.value.name
-                            isDirectory = treeNode.value.isDirectory
-                            children(*children.toTypedArray())
-                        }
-                    }
+        LogManager.getLogger().warn("got response")
 
-                    @Suppress("UNCHECKED_CAST")
-                    val result = (WorkspaceService.getWorkerPool().reap(event.taskId) as
-                            Task<List<TreeNode<FileEntity>>>).result.get();
-
-                    result.onSuccess {
-                        offer(
-                            listFilesResponse {
-                                trees(*it.map(::mapResultToProto).toTypedArray())
-                            }
-                        )
-                        close()
-                    }
-                    result.onFailure { t ->
-                        close(cause = t)
-                    }
-                }
+        fun mapResultToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity {
+            val children = treeNode.childList.map(::mapResultToProto)
+            return fileEntity {
+                id = treeNode.value.id.value
+                name = treeNode.value.name
+                isDirectory = treeNode.value.isDirectory
+                children(*children.toTypedArray())
             }
+        }
 
-            EventBroker.registerEventListener(TaskStatusChangedEvent::class, taskStatusChangedListener)
-
-            awaitClose {
-                runBlocking {
-                    EventBroker.unregisterEventListener(TaskStatusChangedEvent::class, taskStatusChangedListener)
-                }
-            }
+        LogManager.getLogger().debug("sending list file response...")
+        return listFilesResponse {
+            trees(*results.map(::mapResultToProto).toTypedArray())
         }
     }
 }
