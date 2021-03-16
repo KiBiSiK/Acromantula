@@ -2,13 +2,13 @@ package net.cydhra.acromantula.cli
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.ShowHelpException
+import kotlinx.coroutines.runBlocking
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.commands.CommandDispatcherService
-import net.cydhra.acromantula.pool.event.TaskFinishedEvent
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
@@ -18,6 +18,7 @@ import java.io.StringWriter
 /**
  * This service reads from standard in and parses the input as commands that are then dispatched at the
  * [CommandDispatcherService].
+ * TODO change this to single thread executor to not starve the worker thread pool
  */
 object CommandLineService : Service {
     override val name: String = "CLI"
@@ -40,7 +41,6 @@ object CommandLineService : Service {
     override suspend fun initialize() {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
-        EventBroker.registerEventListener(TaskFinishedEvent::class, this::onTaskFinished)
 
         registerCommandParser(::ImportCommandParser, "import")
         registerCommandParser(::ExportCommandParser, "export")
@@ -75,7 +75,9 @@ object CommandLineService : Service {
                 logger.info("command input: \"$command\"...")
 
                 try {
-                    dispatchCommand(command)
+                    runBlocking {
+                        dispatchCommand(command)
+                    }
                 } catch (e: IllegalStateException) {
                     logger.error("cannot dispatch command: ${e.message}")
                 } catch (e: Exception) {
@@ -103,52 +105,22 @@ object CommandLineService : Service {
      * escaped by double-quotes are not possible using this method. Dispatching it will schedule the command to
      * the worker pool and generate a status code, that can be used to request status information about the command.
      */
-    fun dispatchCommand(command: String) {
+    suspend fun dispatchCommand(command: String) {
         val arguments = command.split(" ")
         val parserFactory =
             registeredCommandParsers[arguments[0]] ?: error("\"${arguments[0]}\" is not a valid command")
 
         val workspaceParser = parserFactory.invoke(ArgParser(arguments.subList(1, arguments.size).toTypedArray()))
-        try {
-            val task = CommandDispatcherService.dispatchCommand(workspaceParser.build())
-//            dispatchedCommandTasks += Pair(task.id, workspaceParser)
-        } catch (e: ShowHelpException) {
+
+        val result = CommandDispatcherService.dispatchCommand(workspaceParser.build()).await()
+        val exception = result.exceptionOrNull()
+        if (exception is ShowHelpException) {
             val wr = StringWriter()
-            e.printUserMessage(wr, arguments[0], 120)
+            exception.printUserMessage(wr, arguments[0], 120)
             logger.info("Command Usage:\n" + wr.buffer.toString())
-        }
-    }
-
-    private fun onTaskFinished(event: TaskFinishedEvent) {
-        // find the finished task index in the list of tasks scheduled by this service
-        val scheduledParser =
-            dispatchedCommandTasks.withIndex().find { (_, parserPair) -> parserPair.first == event.taskId }
-
-        // if present, handle the finished command
-        if (scheduledParser != null) {
-            val (index, tuple) = scheduledParser
-            val (taskId, parser) = tuple
-            dispatchedCommandTasks.removeAt(index)
-
-            val task = WorkspaceService.getWorkerPool().reap(taskId)!!
-
-            val resultOptional = task.result
-
-            if (resultOptional.isPresent) {
-                resultOptional.get().onFailure {
-                    logger.error("error during command evaluation", it)
-                }
-
-                // this works because of the class contract (that parsers produce workspace
-                // commands of the result type they consume. Essentially, I need an existential type here.
-                @Suppress("UNCHECKED_CAST")
-                (parser as WorkspaceCommandParser<Any?>).report(resultOptional.get())
-            } else {
-                @Suppress("UNCHECKED_CAST")
-                (parser as WorkspaceCommandParser<Any?>).report(Result.success(null))
-            }
-
-
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            (workspaceParser as WorkspaceCommandParser<Any?>).report(result)
         }
     }
 }
