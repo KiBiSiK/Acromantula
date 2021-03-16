@@ -9,16 +9,15 @@ import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.commands.CommandDispatcherService
-import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.StringWriter
+import java.util.concurrent.Executors
 
 /**
  * This service reads from standard in and parses the input as commands that are then dispatched at the
  * [CommandDispatcherService].
- * TODO change this to single thread executor to not starve the worker thread pool
  */
 object CommandLineService : Service {
     override val name: String = "CLI"
@@ -34,9 +33,9 @@ object CommandLineService : Service {
     private val registeredCommandParsers = mutableMapOf<String, (ArgParser) -> WorkspaceCommandParser<*>>()
 
     /**
-     * A list of task ids that were scheduled by this service.
+     * Asynchronous worker for command line
      */
-    private val dispatchedCommandTasks = mutableListOf<Pair<Int, WorkspaceCommandParser<*>>>()
+    private val executor = Executors.newSingleThreadExecutor()
 
     override suspend fun initialize() {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
@@ -57,7 +56,7 @@ object CommandLineService : Service {
 
     @Suppress("RedundantSuspendModifier")
     private suspend fun onStartUp(@Suppress("UNUSED_PARAMETER") event: ApplicationStartupEvent) {
-        WorkspaceService.getWorkerPool().launchTask(initialStatus = "waiting for input", autoReap = true) {
+        this.executor.submit {
             commandLineParser()
         }
     }
