@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
-import "common.proto";
 import "google/protobuf/empty.proto";
 
 option java_multiple_files = true;
@@ -10,7 +9,7 @@ option java_multiple_files = true;
 service ExportService {
   rpc getExporters (google.protobuf.Empty) returns (ExportersList);
 
-  rpc exportFile (ExportCommand) returns (CommandResponse);
+  rpc exportFile (ExportCommand) returns (google.protobuf.Empty);
 }
 
 message ExportersList {

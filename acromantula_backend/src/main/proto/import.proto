@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package net.cydhra.acromantula.proto;
 
-import "common.proto";
+import "google/protobuf/empty.proto";
 
 option java_multiple_files = true;
 
 service ImportService {
-  rpc importFile (ImportCommand) returns (CommandResponse);
+  rpc importFile (ImportCommand) returns (google.protobuf.Empty);
 }
 
 message ImportCommand {
