@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.cli
 
 import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.ShowHelpException
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
@@ -12,6 +13,7 @@ import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.io.StringWriter
 
 /**
  * This service reads from standard in and parses the input as commands that are then dispatched at the
@@ -105,9 +107,16 @@ object CommandLineService : Service {
         val arguments = command.split(" ")
         val parserFactory =
             registeredCommandParsers[arguments[0]] ?: error("\"${arguments[0]}\" is not a valid command")
+
         val workspaceParser = parserFactory.invoke(ArgParser(arguments.subList(1, arguments.size).toTypedArray()))
-        val task = CommandDispatcherService.dispatchCommand(workspaceParser.build())
-        dispatchedCommandTasks += Pair(task.id, workspaceParser)
+        try {
+            val task = CommandDispatcherService.dispatchCommand(workspaceParser.build())
+            dispatchedCommandTasks += Pair(task.id, workspaceParser)
+        } catch (e: ShowHelpException) {
+            val wr = StringWriter()
+            e.printUserMessage(wr, arguments[0], 120)
+            logger.info("Command Usage:\n" + wr.buffer.toString())
+        }
     }
 
     private fun onTaskFinished(event: TaskFinishedEvent) {
