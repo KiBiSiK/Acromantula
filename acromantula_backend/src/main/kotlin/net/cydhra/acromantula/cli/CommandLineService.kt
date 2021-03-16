@@ -14,6 +14,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.StringWriter
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * This service reads from standard in and parses the input as commands that are then dispatched at the
@@ -64,6 +65,15 @@ object CommandLineService : Service {
     @Suppress("RedundantSuspendModifier")
     private suspend fun onShutdown(@Suppress("UNUSED_PARAMETER") event: ApplicationShutdownEvent) {
         this.running = false
+
+        this.executor.shutdown()
+        logger.info("awaiting CLI service termination (timeout 60 seconds)...")
+        if (!this.executor.awaitTermination(60, TimeUnit.SECONDS)) {
+            logger.warn("termination of CLI service failed. Forcing...")
+            this.executor.shutdownNow()
+        }
+
+        logger.info("CLI service terminated")
     }
 
     private fun commandLineParser() {
