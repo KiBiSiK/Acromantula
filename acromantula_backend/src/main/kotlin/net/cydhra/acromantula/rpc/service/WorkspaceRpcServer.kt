@@ -6,7 +6,6 @@ import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.util.TreeNode
-import org.apache.logging.log4j.LogManager
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
     override suspend fun listTasks(request: Empty): TaskListResponse {
@@ -24,21 +23,13 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
     }
 
     override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
-
-        LogManager.getLogger().warn("dispatching...")
-
-        val results = try {
+        val result =
             if (request.fileId != -1) {
                 CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.fileId))
             } else {
                 CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() }))
             }.await()
-        } catch (e: Exception) {
-            LogManager.getLogger().error(e)
-            TODO()
-        }
 
-        LogManager.getLogger().warn("got response")
 
         fun mapResultToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity {
             val children = treeNode.childList.map(::mapResultToProto)
@@ -50,9 +41,9 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             }
         }
 
-        LogManager.getLogger().debug("sending list file response...")
+        val entries = result.getOrElse { throw it }
         return listFilesResponse {
-            trees(*results.map(::mapResultToProto).toTypedArray())
+            trees(*entries.map(::mapResultToProto).toTypedArray())
         }
     }
 }
