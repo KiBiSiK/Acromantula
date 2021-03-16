@@ -128,6 +128,10 @@ object CommandLineService : Service {
             exception.printUserMessage(wr, arguments[0], 120)
             logger.info("Command Usage:\n" + wr.buffer.toString())
         } else {
+            result.onFailure {
+                logger.error("error during command evaluation", it)
+            }
+
             @Suppress("UNCHECKED_CAST")
             (workspaceParser as WorkspaceCommandParser<Any?>).report(result)
         }
