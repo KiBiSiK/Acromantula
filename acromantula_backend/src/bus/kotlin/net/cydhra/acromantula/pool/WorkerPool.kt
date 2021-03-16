@@ -1,19 +1,18 @@
 package net.cydhra.acromantula.pool
 
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.MoreExecutors
-import kotlinx.coroutines.*
-import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.pool.event.TaskFinishedEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
 import org.apache.logging.log4j.LogManager
-import java.util.*
-import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
  * Provides different scopes for asynchronous dispatching of work.
+ * TODO: change the API so tasks are submitted as packets instead of lambdas, so a list of currently running tasks
+ *  (independent of running coroutines) can be requested
  */
 class WorkerPool {
 
@@ -59,58 +58,6 @@ class WorkerPool {
         })
     }
 
-    /**
-     * Launch a potentially long running task in an unbounded pool of threads. This should not perform heavy duty
-     * work, because that might starve the actual worker threads.
-     *
-     * @param initialStatus initial [Task.status]
-     * @param autoReap automatically reap the job upon completion. Use this for fire-and-forget jobs
-     * @param runnable the task method
-     */
-    fun <V> launchTask(
-        initialStatus: String = "job scheduled",
-        autoReap: Boolean = false,
-        runnable: () -> V
-    ): Task<V> {
-        logger.trace("launching task in unbounded thread pool...")
-        val future = cachedThreadPool.submit(Callable(runnable))
-
-        @Suppress("UNCHECKED_CAST")
-        val task = Task(id++, future, initialStatus)
-        this.registeredTasks.add(task)
-
-        // task finished event listener
-        Futures.addCallback(future, object : FutureCallback<V> {
-            override fun onSuccess(result: V?) {
-                EventBroker.fireEvent(TaskFinishedEvent(task.id))
-                task.finished = true
-                task.result = result?.let { Result.success(it) }?.let { Optional.of(it) } ?: Optional.empty()
-            }
-
-            override fun onFailure(t: Throwable) {
-                EventBroker.fireEvent(TaskFinishedEvent(task.id))
-                task.finished = true
-                task.result = Optional.of(Result.failure(t))
-            }
-        }, this.cachedThreadPool)
-
-        if (autoReap) {
-            // auto reap listener
-            Futures.addCallback(future, object : FutureCallback<V> {
-                override fun onSuccess(result: V?) {
-                    logger.debug("reaped task ${task.id} (exit status: \"${task.status}\")")
-                    this@WorkerPool.registeredTasks.remove(task)
-                }
-
-                override fun onFailure(t: Throwable) {
-                    logger.error("auto-reap task failed:", t)
-                }
-            }, this.cachedThreadPool)
-        }
-
-        return task
-    }
-
     fun shutdown() {
         logger.info("awaiting cached thread pool termination (timeout 60 seconds)...")
         this.cachedThreadPool.shutdown()
@@ -127,21 +74,6 @@ class WorkerPool {
             this.workerPool.shutdownNow()
         }
         logger.info("worker thread pool terminated.")
-    }
-
-    /**
-     * Remove the task from the task list if it is finished. Returns the task, or null, if the task is still running.
-     */
-    fun reap(taskId: Int): Task<*>? {
-        val task = this.registeredTasks.find { it.id == taskId }
-            ?: throw IllegalArgumentException("this task does not exist")
-
-        if (task.finished) {
-            this.registeredTasks.remove(task)
-            return task
-        }
-
-        return null
     }
 
     /**
