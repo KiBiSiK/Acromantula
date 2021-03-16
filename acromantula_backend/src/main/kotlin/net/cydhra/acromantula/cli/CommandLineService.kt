@@ -13,8 +13,10 @@ import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.StringWriter
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.streams.toList
 
 /**
  * This service reads from standard in and parses the input as commands that are then dispatched at the
@@ -34,6 +36,13 @@ object CommandLineService : Service {
     private val registeredCommandParsers = mutableMapOf<String, (ArgParser) -> WorkspaceCommandParser<*>>()
 
     /**
+     * Command names (and aliases), each entry the name and aliases for one registered parser
+     */
+    private val commandNames = mutableListOf<String>()
+
+    val commands: List<String> = commandNames
+
+    /**
      * Asynchronous worker for command line
      */
     private val executor = Executors.newSingleThreadExecutor()
@@ -42,6 +51,7 @@ object CommandLineService : Service {
         EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
 
+        registerCommandParser(::ListCommandsCommandParser, "commands", "list")
         registerCommandParser(::ImportCommandParser, "import")
         registerCommandParser(::ExportCommandParser, "export")
         registerCommandParser(::ListFilesCommandParser, "ls")
@@ -106,6 +116,11 @@ object CommandLineService : Service {
             logger.trace("registering command parser for $command")
             registeredCommandParsers[command] = argumentParser
         }
+
+        commandNames += aliases[0] + Arrays.stream(aliases)
+            .skip(1)
+            .toList()
+            .joinToString(prefix = " [", postfix = "]")
     }
 
 
