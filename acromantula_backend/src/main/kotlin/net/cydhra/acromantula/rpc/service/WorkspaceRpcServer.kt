@@ -1,21 +1,12 @@
 package net.cydhra.acromantula.rpc.service
 
 import com.google.protobuf.Empty
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.runBlocking
-import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
-import net.cydhra.acromantula.pool.Task
-import net.cydhra.acromantula.pool.event.TaskStatusChangedEvent
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.util.TreeNode
-import net.cydhra.acromantula.proto.FileEntity as ProtoFileEntity
+import org.apache.logging.log4j.LogManager
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
     override suspend fun listTasks(request: Empty): TaskListResponse {
