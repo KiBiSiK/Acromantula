@@ -90,7 +90,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         }
 
         saveIndex()
-        EventBroker.fireEvent(AddedResourceEvent(file))
+        EventBroker.fireEvent(AddedResourceEvent(file, content))
     }
 
     /**
