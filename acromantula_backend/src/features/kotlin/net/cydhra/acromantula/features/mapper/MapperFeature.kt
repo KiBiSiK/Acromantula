@@ -3,8 +3,11 @@ package net.cydhra.acromantula.features.mapper
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
+import org.apache.logging.log4j.LogManager
 
 object MapperFeature {
+
+    private val logger = LogManager.getLogger()
 
     /**
      * Registered factories for generating mappings
@@ -21,12 +24,19 @@ object MapperFeature {
     /**
      * Generate mappings for a given file entity and its content
      */
-    suspend fun generateMappings(file: FileEntity, content: ByteArray) {
+    private fun generateMappings(file: FileEntity, content: ByteArray) {
+        this.mappingFactories
+            .filter { it.handles(file, content) }
+            .forEach {
+                logger.debug("generating [${it.name}] mappings for ${file.name}...")
 
+                // start the mapper and forget the deferred result
+                WorkspaceService.getWorkerPool().submit { it.generateMappings(file, content) }.start()
+            }
     }
 
+    @Suppress("RedundantSuspendModifier")
     internal suspend fun onFileAdded(event: AddedResourceEvent) {
-        // schedule generation of mappings but forget the deferred result (which is Unit anyway)
-        WorkspaceService.getWorkerPool().submit { generateMappings(event.file, event.content) }.start()
+        generateMappings(event.file, event.content)
     }
 }

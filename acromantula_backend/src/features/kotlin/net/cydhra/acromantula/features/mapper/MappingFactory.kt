@@ -9,6 +9,11 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 interface MappingFactory {
 
     /**
+     * A name for this mapping factory type (so it can be identified in logs)
+     */
+    val name: String
+
+    /**
      * Returns true, if this factory wants to handle the given file to generate mappings for it
      */
     fun handles(file: FileEntity, content: ByteArray): Boolean
@@ -16,5 +21,5 @@ interface MappingFactory {
     /**
      * Generate mappings for the given file and content
      */
-    fun generateMappings(file: FileEntity, content: ByteArray)
+    suspend fun generateMappings(file: FileEntity, content: ByteArray)
 }
