@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlin_version = '1.4.21'
+        kotlin_version = '1.5.0'
         serialization_version = '1.0.0'
         kotlin_exposed_version = '0.31.1'
         h2_database_version = '1.4.197' // mvcc support broke in an update (as of 10/2020). until fixed, use this ver
