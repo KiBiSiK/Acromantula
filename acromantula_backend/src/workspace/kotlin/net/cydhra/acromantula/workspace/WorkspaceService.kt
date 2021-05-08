@@ -19,6 +19,7 @@ import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.sql.ResultSet
 import java.util.*
 
 /**
@@ -247,6 +248,16 @@ object WorkspaceService : Service {
         }
     }
 
+    fun <T : Any> String.execAndMap(transform: (ResultSet) -> T): List<T> {
+        val result = arrayListOf<T>()
+        TransactionManager.current().exec(this) { rs ->
+            while (rs.next()) {
+                result += transform(rs)
+            }
+        }
+        return result
+    }
+
     /**
      * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
      * repository root is used.
@@ -256,93 +267,97 @@ object WorkspaceService : Service {
         return this.workspaceClient.databaseClient.transaction transaction@{
             val con = TransactionManager.current().connection
 
-            val statement = if (root == null) {
+            val query = if (root == null) {
                 val substitutor = StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_ROOT_CLAUSE))
                     .setVariablePrefix("%{")
                     .setVariableSuffix("}")
-                con.prepareStatement(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
+                substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY)
             } else {
-                val substitutor = StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_RELATIVE_CLAUSE))
+                val substitutor = StrSubstitutor(
+                    mapOf(
+                        "clause" to FILE_TREE_QUERY_RELATIVE_CLAUSE
+                            .replace("?", root.id.value.toString())
+                    )
+                )
                     .setVariablePrefix("%{")
                     .setVariableSuffix("}")
-                val statement = con.prepareStatement(substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY))
-                statement.setInt(1, root.id.value)
-                statement
+                substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY)
             }
 
-            // linearly construct the result list from the query result
-            val rs = statement.executeQuery()
-            val rootNodes = mutableListOf<TreeNode<FileEntity>>()
-            val parentStack = Stack<TreeNode<FileEntity>>()
-            var lastElement: TreeNode<FileEntity>
+            TransactionManager.current().exec(query) resultHandler@{ rs ->
+                // linearly construct the result list from the query result
+                val rootNodes = mutableListOf<TreeNode<FileEntity>>()
+                val parentStack = Stack<TreeNode<FileEntity>>()
+                var lastElement: TreeNode<FileEntity>
 
-            if (rs.next()) {
-                val firstElement = TreeNode(
-                    FileEntity.wrapRow(
-                        ResultRow.create(
-                            rs, listOf(
-                                FileTable.id,
-                                FileTable.name,
-                                FileTable.parent,
-                                FileTable.isDirectory,
-                                FileTable.type,
-                                FileTable.archive,
+                if (rs.next()) {
+                    val firstElement = TreeNode(
+                        FileEntity.wrapRow(
+                            ResultRow.create(
+                                rs, listOf(
+                                    FileTable.id,
+                                    FileTable.name,
+                                    FileTable.parent,
+                                    FileTable.isDirectory,
+                                    FileTable.type,
+                                    FileTable.archive,
+                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
                             )
                         )
                     )
-                )
-                lastElement = firstElement
-                parentStack.push(firstElement)
-                rootNodes.add(firstElement)
-            } else {
-                return@transaction emptyList()
-            }
-
-            while (rs.next()) {
-                val currentElement = TreeNode(
-                    FileEntity.wrapRow(
-                        ResultRow.create(
-                            rs, listOf(
-                                FileTable.id,
-                                FileTable.name,
-                                FileTable.parent,
-                                FileTable.isDirectory,
-                                FileTable.type,
-                                FileTable.archive,
-                            )
-                        )
-                    )
-                )
-
-                if (currentElement.value.parent == lastElement.value) {
-                    parentStack.push(lastElement)
-                    lastElement.appendChild(currentElement)
-                } else if (currentElement.value.parent == parentStack.peek().value) {
-                    parentStack.peek().appendChild(currentElement)
+                    lastElement = firstElement
+                    parentStack.push(firstElement)
+                    rootNodes.add(firstElement)
                 } else {
-                    while (true) {
-                        parentStack.pop()
+                    return@resultHandler emptyList()
+                }
 
-                        if (parentStack.isNotEmpty()) {
-                            if (currentElement.value.parent == parentStack.peek().value) {
-                                parentStack.peek().appendChild(currentElement)
+                while (rs.next()) {
+                    val currentElement = TreeNode(
+                        FileEntity.wrapRow(
+                            ResultRow.create(
+                                rs, listOf(
+                                    FileTable.id,
+                                    FileTable.name,
+                                    FileTable.parent,
+                                    FileTable.isDirectory,
+                                    FileTable.type,
+                                    FileTable.archive,
+                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
+                            )
+                        )
+                    )
+
+                    if (currentElement.value.parent == lastElement.value) {
+                        parentStack.push(lastElement)
+                        lastElement.appendChild(currentElement)
+                    } else if (currentElement.value.parent == parentStack.peek().value) {
+                        parentStack.peek().appendChild(currentElement)
+                    } else {
+                        while (true) {
+                            parentStack.pop()
+
+                            if (parentStack.isNotEmpty()) {
+                                if (currentElement.value.parent == parentStack.peek().value) {
+                                    parentStack.peek().appendChild(currentElement)
+                                    break
+                                }
+                            } else {
                                 break
                             }
-                        } else {
-                            break
+                        }
+
+                        if (parentStack.isEmpty()) {
+                            rootNodes.add(currentElement)
+                            parentStack.push(currentElement)
                         }
                     }
 
-                    if (parentStack.isEmpty()) {
-                        rootNodes.add(currentElement)
-                        parentStack.push(currentElement)
-                    }
+                    lastElement = currentElement
                 }
 
-                lastElement = currentElement
-            }
-
-            rootNodes
+                rootNodes
+            } ?: error("query did not produce result set")
         }
     }
 

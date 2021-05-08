@@ -1,9 +1,8 @@
 package net.cydhra.acromantula.workspace.database.mapping
 
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.dao.id.EntityID
 
 /**
  * A table of registered content mapping reference types. It exists per workspace so that plugins may register new
@@ -11,7 +10,7 @@ import org.jetbrains.exposed.dao.IntIdTable
  * which plugins are activated (and if plugins are deactivated, the reference type id does not get reused for another
  * plugin)
  */
-internal object ContentMappingReferenceTypeTable : IntIdTable() {
+internal object ContentMappingReferenceTypeTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val symbolType = reference("symbol", ContentMappingSymbolTypeTable)
     val identifier = varchar("type", 255)
 

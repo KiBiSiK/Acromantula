@@ -1,13 +1,12 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.dao.id.EntityID
 
 const val MAX_FILE_NAME = Short.MAX_VALUE.toInt()
 
-internal object ArchiveTable : IntIdTable("TreeArchives") {
+internal object ArchiveTable : org.jetbrains.exposed.dao.id.IntIdTable("TreeArchives") {
 
 }
 

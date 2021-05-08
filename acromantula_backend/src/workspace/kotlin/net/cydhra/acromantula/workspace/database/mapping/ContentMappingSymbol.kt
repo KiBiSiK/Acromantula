@@ -3,12 +3,11 @@ package net.cydhra.acromantula.workspace.database.mapping
 import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.dao.id.EntityID
 
-object ContentMappingSymbolTable : IntIdTable() {
+object ContentMappingSymbolTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val type = reference("type", ContentMappingSymbolTypeTable)
     val identifier = varchar("identifier", Short.SIZE_BITS - 1)
     val name = varchar("name", Short.SIZE_BITS - 1)

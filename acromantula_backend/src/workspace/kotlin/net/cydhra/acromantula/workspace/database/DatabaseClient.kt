@@ -59,10 +59,10 @@ internal class DatabaseClient(private val databasePath: String) {
      */
     fun directQuery(query: String): List<List<String>> {
         return this.transaction {
-            val statement = database.transactionManager.currentOrNull()!!.connection.createStatement()
-            statement.execute(query)
-            val resultSet = statement.resultSet
-            val columnCount = statement.resultSet.metaData.columnCount
+            val statement = database.transactionManager.currentOrNull()!!.connection.prepareStatement(query, true)
+            statement.executeQuery()
+            val resultSet = statement.resultSet!!
+            val columnCount = resultSet.metaData.columnCount
 
             val resultList = mutableListOf<List<String>>()
 

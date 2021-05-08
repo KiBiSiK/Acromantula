@@ -1,10 +1,8 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import org.jetbrains.exposed.dao.IntIdTable
-
 class IndexMetaDatum
 
-internal object IndexMetaDatumTable : IntIdTable("TreeIndexData") {
+internal object IndexMetaDatumTable : org.jetbrains.exposed.dao.id.IntIdTable("TreeIndexData") {
     val name = varchar("name", 255)
     val value = varchar("value", 255)
 

@@ -21,6 +21,14 @@ object MapperFeature {
         this.mappingFactories += factory
     }
 
+    fun insertSymbolIntoDatabase(symbol: AcromantulaSymbol) {
+
+    }
+
+    fun insertReferenceIntoDatabase(reference: AcromantulaReference) {
+
+    }
+
     /**
      * Generate mappings for a given file entity and its content
      */

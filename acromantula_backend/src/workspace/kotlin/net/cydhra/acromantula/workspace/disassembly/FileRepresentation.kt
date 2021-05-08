@@ -2,12 +2,12 @@ package net.cydhra.acromantula.workspace.disassembly
 
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.jodatime.datetime
 
-internal object FileRepresentationTable : IntIdTable() {
+internal object FileRepresentationTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val file = reference("file", FileTable)
     val type = varchar("type", 255)
     val resource = integer("view")
