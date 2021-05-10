@@ -193,7 +193,7 @@ object DatabaseManager {
         owner: ContentMappingSymbol?,
         file: FileEntity,
         location: String
-    ) {
+    ): ContentMappingReference {
         return this.databaseClient.transaction {
             ContentMappingReference.new {
                 this.type = type

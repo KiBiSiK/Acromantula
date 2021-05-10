@@ -1,28 +1,38 @@
 package net.cydhra.acromantula.features.mapper
 
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 
-interface AcromantulaReference {
+/**
+ * @param type A unique string identifier for this reference type. This must never change for instances and must be
+ * the same for symbols that are indistinguishable in their functionality
+ */
+abstract class AcromantulaReference(val type: String) {
+
+    /**
+     * The database reference handle
+     */
+    internal lateinit var reference: ContentMappingReference
 
     /**
      * Get the referenced symbol
      */
-    fun getReferencedSymbol(): AcromantulaSymbol
+    abstract fun getReferencedSymbol(): AcromantulaSymbol
 
     /**
      * Location of the reference within its file
      */
-    fun getLocation(): String
+    abstract fun getLocation(): String
 
     /**
      * The file this reference stems from
      */
-    fun getFile(): FileEntity
+    abstract fun getFile(): FileEntity
 
     /**
      * An implementation may chose to assign [AcromantulaSymbol]s as owners of references to further specify the
      * exact location of a reference within a file. If so, this returns the assigned owner symbol of this reference.
      * If not, this returns null.
      */
-    fun getOwner(): AcromantulaSymbol?
+    abstract fun getOwner(): AcromantulaSymbol?
 }
