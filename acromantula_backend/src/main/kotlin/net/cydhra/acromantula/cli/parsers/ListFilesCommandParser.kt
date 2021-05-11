@@ -30,7 +30,7 @@ class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser<List<Tr
 
     override fun report(result: Result<List<TreeNode<FileEntity>>>) {
         fun dumpView(view: FileRepresentation, prefix: String = ""): String {
-            return prefix + "V: " + view.type
+            return prefix + "V: " + view.type + "\n"
         }
 
         fun dumpFileTree(node: TreeNode<FileEntity>, prefix: String = ""): String {
