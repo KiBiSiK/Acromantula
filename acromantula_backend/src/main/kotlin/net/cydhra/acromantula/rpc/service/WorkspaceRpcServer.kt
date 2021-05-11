@@ -5,6 +5,7 @@ import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.util.TreeNode
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
@@ -30,6 +31,13 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
                 CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() }))
             }.await()
 
+        fun viewToProto(view: FileRepresentation): ViewEntity {
+            return viewEntity {
+                id = view.id.value
+                type = view.type
+                url = WorkspaceService.getFileUrl(view.resource).toExternalForm()
+            }
+        }
 
         fun mapResultToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity {
             val children = treeNode.childList.map(::mapResultToProto)
@@ -38,6 +46,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
                 name = treeNode.value.name
                 isDirectory = treeNode.value.isDirectory
                 children(*children.toTypedArray())
+                views(*treeNode.value.views.map(::viewToProto).toTypedArray())
             }
         }
 

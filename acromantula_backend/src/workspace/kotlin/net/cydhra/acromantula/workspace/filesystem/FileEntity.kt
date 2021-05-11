@@ -1,5 +1,7 @@
 package net.cydhra.acromantula.workspace.filesystem
 
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -39,4 +41,6 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
     var resource by FileTable.resource
 
     var archiveEntity by ArchiveEntity optionalReferencedOn FileTable.archive
+
+    val views by FileRepresentation referrersOn FileRepresentationTable.file
 }
