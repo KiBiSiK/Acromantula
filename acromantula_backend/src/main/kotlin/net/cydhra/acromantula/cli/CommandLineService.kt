@@ -136,19 +136,20 @@ object CommandLineService : Service {
 
         val workspaceParser = parserFactory.invoke(ArgParser(arguments.subList(1, arguments.size).toTypedArray()))
 
-        val result = CommandDispatcherService.dispatchCommand(workspaceParser.build()).await()
-        val exception = result.exceptionOrNull()
-        if (exception is ShowHelpException) {
-            val wr = StringWriter()
-            exception.printUserMessage(wr, arguments[0], 120)
-            logger.info("Command Usage:\n" + wr.buffer.toString())
-        } else {
+        try {
+            val parser = workspaceParser.build()
+            val result = CommandDispatcherService.dispatchCommand(parser).await()
+
             result.onFailure {
                 logger.error("error during command evaluation", it)
             }
 
             @Suppress("UNCHECKED_CAST")
             (workspaceParser as WorkspaceCommandParser<Any?>).report(result)
+        } catch (showHelpException: ShowHelpException) {
+            val wr = StringWriter()
+            showHelpException.printUserMessage(wr, arguments[0], 120)
+            logger.info("Command Usage:\n" + wr.buffer.toString())
         }
     }
 }
