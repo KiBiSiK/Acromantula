@@ -2,7 +2,9 @@ package net.cydhra.acromantula.features.mapper
 
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.database.DatabaseManager
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceDelegate
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbol
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTypeDelegate
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
@@ -56,6 +58,14 @@ object MapperFeature {
             this.registeredSymbolTypes[symbolType]!!
         )
         this.registeredReferenceTypes[referenceType] = delegate
+    }
+
+    fun findSymbolsInFile(file: FileEntity): List<ContentMappingSymbol> {
+        TODO("not implemented yet")
+    }
+
+    fun findReferencesInFile(file: FileEntity): List<ContentMappingReference> {
+        TODO("not implemented yet")
     }
 
     /**
