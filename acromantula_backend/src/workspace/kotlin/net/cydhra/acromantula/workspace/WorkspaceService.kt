@@ -400,12 +400,12 @@ object WorkspaceService : Service {
      * Get an URL pointing to the file system address of a file. This is mainly used to instruct the front-end where
      * to find something and should not be used by the back-end for direct file manipulation
      *
-     * @param fileEntity a file in the workspace
+     * @param resource the resource id assigned by the workspace
      *
      * @return an URL pointing to the file on the filesystem
      */
-    fun getFileUrl(fileEntity: FileEntity): URL {
-        return this.workspaceClient.getFileUrl(fileEntity)
+    fun getFileUrl(resource: Int): URL {
+        return this.workspaceClient.getFileUrl(resource)
     }
 
     /**

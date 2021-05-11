@@ -245,8 +245,8 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Return the URL of a file within this file system.
      */
-    fun getFileUrl(fileEntity: FileEntity): URL {
-        return File(this.resourceDirectory, fileEntity.resource.toString()).toURI().toURL()
+    fun getFileUrl(fileEntity: Int): URL {
+        return File(this.resourceDirectory, fileEntity.toString()).toURI().toURL()
     }
 
     private class WorkspaceIndex {

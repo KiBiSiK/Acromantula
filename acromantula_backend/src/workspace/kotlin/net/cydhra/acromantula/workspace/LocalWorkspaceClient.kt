@@ -39,7 +39,7 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         return this.workspaceFileSystem.openFileRepresentation(representation)
     }
 
-    override fun getFileUrl(fileEntity: FileEntity): URL {
+    override fun getFileUrl(fileEntity: Int): URL {
         return this.workspaceFileSystem.getFileUrl(fileEntity)
     }
 }

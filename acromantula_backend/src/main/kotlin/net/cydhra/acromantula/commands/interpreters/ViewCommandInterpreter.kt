@@ -50,7 +50,7 @@ class ViewCommandInterpreter private constructor(
             LogManager.getLogger().info("view available as resource")
         }
 
-        return viewResource?.file?.let(WorkspaceService::getFileUrl)
+        return viewResource?.resource?.let(WorkspaceService::getFileUrl)
     }
 }
 

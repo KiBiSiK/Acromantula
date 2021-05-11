@@ -38,7 +38,7 @@ class FileRepresentation(entityID: EntityID<Int>) : IntEntity(entityID) {
     /**
      * The workspace resource of this view
      */
-    internal var resource by FileRepresentationTable.resource
+    var resource by FileRepresentationTable.resource
 
     /**
      * When the view was created

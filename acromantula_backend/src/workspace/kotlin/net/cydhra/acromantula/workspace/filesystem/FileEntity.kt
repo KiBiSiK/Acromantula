@@ -36,7 +36,7 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
     var type by FileTable.type
         internal set
 
-    internal var resource by FileTable.resource
+    var resource by FileTable.resource
 
     var archiveEntity by ArchiveEntity optionalReferencedOn FileTable.archive
 }
