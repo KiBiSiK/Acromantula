@@ -2,6 +2,7 @@ package net.cydhra.acromantula.workspace.database
 
 import net.cydhra.acromantula.workspace.database.mapping.*
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import org.jetbrains.exposed.sql.Transaction
 
 /**
  * Manager for mappings within the workspace. [ContentMappingReferenceType]s and [ContentMappingSymbolType]s must be
@@ -203,5 +204,12 @@ object DatabaseManager {
                 this.location = location
             }
         }
+    }
+
+    /**
+     * Execute a transaction within the current database.
+     */
+    internal fun <T> transaction(body: Transaction.() -> T): T {
+        return this.databaseClient.transaction(body)
     }
 }
