@@ -4,6 +4,7 @@ import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
+import java.net.URL
 
 /**
  * Command to import files into workspace.
@@ -16,7 +17,7 @@ class ViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val type: String
-) : WorkspaceCommandInterpreter<Unit> {
+) : WorkspaceCommandInterpreter<URL?> {
 
     /**
      * Command to import files into workspace.
@@ -34,7 +35,7 @@ class ViewCommandInterpreter private constructor(
      */
     constructor(filePath: String? = null, type: String) : this(null, filePath, type)
 
-    override fun evaluate() {
+    override fun evaluate(): URL? {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)
@@ -48,6 +49,8 @@ class ViewCommandInterpreter private constructor(
         else {
             LogManager.getLogger().info("view available as resource")
         }
+
+        return viewResource?.file?.let(WorkspaceService::getFileUrl)
     }
 }
 

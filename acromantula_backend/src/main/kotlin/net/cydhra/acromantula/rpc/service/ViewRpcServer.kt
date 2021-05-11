@@ -20,7 +20,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
         }
     }
 
-    override suspend fun view(request: ViewCommand): Empty {
+    override suspend fun view(request: ViewCommand): ViewResponse {
         val result = CommandDispatcherService.dispatchCommand(
             when {
                 request.fileId != -1 -> ViewCommandInterpreter(request.fileId, request.type)
@@ -31,7 +31,9 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
 
         result.onFailure { throw it }
 
-        return Empty.getDefaultInstance()
+        return viewResponse {
+            resourceUrl = result.getOrNull()?.toExternalForm() ?: ""
+        }
     }
 
     override suspend fun exportView(request: ExportViewCommand): Empty {
