@@ -3,8 +3,7 @@ package net.cydhra.acromantula.commands.interpreters
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
-import org.apache.logging.log4j.LogManager
-import java.net.URL
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 
 /**
  * Command to import files into workspace.
@@ -17,7 +16,7 @@ class ViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val type: String
-) : WorkspaceCommandInterpreter<URL?> {
+) : WorkspaceCommandInterpreter<FileRepresentation?> {
 
     /**
      * Command to import files into workspace.
@@ -35,22 +34,14 @@ class ViewCommandInterpreter private constructor(
      */
     constructor(filePath: String? = null, type: String) : this(null, filePath, type)
 
-    override fun evaluate(): URL? {
+    override fun evaluate(): FileRepresentation? {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)
             else -> throw IllegalStateException("either the entity id or the path of the file must be present")
         }
 
-        val viewResource = GenerateViewFeature.generateView(file, type)
-
-        if (viewResource == null)
-            LogManager.getLogger().info("cannot create view of type \"$type\" for \"${file.name}\"")
-        else {
-            LogManager.getLogger().info("view available as resource")
-        }
-
-        return viewResource?.resource?.let(WorkspaceService::getFileUrl)
+        return GenerateViewFeature.generateView(file, type)
     }
 }
 

@@ -6,6 +6,7 @@ import net.cydhra.acromantula.commands.interpreters.ExportViewCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ViewCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.proto.*
+import net.cydhra.acromantula.workspace.WorkspaceService
 
 class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
 
@@ -20,7 +21,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
         }
     }
 
-    override suspend fun view(request: ViewCommand): ViewResponse {
+    override suspend fun view(request: ViewCommand): ViewEntity {
         val result = CommandDispatcherService.dispatchCommand(
             when {
                 request.fileId != -1 -> ViewCommandInterpreter(request.fileId, request.type)
@@ -31,8 +32,13 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
 
         result.onFailure { throw it }
 
-        return viewResponse {
-            resourceUrl = result.getOrNull()?.toExternalForm() ?: ""
+        val view = result.getOrThrow() ?: throw java.lang.IllegalArgumentException("cannot generate view of given type")
+
+        return viewEntity {
+            id = view.id.value
+            type = view.type
+            url = WorkspaceService.getFileUrl(view.resource).toExternalForm()
+
         }
     }
 
