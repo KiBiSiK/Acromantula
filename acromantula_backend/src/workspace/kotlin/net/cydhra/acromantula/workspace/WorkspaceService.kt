@@ -314,7 +314,7 @@ object WorkspaceService : Service {
                                                     FileTable.archive,
                                                 ).distinct().mapIndexed { index, field -> field to index }.toMap()
                                             )
-                                        ).also { it.views }
+                                        )
                                     )
                                     lastElement = firstElement
                                     parentStack.push(firstElement)
@@ -336,7 +336,7 @@ object WorkspaceService : Service {
                                                     FileTable.archive,
                                                 ).distinct().mapIndexed { index, field -> field to index }.toMap()
                                             )
-                                        ).also { it.views }
+                                        )
                                     )
 
                                     if (currentElement.value.parent == lastElement.value) {

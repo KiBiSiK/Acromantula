@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.workspace.filesystem
 
+import net.cydhra.acromantula.workspace.database.DatabaseManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import org.jetbrains.exposed.dao.IntEntity
@@ -42,5 +43,14 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
 
     var archiveEntity by ArchiveEntity optionalReferencedOn FileTable.archive
 
-    val views by FileRepresentation referrersOn FileRepresentationTable.file
+    private val views by FileRepresentation referrersOn FileRepresentationTable.file
+
+    /**
+     * Get all views associated with this file
+     */
+    fun getViews(): List<FileRepresentation> {
+        return DatabaseManager.transaction {
+            this@FileEntity.views.toList()
+        }
+    }
 }

@@ -5,6 +5,7 @@ import com.xenomachina.argparser.default
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
+import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.util.TreeNode
 import org.apache.logging.log4j.LogManager
@@ -28,10 +29,15 @@ class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser<List<Tr
             ListFilesCommandInterpreter(directoryId)
 
     override fun report(result: Result<List<TreeNode<FileEntity>>>) {
+        fun dumpView(view: FileRepresentation, prefix: String = ""): String {
+            return prefix + "V: " + view.type
+        }
+
         fun dumpFileTree(node: TreeNode<FileEntity>, prefix: String = ""): String {
-            return prefix + node.value.name + "\n" + node.childList.joinToString("") {
-                dumpFileTree(it, prefix + "\t")
-            }
+            return prefix +
+                    node.value.name + "\n" +
+                    node.childList.joinToString("") { dumpFileTree(it, prefix + "\t") } +
+                    node.value.getViews().joinToString("") { dumpView(it, prefix + "\t") }
         }
 
         result.onSuccess { fileList ->
