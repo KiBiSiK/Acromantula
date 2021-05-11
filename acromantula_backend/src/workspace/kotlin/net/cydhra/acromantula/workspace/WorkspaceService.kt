@@ -13,8 +13,13 @@ import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.util.TreeNode
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.lookup.StrSubstitutor
+import org.jetbrains.exposed.sql.IColumnType
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.statements.Statement
+import org.jetbrains.exposed.sql.statements.StatementType
+import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
@@ -285,80 +290,92 @@ object WorkspaceService : Service {
                 substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY)
             }
 
-            TransactionManager.current().exec(query) resultHandler@{ rs ->
-                // linearly construct the result list from the query result
-                val rootNodes = mutableListOf<TreeNode<FileEntity>>()
-                val parentStack = Stack<TreeNode<FileEntity>>()
-                var lastElement: TreeNode<FileEntity>
+            return@transaction TransactionManager.current()
+                .exec(object : Statement<List<TreeNode<FileEntity>>>(StatementType.SELECT, emptyList()) {
+                    override fun PreparedStatementApi.executeInternal(transaction: Transaction): List<TreeNode<FileEntity>> {
+                        val result = executeQuery()
+                        return result.let resultHandler@{ rs ->
+                            rs.use { rs ->
+                                // linearly construct the result list from the query result
+                                val rootNodes = mutableListOf<TreeNode<FileEntity>>()
+                                val parentStack = Stack<TreeNode<FileEntity>>()
+                                var lastElement: TreeNode<FileEntity>
 
-                if (rs.next()) {
-                    val firstElement = TreeNode(
-                        FileEntity.wrapRow(
-                            ResultRow.create(
-                                rs, listOf(
-                                    FileTable.id,
-                                    FileTable.name,
-                                    FileTable.parent,
-                                    FileTable.isDirectory,
-                                    FileTable.type,
-                                    FileTable.archive,
-                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
-                            )
-                        )
-                    )
-                    lastElement = firstElement
-                    parentStack.push(firstElement)
-                    rootNodes.add(firstElement)
-                } else {
-                    return@resultHandler emptyList()
-                }
-
-                while (rs.next()) {
-                    val currentElement = TreeNode(
-                        FileEntity.wrapRow(
-                            ResultRow.create(
-                                rs, listOf(
-                                    FileTable.id,
-                                    FileTable.name,
-                                    FileTable.parent,
-                                    FileTable.isDirectory,
-                                    FileTable.type,
-                                    FileTable.archive,
-                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
-                            )
-                        )
-                    )
-
-                    if (currentElement.value.parent == lastElement.value) {
-                        parentStack.push(lastElement)
-                        lastElement.appendChild(currentElement)
-                    } else if (currentElement.value.parent == parentStack.peek().value) {
-                        parentStack.peek().appendChild(currentElement)
-                    } else {
-                        while (true) {
-                            parentStack.pop()
-
-                            if (parentStack.isNotEmpty()) {
-                                if (currentElement.value.parent == parentStack.peek().value) {
-                                    parentStack.peek().appendChild(currentElement)
-                                    break
+                                if (rs.next()) {
+                                    val firstElement = TreeNode(
+                                        FileEntity.wrapRow(
+                                            ResultRow.create(
+                                                rs, listOf(
+                                                    FileTable.id,
+                                                    FileTable.name,
+                                                    FileTable.parent,
+                                                    FileTable.isDirectory,
+                                                    FileTable.type,
+                                                    FileTable.archive,
+                                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
+                                            )
+                                        ).also { it.views }
+                                    )
+                                    lastElement = firstElement
+                                    parentStack.push(firstElement)
+                                    rootNodes.add(firstElement)
+                                } else {
+                                    return@resultHandler emptyList()
                                 }
-                            } else {
-                                break
-                            }
-                        }
 
-                        if (parentStack.isEmpty()) {
-                            rootNodes.add(currentElement)
-                            parentStack.push(currentElement)
+                                while (rs.next()) {
+                                    val currentElement = TreeNode(
+                                        FileEntity.wrapRow(
+                                            ResultRow.create(
+                                                rs, listOf(
+                                                    FileTable.id,
+                                                    FileTable.name,
+                                                    FileTable.parent,
+                                                    FileTable.isDirectory,
+                                                    FileTable.type,
+                                                    FileTable.archive,
+                                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
+                                            )
+                                        ).also { it.views }
+                                    )
+
+                                    if (currentElement.value.parent == lastElement.value) {
+                                        parentStack.push(lastElement)
+                                        lastElement.appendChild(currentElement)
+                                    } else if (currentElement.value.parent == parentStack.peek().value) {
+                                        parentStack.peek().appendChild(currentElement)
+                                    } else {
+                                        while (true) {
+                                            parentStack.pop()
+
+                                            if (parentStack.isNotEmpty()) {
+                                                if (currentElement.value.parent == parentStack.peek().value) {
+                                                    parentStack.peek().appendChild(currentElement)
+                                                    break
+                                                }
+                                            } else {
+                                                break
+                                            }
+                                        }
+
+                                        if (parentStack.isEmpty()) {
+                                            rootNodes.add(currentElement)
+                                            parentStack.push(currentElement)
+                                        }
+                                    }
+
+                                    lastElement = currentElement
+                                }
+
+                                rootNodes
+                            }
                         }
                     }
 
-                    lastElement = currentElement
-                }
+                    override fun prepareSQL(transaction: Transaction): String = query
 
-                rootNodes
-            } ?: error("query did not produce result set")
+                    override fun arguments(): Iterable<Iterable<Pair<IColumnType, Any?>>> = emptyList()
+                }) ?: error("query did not produce result set")
         }
     }
 
