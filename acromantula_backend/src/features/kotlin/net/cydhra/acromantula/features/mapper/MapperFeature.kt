@@ -7,7 +7,6 @@ import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTyp
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
 import org.apache.logging.log4j.LogManager
-import kotlin.reflect.KClass
 
 object MapperFeature {
 
@@ -19,9 +18,10 @@ object MapperFeature {
     private val mappingFactories = mutableListOf<MappingFactory>()
 
     private val registeredSymbolTypes =
-        mutableMapOf<KClass<out AcromantulaSymbol>, ContentMappingSymbolTypeDelegate>()
+        mutableMapOf<AcromantulaSymbolType, ContentMappingSymbolTypeDelegate>()
+
     private val registeredReferenceTypes =
-        mutableMapOf<KClass<out AcromantulaReference>, ContentMappingReferenceDelegate>()
+        mutableMapOf<AcromantulaReferenceType, ContentMappingReferenceDelegate>()
 
     /**
      * Register a factory to generate mappings
@@ -31,49 +31,31 @@ object MapperFeature {
     }
 
     /**
-     * Insert a symbol into database
+     * Register a symbol type at the database
      */
-    fun insertSymbolIntoDatabase(symbol: AcromantulaSymbol) {
-        val type = getSymbolTypeDelegate(symbol)
-
-        symbol.symbol = DatabaseManager.insertSymbol(
-            type,
-            symbol.getFile(),
-            symbol.getIdentifier(),
-            symbol.getName(),
-            symbol.getLocation()
-        )
+    fun registerSymbolType(symbolType: AcromantulaSymbolType) {
+        val typeDelegate = DatabaseManager.registerContentMappingSymbolType(symbolType.symbolType)
+        this.registeredSymbolTypes[symbolType] = typeDelegate
     }
 
     /**
-     * Insert a reference into database. The referenced symbol must have been inserted yet, otherwise an exception is
-     * thrown.
-     */
-    fun insertReferenceIntoDatabase(reference: AcromantulaReference) {
-        val type = this.registeredReferenceTypes.getOrPut(reference::class) {
-            DatabaseManager.registerContentMappingReferenceType(
-                reference.type,
-                getSymbolTypeDelegate(reference.getReferencedSymbol())
-            )
-        }
-
-        reference.reference = DatabaseManager.insertReference(
-            type, reference.getReferencedSymbol().symbol,
-            reference.getOwner()?.symbol,
-            reference.getFile(),
-            reference.getLocation()
-        )
-    }
-
-    /**
-     * Get the symbol's type delegate or register it, if it has not been registered
+     * Register a symbol reference type at the database. The referenced symbol type must have already been registered.
      *
-     * @param symbol a [AcromantulaSymbol] instance
+     * @param referenceType the reference type implementation
+     * @param symbolType the symbol type referenced by this reference type
      */
-    private fun getSymbolTypeDelegate(symbol: AcromantulaSymbol): ContentMappingSymbolTypeDelegate {
-        return this.registeredSymbolTypes.getOrPut(symbol::class) {
-            DatabaseManager.registerContentMappingSymbolType(symbol.type)
-        }
+    fun insertReferenceIntoDatabase(referenceType: AcromantulaReferenceType, symbolType: AcromantulaSymbolType) {
+        if (!this.registeredSymbolTypes.containsKey(symbolType))
+            throw IllegalStateException("the symbol type of this reference has not been registered yet")
+
+        if (this.registeredReferenceTypes.containsKey(referenceType))
+            throw IllegalStateException("this reference tyoe has been registered before")
+
+        val delegate = DatabaseManager.registerContentMappingReferenceType(
+            referenceType.referenceType,
+            this.registeredSymbolTypes[symbolType]!!
+        )
+        this.registeredReferenceTypes[referenceType] = delegate
     }
 
     /**
