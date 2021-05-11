@@ -242,6 +242,13 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         this.indexFile.writeText(gson.toJson(this.index))
     }
 
+    /**
+     * Return the URL of a file within this file system.
+     */
+    fun getFileUrl(fileEntity: FileEntity): URL {
+        return File(this.resourceDirectory, fileEntity.resource.toString()).toURI().toURL()
+    }
+
     private class WorkspaceIndex {
         /**
          * Current resource counter

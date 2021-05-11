@@ -19,6 +19,7 @@ import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.URL
 import java.sql.ResultSet
 import java.util.*
 
@@ -393,6 +394,18 @@ object WorkspaceService : Service {
      */
     fun getRepresentationContent(representation: FileRepresentation): InputStream {
         return this.workspaceClient.downloadRepresentation(representation)
+    }
+
+    /**
+     * Get an URL pointing to the file system address of a file. This is mainly used to instruct the front-end where
+     * to find something and should not be used by the back-end for direct file manipulation
+     *
+     * @param fileEntity a file in the workspace
+     *
+     * @return an URL pointing to the file on the filesystem
+     */
+    fun getFileUrl(fileEntity: FileEntity): URL {
+        return this.workspaceClient.getFileUrl(fileEntity)
     }
 
     /**

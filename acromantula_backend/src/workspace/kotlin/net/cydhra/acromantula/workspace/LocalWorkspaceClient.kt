@@ -5,6 +5,7 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.URL
 import java.nio.channels.Channels
 
 internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(directory, "db").toURI().toURL()) {
@@ -36,5 +37,9 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
 
     override fun downloadRepresentation(representation: FileRepresentation): InputStream {
         return this.workspaceFileSystem.openFileRepresentation(representation)
+    }
+
+    override fun getFileUrl(fileEntity: FileEntity): URL {
+        return this.workspaceFileSystem.getFileUrl(fileEntity)
     }
 }

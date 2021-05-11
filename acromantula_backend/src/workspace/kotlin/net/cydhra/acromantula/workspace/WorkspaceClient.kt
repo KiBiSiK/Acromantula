@@ -82,4 +82,9 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      */
     abstract fun downloadRepresentation(representation: FileRepresentation): InputStream
 
+    /**
+     * Get an URL that grants direct file acces onto a file in workspace
+     */
+    abstract fun getFileUrl(fileEntity: FileEntity): URL
+
 }
