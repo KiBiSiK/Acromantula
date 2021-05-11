@@ -15,10 +15,6 @@ class ViewCommandCommandParser(parser: ArgParser) : WorkspaceCommandParser<FileR
     override fun build(): WorkspaceCommandInterpreter<FileRepresentation?> = ViewCommandInterpreter(filePath, type)
 
     override fun report(result: Result<FileRepresentation?>) {
-        result.onFailure {
-            LogManager.getLogger().error("error during view generation: ", it)
-        }
-
         result.onSuccess { result ->
             if (result == null) {
                 LogManager.getLogger().info(
