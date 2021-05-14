@@ -1,5 +1,7 @@
 package net.cydhra.acromantula.features.mapper
 
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbol
+
 /**
  * A model symbol type. Any file entity may define any number of symbols (for example function names
  * in code files) that can be referenced by other files.
@@ -19,5 +21,5 @@ abstract class AcromantulaSymbolType(typeName: String, val doesSupportRenaming: 
      * source file. References of this symbol must not be updated, as their [AcromantulaReferenceType] implementation
      * is called separately
      */
-    abstract fun onUpdateName(newName: String)
+    abstract fun onUpdateName(symbol: ContentMappingSymbol, newName: String)
 }
