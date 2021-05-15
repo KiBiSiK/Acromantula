@@ -33,7 +33,7 @@ internal class DatabaseClient(private val databasePath: String) {
     fun connect() {
         dataSource = JdbcDataSource()
             .also {
-                it.setURL("jdbc:h2:$databasePath;DB_CLOSE_DELAY=10;MVCC=true")
+                it.setURL("jdbc:h2:$databasePath;DB_CLOSE_DELAY=10")
             }
 
         database = Database.connect(dataSource)

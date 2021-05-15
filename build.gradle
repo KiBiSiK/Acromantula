@@ -3,7 +3,7 @@ buildscript {
         kotlin_version = '1.5.0'
         serialization_version = '1.0.0'
         kotlin_exposed_version = '0.31.1'
-        h2_database_version = '1.4.197' // mvcc support broke in an update (as of 10/2020). until fixed, use this ver
+        h2_database_version = '1.4.200' // mvcc support broke in an update (as of 10/2020). until fixed, use this ver
         jvm_target = '1.8'
         junit_version = '5.2.0'
         log4j2_version = '2.11.1'
