@@ -9,10 +9,10 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 object ContentMappingSymbolTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val type = reference("type", ContentMappingSymbolTypeTable)
-    val identifier = varchar("identifier", Short.SIZE_BITS - 1)
-    val name = varchar("name", Short.SIZE_BITS - 1)
+    val identifier = varchar("identifier", Short.MAX_VALUE - 1)
+    val name = varchar("name", Short.MAX_VALUE - 1)
     val file = reference("file", FileTable)
-    val location = varchar("location", Short.SIZE_BITS - 1).nullable()
+    val location = varchar("location", Short.MAX_VALUE - 1).nullable()
 }
 
 class ContentMappingSymbol(entityId: EntityID<Int>) : IntEntity(entityId) {
