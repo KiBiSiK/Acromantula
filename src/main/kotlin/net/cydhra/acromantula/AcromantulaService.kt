@@ -15,12 +15,12 @@ fun main() {
     runBlocking {
         EventBroker.registerService(EventBroker)
         EventBroker.registerService(ConfigurationService)
-        EventBroker.registerService(PluginService)
         EventBroker.registerService(WorkspaceService)
         EventBroker.registerService(CommandDispatcherService)
         EventBroker.registerService(RemoteProcedureService)
         EventBroker.registerService(CommandLineService)
         EventBroker.registerService(FeatureService)
+        EventBroker.registerService(PluginService)
 
         EventBroker.fireEvent(ApplicationStartupEvent())
     }
