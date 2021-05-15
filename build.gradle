@@ -25,6 +25,7 @@ buildscript {
 
 apply plugin: 'kotlin'
 apply plugin: 'kotlinx-serialization'
+apply plugin: 'com.google.protobuf'
 
 allprojects {
     apply plugin: 'kotlin'
@@ -45,140 +46,99 @@ allprojects {
     }
 }
 
-project("acromantula_backend") {
-    apply plugin: 'com.google.protobuf'
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:$protobuf_version"
+    }
 
-    protobuf {
-        protoc {
-            artifact = "com.google.protobuf:protoc:$protobuf_version"
+    plugins {
+        client {
+            artifact = 'com.github.googleapis:gapic-generator-kotlin:master-SNAPSHOT:core@jar'
         }
-
-        plugins {
-            client {
-                artifact = 'com.github.googleapis:gapic-generator-kotlin:master-SNAPSHOT:core@jar'
-            }
-            grpc {
-                artifact = "io.grpc:protoc-gen-grpc-java:$grpc_version"
-            }
-            grpckt {
-                artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpc_kotlin_version:jdk7@jar"
-            }
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:$grpc_version"
         }
-        generateProtoTasks {
-            ofSourceSet("main").forEach {
-                it.plugins {
-                    // generate client side stuff and message builders
-                    client {
-                        option("test-output=build/generated/source/clientTest")
-                    }
-
-                    // generate server API
-                    grpc {}
-                    grpckt {}
+        grpckt {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpc_kotlin_version:jdk7@jar"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                // generate client side stuff and message builders
+                client {
+                    option("test-output=build/generated/source/clientTest")
                 }
+
+                // generate server API
+                grpc {}
+                grpckt {}
             }
         }
     }
+}
 
-    sourceSets {
-        bus {
-
-        }
-
-        workspace {
-            compileClasspath += sourceSets.bus.runtimeClasspath
-
-
-        }
-
-        features {
-            compileClasspath += sourceSets.bus.runtimeClasspath
-            compileClasspath += sourceSets.workspace.runtimeClasspath
-        }
-
-        main {
-            compileClasspath += sourceSets.bus.runtimeClasspath
-            compileClasspath += sourceSets.workspace.runtimeClasspath
-            compileClasspath += sourceSets.features.runtimeClasspath
-            runtimeClasspath += sourceSets.bus.runtimeClasspath
-            runtimeClasspath += sourceSets.workspace.runtimeClasspath
-            runtimeClasspath += sourceSets.features.runtimeClasspath
-
-            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/java"
-            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpc"
-            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpckt"
-            java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/client"
-        }
-
-        test {
-            compileClasspath += sourceSets.bus.runtimeClasspath
-            compileClasspath += sourceSets.workspace.runtimeClasspath
-            compileClasspath += sourceSets.features.runtimeClasspath
-            runtimeClasspath += sourceSets.bus.runtimeClasspath
-            runtimeClasspath += sourceSets.workspace.runtimeClasspath
-            runtimeClasspath += sourceSets.features.runtimeClasspath
-
-            java.srcDirs += "${project.buildDir}/generated/source/clientTest"
-        }
-    }
-
-    // main source set and test
-    dependencies {
-        // kotlin
-        implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
-        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.5'
-        implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-protobuf',
-                version: serialization_version
-
-        // protobuf
-        implementation group: 'com.google.protobuf', name: 'protobuf-java', version: protobuf_version
-
-        // grpc
-        implementation group: 'com.github.googleapis.gax-kotlin', name: 'kgax-grpc', version: 'master-SNAPSHOT'
-        implementation group: 'io.grpc', name: 'grpc-netty-shaded', version: grpc_version
-        implementation group: 'io.grpc', name: 'grpc-services', version: grpc_version
-        implementation group: 'io.grpc', name: 'grpc-kotlin-stub', version: grpc_kotlin_version
-
-        // utility
-        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-        implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
-        implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
-
-        // logging
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4j2_version
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4j2_version
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: log4j2_version
-
-        // argument parsing for CLI
-        implementation group: 'com.xenomachina', name: 'kotlin-argparser', version: '2.0.7'
-
-        // database
-        implementation group: 'org.jetbrains.exposed', name: 'exposed-core', version: kotlin_exposed_version
-        implementation group: 'com.h2database', name: 'h2', version: h2_database_version
-
-        // testing (mocking required for autogenerated grpc tests)
-        testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test'
-        testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit'
-        testImplementation group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
-        testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.23.4'
+sourceSets {
+    main {
+        java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/java"
+        java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpc"
+        java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/grpckt"
+        java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/client"
     }
 
     test {
-        useJUnit()
-        testLogging {
-            events "passed", "skipped", "failed"
-        }
+        java.srcDirs += "${project.buildDir}/generated/source/clientTest"
     }
+}
 
-    jar {
-        from(sourceSets.bus.output)
-        from(sourceSets.workspace.output)
-        from(sourceSets.features.output)
+// main source set and test
+dependencies {
+    // kotlin
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.5'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-protobuf',
+            version: serialization_version
 
-        manifest {
-            attributes "Implementation-Title": project.name,
-                    "Implementation-Version": project.version,
-                    "Main-Class": "net.cydhra.acromantula.AcromantulaServiceKt"
-        }
+    // modules
+    api project(':Bus')
+    api project(':Workspace')
+    api project(':Features')
+
+    // protobuf
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: protobuf_version
+
+    // grpc
+    implementation group: 'com.github.googleapis.gax-kotlin', name: 'kgax-grpc', version: 'master-SNAPSHOT'
+    implementation group: 'io.grpc', name: 'grpc-netty-shaded', version: grpc_version
+    implementation group: 'io.grpc', name: 'grpc-services', version: grpc_version
+    implementation group: 'io.grpc', name: 'grpc-kotlin-stub', version: grpc_kotlin_version
+
+    // logging
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4j2_version
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4j2_version
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: log4j2_version
+
+    // argument parsing for CLI
+    implementation group: 'com.xenomachina', name: 'kotlin-argparser', version: '2.0.7'
+
+    // testing (mocking required for autogenerated grpc tests)
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test'
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit'
+    testImplementation group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.23.4'
+}
+
+test {
+    useJUnit()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+jar {
+    manifest {
+        attributes "Implementation-Title": project.name,
+                "Implementation-Version": project.version,
+                "Main-Class": "net.cydhra.acromantula.AcromantulaServiceKt"
     }
 }
