@@ -9,6 +9,9 @@ doc/
 run/*
 !run/.gitkeep
 
+plugins/*
+!plugins/.gitkeep
+
 .idea/*
 !.idea/codeStyles
 !.idea/runConfigurations
