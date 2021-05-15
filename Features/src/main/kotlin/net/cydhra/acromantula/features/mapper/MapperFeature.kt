@@ -29,6 +29,7 @@ object MapperFeature {
      * Register a factory to generate mappings
      */
     fun registerMappingFactory(factory: MappingFactory) {
+        logger.trace("register mapping factory: ${factory.name}")
         this.mappingFactories += factory
     }
 
@@ -36,6 +37,7 @@ object MapperFeature {
      * Register a symbol type at the database
      */
     fun registerSymbolType(symbolType: AcromantulaSymbolType) {
+        logger.trace("register symbol type: ${symbolType.symbolType}")
         val typeDelegate = DatabaseManager.registerContentMappingSymbolType(symbolType.symbolType)
         this.registeredSymbolTypes[symbolType] = typeDelegate
     }
@@ -47,6 +49,7 @@ object MapperFeature {
      * @param symbolType the symbol type referenced by this reference type
      */
     fun registerReferenceType(referenceType: AcromantulaReferenceType, symbolType: AcromantulaSymbolType) {
+        logger.trace("register reference type: ${referenceType.referenceType}")
         if (!this.registeredSymbolTypes.containsKey(symbolType))
             throw IllegalStateException("the symbol type of this reference has not been registered yet")
 
@@ -81,6 +84,7 @@ object MapperFeature {
         if (!this.registeredSymbolTypes.containsKey(symbolType))
             throw IllegalStateException("this symbol type has not been registered yet")
 
+        logger.trace("insert \"${symbolType.symbolType}\" ($symbolIdentifier) at ($location) into database.")
         return DatabaseManager.insertSymbol(
             this.registeredSymbolTypes[symbolType]!!,
             file,
@@ -100,6 +104,10 @@ object MapperFeature {
         if (!this.registeredReferenceTypes.containsKey(referenceType))
             throw IllegalStateException("this reference type has not been registered yet")
 
+        logger.trace(
+            "insert \"${referenceType.referenceType}\" for (${symbol.identifier}) at ($location) into " +
+                    "database."
+        )
         return DatabaseManager.insertReference(
             this.registeredReferenceTypes[referenceType]!!,
             symbol,
