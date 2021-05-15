@@ -46,7 +46,7 @@ object MapperFeature {
      * @param referenceType the reference type implementation
      * @param symbolType the symbol type referenced by this reference type
      */
-    fun insertReferenceIntoDatabase(referenceType: AcromantulaReferenceType, symbolType: AcromantulaSymbolType) {
+    fun registerReferenceType(referenceType: AcromantulaReferenceType, symbolType: AcromantulaSymbolType) {
         if (!this.registeredSymbolTypes.containsKey(symbolType))
             throw IllegalStateException("the symbol type of this reference has not been registered yet")
 
