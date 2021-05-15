@@ -53,6 +53,7 @@ class WorkerPool {
             try {
                 worker.invoke(this).let { Result.success(it) }
             } catch (t: Throwable) {
+                logger.error("worker task crashed: ", t)
                 Result.failure(t)
             }
         })
