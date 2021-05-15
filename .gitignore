@@ -13,15 +13,15 @@ run/*
 !.idea/codeStyles
 !.idea/runConfigurations
 
-acromantula_gui/.idea/*
-!acromantula_gui/.idea/codeStyles
-!acromantula_gui/.idea/runConfigurations
+Gui/.idea/*
+!Gui/.idea/codeStyles
+!Gui/.idea/runConfigurations
 
 .gradle/
 **/build/
 
-acromantula_gui/Acromantula\ GUI/bin/
-acromantula_gui/Acromantula\ GUI/obj/
-acromantula_gui/.vs/
+Gui/Acromantula\ GUI/bin/
+Gui/Acromantula\ GUI/obj/
+Gui/.vs/
 
-acromantula_gui/packages/
+Gui/packages/
