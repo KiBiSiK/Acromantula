@@ -12,7 +12,7 @@ object ContentMappingSymbolTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val identifier = varchar("identifier", Short.SIZE_BITS - 1)
     val name = varchar("name", Short.SIZE_BITS - 1)
     val file = reference("file", FileTable)
-    val location = varchar("location", Short.SIZE_BITS - 1)
+    val location = varchar("location", Short.SIZE_BITS - 1).nullable()
 }
 
 class ContentMappingSymbol(entityId: EntityID<Int>) : IntEntity(entityId) {

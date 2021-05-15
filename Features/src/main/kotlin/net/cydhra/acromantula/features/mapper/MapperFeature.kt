@@ -60,6 +60,55 @@ object MapperFeature {
         this.registeredReferenceTypes[referenceType] = delegate
     }
 
+    /**
+     * Insert a new symbol instance into the database.
+     *
+     * @param symbolType symbol type implementation
+     * @param file the symbol's origin file
+     * @param symbolIdentifier a globally unique identifier for the symbol. The format of this parameter is chosen by
+     * the implementation.
+     * @param symbolName the local name of the symbol. The format of this parameter is chosen by the implementation.
+     * @param location the location of the symbol within the file. The format of this parameter is chosen by the
+     * implementation
+     */
+    fun insertSymbolIntoDatabase(
+        symbolType: AcromantulaSymbolType,
+        file: FileEntity,
+        symbolIdentifier: String,
+        symbolName: String,
+        location: String?
+    ): ContentMappingSymbol {
+        if (!this.registeredSymbolTypes.containsKey(symbolType))
+            throw IllegalStateException("this symbol type has not been registered yet")
+
+        return DatabaseManager.insertSymbol(
+            this.registeredSymbolTypes[symbolType]!!,
+            file,
+            symbolIdentifier,
+            symbolName,
+            location
+        )
+    }
+
+    fun insertReferenceIntoDatabase(
+        referenceType: AcromantulaReferenceType,
+        file: FileEntity,
+        symbol: ContentMappingSymbol,
+        owner: ContentMappingSymbol?,
+        location: String?
+    ): ContentMappingReference {
+        if (!this.registeredReferenceTypes.containsKey(referenceType))
+            throw IllegalStateException("this reference type has not been registered yet")
+
+        return DatabaseManager.insertReference(
+            this.registeredReferenceTypes[referenceType]!!,
+            symbol,
+            owner,
+            file,
+            location
+        )
+    }
+
     fun findSymbolsInFile(file: FileEntity): List<ContentMappingSymbol> {
         TODO("not implemented yet")
     }

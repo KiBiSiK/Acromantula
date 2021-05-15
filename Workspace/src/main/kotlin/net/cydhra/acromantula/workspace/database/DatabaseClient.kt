@@ -1,5 +1,7 @@
 package net.cydhra.acromantula.workspace.database
 
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceTable
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTable
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveTable
 import net.cydhra.acromantula.workspace.filesystem.FileTable
@@ -42,6 +44,8 @@ internal class DatabaseClient(private val databasePath: String) {
                 FileTable,
                 IndexMetaDatumTable,
                 FileRepresentationTable,
+                ContentMappingSymbolTable,
+                ContentMappingReferenceTable
             )
         }
     }

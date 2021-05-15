@@ -19,7 +19,7 @@ object ContentMappingReferenceTable : org.jetbrains.exposed.dao.id.IntIdTable() 
     val owner = reference("owner", ContentMappingSymbolTable).nullable()
 
     // an unstructured hint about the precise location of the reference, so it can be used by tools
-    val location = varchar("location", Short.SIZE_BITS - 1)
+    val location = varchar("location", Short.SIZE_BITS - 1).nullable()
 }
 
 class ContentMappingReference(entityId: EntityID<Int>) : IntEntity(entityId) {

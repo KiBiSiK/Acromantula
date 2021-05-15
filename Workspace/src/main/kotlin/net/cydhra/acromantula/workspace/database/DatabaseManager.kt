@@ -163,7 +163,7 @@ object DatabaseManager {
         file: FileEntity,
         identifier: String,
         name: String,
-        location: String
+        location: String?
     ): ContentMappingSymbol {
         return this.databaseClient.transaction {
             ContentMappingSymbol.new {
@@ -193,7 +193,7 @@ object DatabaseManager {
         symbol: ContentMappingSymbol,
         owner: ContentMappingSymbol?,
         file: FileEntity,
-        location: String
+        location: String?
     ): ContentMappingReference {
         return this.databaseClient.transaction {
             ContentMappingReference.new {
