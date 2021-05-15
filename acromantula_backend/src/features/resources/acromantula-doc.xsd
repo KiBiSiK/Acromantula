@@ -1,0 +1,104 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:adoc="urn:acromantula-document"
+            targetNamespace="urn:acromantula-document"
+            xml:lang="en">
+
+    <xsd:element name="Document">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Header" type="adoc:Header"/>
+                <xsd:element name="Body" type="adoc:Body"/>
+            </xsd:sequence>
+        </xsd:complexType>
+
+        <xsd:key name="menuIdKey">
+            <xsd:selector xpath=".//Header/ContextMenus/Menu"/>
+            <xsd:field xpath="@id"/>
+        </xsd:key>
+
+        <xsd:keyref name="contextMenuRef" refer="adoc:menuIdKey">
+            <xsd:selector xpath=".//adoc:Interactive"/>
+            <xsd:field xpath="@menu"/>
+        </xsd:keyref>
+    </xsd:element>
+
+
+    <xsd:complexType name="Header">
+        <xsd:sequence>
+            <xsd:element name="ContextMenus">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        A list of menus that can be referred to in the document body to allow for user interaction with
+                        the text. Each item in a menu defines an action, that is sent to the backend, if the user
+                        clicks on the context menu entry.
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="Menu" maxOccurs="unbounded" minOccurs="1">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="Item" maxOccurs="unbounded" minOccurs="1">
+                                        <xsd:complexType>
+                                            <xsd:attribute name="text" type="xsd:string"/>
+                                            <xsd:attribute name="action" type="xsd:string"/>
+                                            <xsd:attribute name="separator" type="xsd:boolean" default="false"/>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:sequence>
+
+                                <xsd:attribute name="id" type="xsd:string"/>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="Body" mixed="true">
+        <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="Symbol">
+        <xsd:complexType mixed="true">
+            <xsd:sequence>
+                <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="required"/>
+            <xsd:attribute name="type" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="Reference">
+        <xsd:complexType mixed="true">
+            <xsd:sequence>
+                <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="id" type="xsd:string" use="required"/>
+            <xsd:attribute name="type" type="xsd:string" use="required"/>
+            <xsd:attribute name="symbol" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="Block">
+        <xsd:complexType mixed="true">
+            <xsd:sequence>
+                <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="indent" type="xsd:boolean" default="true"/>
+            <xsd:attribute name="collapsible" type="xsd:boolean" default="true"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="Interactive">
+        <xsd:complexType mixed="true">
+            <xsd:sequence>
+                <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="menu" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
