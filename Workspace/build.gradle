@@ -12,7 +12,7 @@ dependencies {
     // database
     implementation group: 'org.jetbrains.exposed', name: 'exposed-core', version: kotlin_exposed_version
     implementation group: 'org.jetbrains.exposed', name: 'exposed-jdbc', version: kotlin_exposed_version
-    implementation group: 'org.jetbrains.exposed', name: 'exposed-jodatime', version: kotlin_exposed_version
-    implementation group: 'org.jetbrains.exposed', name: 'exposed-dao', version: kotlin_exposed_version
+    api group: 'org.jetbrains.exposed', name: 'exposed-jodatime', version: kotlin_exposed_version
+    api group: 'org.jetbrains.exposed', name: 'exposed-dao', version: kotlin_exposed_version
     implementation group: 'com.h2database', name: 'h2', version: h2_database_version
 }
