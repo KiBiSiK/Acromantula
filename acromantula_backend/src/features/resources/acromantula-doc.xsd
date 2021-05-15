@@ -47,7 +47,7 @@
                                     </xsd:element>
                                 </xsd:sequence>
 
-                                <xsd:attribute name="id" type="xsd:string"/>
+                                <xsd:attribute name="id" type="xsd:string" use="required"/>
                             </xsd:complexType>
                         </xsd:element>
                     </xsd:sequence>
