@@ -1,14 +1,3 @@
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.0'
-}
-
-group 'net.cydhra'
-version '0.1.0'
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     // kotlin
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
