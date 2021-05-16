@@ -8,6 +8,6 @@ import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
  */
 class ListCommandsCommandInterpreter() : WorkspaceCommandInterpreter<List<String>> {
 
-    override fun evaluate() = CommandLineService.commands
+    override suspend fun evaluate() = CommandLineService.commands
 }
 

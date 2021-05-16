@@ -9,11 +9,11 @@ import java.io.PushbackInputStream
  */
 internal class GenericFileImporterStrategy : ImporterStrategy {
 
-    override fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
+    override suspend fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
         return true
     }
 
-    override fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
+    override suspend fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
         WorkspaceService.addFileEntry(fileName, parent, fileContent.readBytes())
     }
 }

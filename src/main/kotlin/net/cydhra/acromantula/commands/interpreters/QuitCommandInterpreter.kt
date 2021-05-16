@@ -14,7 +14,7 @@ class QuitCommandInterpreter : WorkspaceCommandInterpreter<Unit> {
         private val logger = LogManager.getLogger()
     }
 
-    override fun evaluate() {
+    override suspend fun evaluate() {
         logger.info("quitting...")
         EventBroker.fireEvent(ApplicationShutdownEvent())
     }

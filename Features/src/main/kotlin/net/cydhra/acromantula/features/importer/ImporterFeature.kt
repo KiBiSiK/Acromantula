@@ -40,7 +40,7 @@ object ImporterFeature {
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param file URL pointing to the file
      */
-    fun importFile(parent: FileEntity?, file: URL) {
+    suspend fun importFile(parent: FileEntity?, file: URL) {
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -60,7 +60,7 @@ object ImporterFeature {
      * @param fileName name for the file in the workspace
      * @param fileStream an [InputStream] for the file content
      */
-    fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
+    suspend fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
         logger.debug("importing \"$fileName\"")
 
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else

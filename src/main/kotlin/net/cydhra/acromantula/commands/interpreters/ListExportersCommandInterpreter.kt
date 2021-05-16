@@ -7,7 +7,7 @@ import net.cydhra.acromantula.features.exporter.ExporterFeature
  * Command to list all available exporter strategies.
  */
 class ListExportersCommandInterpreter() : WorkspaceCommandInterpreter<List<String>> {
-    override fun evaluate(): List<String> {
+    override suspend fun evaluate(): List<String> {
         return ExporterFeature.getExporters().toList()
     }
 }

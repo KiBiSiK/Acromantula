@@ -1,9 +1,6 @@
 package net.cydhra.acromantula.pool
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -26,14 +23,17 @@ class WorkerPool {
      * A work-stealing threadpool for heavy-duty jobs that can easily be paralleled and require high amounts of green
      * threads. Use this for actual work on data. The pool is limited to the number of logical cores available.
      */
-    private val workerCoroutineScope = CoroutineScope(workerPool.asCoroutineDispatcher())
+    private val dispatcher = workerPool.asCoroutineDispatcher()
 
     /**
      * Submit a heavy duty task and return a deferred promise. The task is scheduled in a work stealing threadpool.
      */
-    fun <T> submit(worker: suspend CoroutineScope.() -> T): Deferred<Result<T>> {
+    fun <T> submit(supervisor: CompletableJob? = null, worker: suspend CoroutineScope.() -> T): Deferred<Result<T>> {
         logger.trace("launching worker in bounded thread pool...")
-        return workerCoroutineScope.async(block = {
+
+        val scope = supervisor?.let { CoroutineScope(it + dispatcher) } ?: CoroutineScope(dispatcher)
+
+        return scope.async(block = {
             try {
                 worker.invoke(this).let { Result.success(it) }
             } catch (t: Throwable) {

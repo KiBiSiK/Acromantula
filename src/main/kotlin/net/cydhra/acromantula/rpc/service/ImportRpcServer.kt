@@ -9,14 +9,14 @@ import net.cydhra.acromantula.proto.ImportServiceGrpcKt
 class ImportRpcServer : ImportServiceGrpcKt.ImportServiceCoroutineImplBase() {
 
     override suspend fun importFile(request: ImportCommand): Empty {
-        val result = CommandDispatcherService.dispatchCommand(
+        val result = CommandDispatcherService.dispatchCommandSupervised(
             when {
                 request.directoryId != -1 ->
                     ImportCommandInterpreter(request.directoryId, request.fileUrl)
                 request.directoryPath != null -> ImportCommandInterpreter(request.directoryPath, request.fileUrl)
                 else -> throw IllegalArgumentException("either directoryId or directoryPath must be defined")
             }
-        ).await()
+        )
 
         result.onFailure {
             throw it

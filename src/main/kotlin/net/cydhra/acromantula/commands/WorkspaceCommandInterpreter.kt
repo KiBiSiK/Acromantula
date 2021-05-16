@@ -10,5 +10,5 @@ interface WorkspaceCommandInterpreter<T> {
      * Evaluate the command. This function is suspendable and should be launched in a cached thread pool. The
      * function returns
      */
-    fun evaluate(): T
+    suspend fun evaluate(): T
 }

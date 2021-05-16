@@ -10,12 +10,13 @@ import net.cydhra.acromantula.workspace.util.TreeNode
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
 
     override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
+
         val result =
             if (request.fileId != -1) {
-                CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.fileId))
+                CommandDispatcherService.dispatchCommandSupervised(ListFilesCommandInterpreter(request.fileId))
             } else {
-                CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() }))
-            }.await()
+                CommandDispatcherService.dispatchCommandSupervised(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() }))
+            }
 
         fun viewToProto(view: FileRepresentation): ViewEntity {
             return viewEntity {

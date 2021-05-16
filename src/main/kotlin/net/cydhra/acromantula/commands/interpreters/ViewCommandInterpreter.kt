@@ -34,7 +34,7 @@ class ViewCommandInterpreter private constructor(
      */
     constructor(filePath: String? = null, type: String) : this(null, filePath, type)
 
-    override fun evaluate(): FileRepresentation? {
+    override suspend fun evaluate(): FileRepresentation? {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)

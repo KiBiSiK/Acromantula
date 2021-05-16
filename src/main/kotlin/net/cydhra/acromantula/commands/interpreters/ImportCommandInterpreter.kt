@@ -35,7 +35,7 @@ class ImportCommandInterpreter(
      */
     constructor(directoryPath: String? = null, fileUrl: String) : this(null, directoryPath, fileUrl)
 
-    override fun evaluate() {
+    override suspend fun evaluate() {
         val sourceFile = try {
             // TODO how to parse URLs without blocking? Why does this block anyway?
             URL(fileUrl)

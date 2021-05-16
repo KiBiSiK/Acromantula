@@ -10,7 +10,7 @@ import java.io.PushbackInputStream
  */
 interface ImporterStrategy {
 
-    fun handles(fileName: String, fileContent: PushbackInputStream): Boolean
+    suspend fun handles(fileName: String, fileContent: PushbackInputStream): Boolean
 
-    fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream)
+    suspend fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream)
 }

@@ -15,12 +15,12 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
         private val logger = LogManager.getLogger()
     }
 
-    override fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
+    override suspend fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
         // TODO maybe search magic bytes idk
         return fileName.endsWith(".zip") || fileName.endsWith(".jar")
     }
 
-    override fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
+    override suspend fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
         val archive = WorkspaceService.addArchiveEntry(fileName, parent)
         val treeBuilder = FileTreeBuilder(archive)
 

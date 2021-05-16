@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.features.mapper
 
+import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
@@ -143,19 +144,20 @@ object MapperFeature {
     /**
      * Generate mappings for a given file entity and its content
      */
-    private fun generateMappings(file: FileEntity, content: ByteArray) {
+    private fun generateMappings(supervisor: CompletableJob, file: FileEntity, content: ByteArray) {
         this.mappingFactories
             .filter { it.handles(file, content) }
             .forEach {
                 logger.debug("generating [${it.name}] mappings for ${file.name}...")
 
                 // start the mapper and forget the deferred result
-                WorkspaceService.getWorkerPool().submit { it.generateMappings(file, content) }.start()
+                WorkspaceService.getWorkerPool().submit(supervisor) { it.generateMappings(file, content) }.start()
             }
     }
 
     @Suppress("RedundantSuspendModifier")
     internal suspend fun onFileAdded(event: AddedResourceEvent) {
-        generateMappings(event.file, event.content)
+        TODO("do not do this with events")
+//        generateMappings(event.file, event.content)
     }
 }

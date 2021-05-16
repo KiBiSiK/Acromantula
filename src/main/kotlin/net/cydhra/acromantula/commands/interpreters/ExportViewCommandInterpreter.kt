@@ -72,7 +72,7 @@ class ExportViewCommandInterpreter private constructor(
         targetFileName: String
     ) : this(null, filePath, viewType, recursive, includeIncompatible, targetFileName)
 
-    override fun evaluate() {
+    override suspend fun evaluate() {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)
