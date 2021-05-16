@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace.database.mapping
 
-import net.cydhra.acromantula.workspace.database.DatabaseManager
+import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import org.jetbrains.exposed.dao.IntEntity
@@ -33,7 +33,7 @@ class ContentMappingReference(entityId: EntityID<Int>) : IntEntity(entityId) {
      */
     var type: ContentMappingReferenceDelegate
         get() {
-            return DatabaseManager.getReferenceTypeDelegate(this.typeEntity)
+            return DatabaseMappingsManager.getReferenceTypeDelegate(this.typeEntity)
         }
         set(value) {
             this.typeEntity = value.referenceType

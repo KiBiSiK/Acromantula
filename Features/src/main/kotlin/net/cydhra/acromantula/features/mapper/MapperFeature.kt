@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.features.mapper
 
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.database.DatabaseManager
+import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceDelegate
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbol
@@ -38,7 +38,7 @@ object MapperFeature {
      */
     fun registerSymbolType(symbolType: AcromantulaSymbolType) {
         logger.trace("register symbol type: ${symbolType.symbolType}")
-        val typeDelegate = DatabaseManager.registerContentMappingSymbolType(symbolType.symbolType)
+        val typeDelegate = DatabaseMappingsManager.registerContentMappingSymbolType(symbolType.symbolType)
         this.registeredSymbolTypes[symbolType] = typeDelegate
     }
 
@@ -56,7 +56,7 @@ object MapperFeature {
         if (this.registeredReferenceTypes.containsKey(referenceType))
             throw IllegalStateException("this reference tyoe has been registered before")
 
-        val delegate = DatabaseManager.registerContentMappingReferenceType(
+        val delegate = DatabaseMappingsManager.registerContentMappingReferenceType(
             referenceType.referenceType,
             this.registeredSymbolTypes[symbolType]!!
         )
@@ -85,7 +85,7 @@ object MapperFeature {
             throw IllegalStateException("this symbol type has not been registered yet")
 
         logger.trace("insert \"${symbolType.symbolType}\" ($symbolIdentifier) at ($location) into database.")
-        return DatabaseManager.insertSymbol(
+        return DatabaseMappingsManager.insertSymbol(
             this.registeredSymbolTypes[symbolType]!!,
             file,
             symbolIdentifier,
@@ -108,7 +108,7 @@ object MapperFeature {
             "insert \"${referenceType.referenceType}\" for (${symbol.identifier}) at ($location) into " +
                     "database."
         )
-        return DatabaseManager.insertReference(
+        return DatabaseMappingsManager.insertReference(
             this.registeredReferenceTypes[referenceType]!!,
             symbol,
             owner,

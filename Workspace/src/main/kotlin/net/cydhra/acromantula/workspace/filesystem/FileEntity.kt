@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import net.cydhra.acromantula.workspace.database.DatabaseManager
+import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import org.jetbrains.exposed.dao.IntEntity
@@ -49,7 +49,7 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
      * Get all views associated with this file
      */
     fun getViews(): List<FileRepresentation> {
-        return DatabaseManager.transaction {
+        return DatabaseMappingsManager.transaction {
             this@FileEntity.views.toList()
         }
     }

@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Transaction
  * Manager for mappings within the workspace. [ContentMappingReferenceType]s and [ContentMappingSymbolType]s must be
  * registered here and will then be registered within the database
  */
-object DatabaseManager {
+object DatabaseMappingsManager {
 
     /**
      * The current [DatabaseClient]. When the database is closed and another one is opened, this reference must be

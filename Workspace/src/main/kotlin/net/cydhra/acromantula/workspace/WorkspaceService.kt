@@ -4,7 +4,7 @@ import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.pool.WorkerPool
-import net.cydhra.acromantula.workspace.database.DatabaseManager
+import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
@@ -81,7 +81,7 @@ object WorkspaceService : Service {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
 
-        DatabaseManager.setActiveDatabase(workspaceClient.databaseClient)
+        DatabaseMappingsManager.setActiveDatabase(workspaceClient.databaseClient)
 
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, ::onShutdown)
     }
@@ -109,7 +109,7 @@ object WorkspaceService : Service {
         workspaceClient.initialize()
 
         logger.info("updating database manager...")
-        DatabaseManager.setActiveDatabase(workspaceClient.databaseClient)
+        DatabaseMappingsManager.setActiveDatabase(workspaceClient.databaseClient)
     }
 
     /**

@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace.database.mapping
 
-import net.cydhra.acromantula.workspace.database.DatabaseManager
+import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import org.jetbrains.exposed.dao.IntEntity
@@ -25,7 +25,7 @@ class ContentMappingSymbol(entityId: EntityID<Int>) : IntEntity(entityId) {
      */
     var type: ContentMappingSymbolTypeDelegate
         get() {
-            return DatabaseManager.getSymbolDelegate(this.databaseType)
+            return DatabaseMappingsManager.getSymbolDelegate(this.databaseType)
         }
         internal set(value) {
             databaseType = value.symbolType
