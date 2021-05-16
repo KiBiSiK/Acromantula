@@ -28,10 +28,10 @@ class WorkerPool {
     /**
      * Submit a heavy duty task and return a deferred promise. The task is scheduled in a work stealing threadpool.
      */
-    fun <T> submit(supervisor: CompletableJob? = null, worker: suspend CoroutineScope.() -> T): Deferred<Result<T>> {
+    fun <T> submit(supervisor: CompletableJob, worker: suspend CoroutineScope.() -> T): Deferred<Result<T>> {
         logger.trace("launching worker in bounded thread pool...")
 
-        val scope = supervisor?.let { CoroutineScope(it + dispatcher) } ?: CoroutineScope(dispatcher)
+        val scope = CoroutineScope(supervisor + dispatcher)
 
         return scope.async(block = {
             try {

@@ -1,5 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
+import kotlinx.coroutines.CompletableJob
+import net.cydhra.acromantula.features.mapper.MapperFeature
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import java.io.File
@@ -37,10 +39,11 @@ object ImporterFeature {
     /**
      * Import a file into the workspace
      *
+     * @param supervisor a [CompletableJob] that supervises this import and all subsequent tasks
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param file URL pointing to the file
      */
-    suspend fun importFile(parent: FileEntity?, file: URL) {
+    suspend fun importFile(supervisor: CompletableJob, parent: FileEntity?, file: URL) {
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -50,26 +53,30 @@ object ImporterFeature {
             return
         }
 
-        importFile(parent, fileName, fileStream)
+        importFile(supervisor, parent, fileName, fileStream)
     }
 
     /**
      * Import a file into the workspace
      *
+     * @param supervisor a [CompletableJob] that supervises this import and all subsequent tasks
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param fileName name for the file in the workspace
      * @param fileStream an [InputStream] for the file content
      */
-    suspend fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
-        logger.debug("importing \"$fileName\"")
+    suspend fun importFile(supervisor: CompletableJob, parent: FileEntity?, fileName: String, fileStream: InputStream) {
+        logger.trace("importing \"$fileName\"")
 
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else
             PushbackInputStream(fileStream, 512)
 
         val importer =
             registeredImporters.firstOrNull { it.handles(fileName, pushbackStream) } ?: genericFileImporterStrategy
-        importer.import(parent, fileName, pushbackStream)
+        val (file, content) = importer.import(supervisor, parent, fileName, pushbackStream)
         logger.trace("finished importing \"$fileName\"")
+
+        if (!file.isDirectory && file.archiveEntity == null)
+            MapperFeature.startMappingTasks(supervisor, file, content)
     }
 
     /**

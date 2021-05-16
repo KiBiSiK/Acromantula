@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.commands.interpreters
 
+import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import org.apache.logging.log4j.LogManager
@@ -13,7 +14,7 @@ class DirectQueryCommandInterpreter(val query: String) : WorkspaceCommandInterpr
         private val logger = LogManager.getLogger()
     }
 
-    override suspend fun evaluate() {
+    override suspend fun evaluate(supervisor: CompletableJob) {
         val resultSet = WorkspaceService.directQuery(this.query)
         resultSet.forEach(::println)
         logger.debug("finished SQL query")

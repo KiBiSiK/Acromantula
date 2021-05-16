@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
+import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.PushbackInputStream
@@ -13,7 +14,14 @@ internal class GenericFileImporterStrategy : ImporterStrategy {
         return true
     }
 
-    override suspend fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
-        WorkspaceService.addFileEntry(fileName, parent, fileContent.readBytes())
+    override suspend fun import(
+        supervisor: CompletableJob,
+        parent: FileEntity?,
+        fileName: String,
+        fileContent: PushbackInputStream
+    ): Pair<FileEntity, ByteArray> {
+        val content = fileContent.readBytes()
+        val file = WorkspaceService.addFileEntry(fileName, parent, content)
+        return Pair(file, content)
     }
 }

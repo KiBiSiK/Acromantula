@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
+import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.features.util.FileTreeBuilder
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
@@ -20,7 +21,13 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
         return fileName.endsWith(".zip") || fileName.endsWith(".jar")
     }
 
-    override suspend fun import(parent: FileEntity?, fileName: String, fileContent: PushbackInputStream) {
+    override suspend fun import(
+        supervisor: CompletableJob,
+        parent: FileEntity?,
+        fileName: String,
+        fileContent: PushbackInputStream
+    ):
+            Pair<FileEntity, ByteArray?> {
         val archive = WorkspaceService.addArchiveEntry(fileName, parent)
         val treeBuilder = FileTreeBuilder(archive)
 
@@ -39,6 +46,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
                 val parentDirectory = treeBuilder.getParentDirectory(currentEntry.name)
                 val parentDirectoryName = treeBuilder.getParentPath(currentEntry.name)
                 ImporterFeature.importFile(
+                    supervisor = supervisor,
                     parent = parentDirectory,
                     fileName = currentEntry.name.removePrefix(parentDirectoryName),
                     fileStream = PushbackInputStream(ByteArrayInputStream(blob))
@@ -50,5 +58,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
             currentEntry = zipInputStream.nextEntry
         }
+
+        return Pair(archive, null)
     }
 }

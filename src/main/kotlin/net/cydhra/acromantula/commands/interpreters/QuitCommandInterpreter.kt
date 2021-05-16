@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.commands.interpreters
 
+import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
@@ -14,7 +15,7 @@ class QuitCommandInterpreter : WorkspaceCommandInterpreter<Unit> {
         private val logger = LogManager.getLogger()
     }
 
-    override suspend fun evaluate() {
+    override suspend fun evaluate(supervisor: CompletableJob) {
         logger.info("quitting...")
         EventBroker.fireEvent(ApplicationShutdownEvent())
     }

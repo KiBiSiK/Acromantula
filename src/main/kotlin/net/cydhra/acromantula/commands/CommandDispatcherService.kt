@@ -29,7 +29,7 @@ object CommandDispatcherService : Service {
         commandInterpreter: WorkspaceCommandInterpreter<T>
     ): Deferred<Result<T>> {
         logger.trace("launching command handler task for $commandInterpreter")
-        return WorkspaceService.getWorkerPool().submit(supervisor) { commandInterpreter.evaluate() }
+        return WorkspaceService.getWorkerPool().submit(supervisor) { commandInterpreter.evaluate(supervisor) }
     }
 
     /**
@@ -40,6 +40,7 @@ object CommandDispatcherService : Service {
         val supervisor = SupervisorJob()
         val result = dispatchCommand(supervisor, commandInterpreter).await()
         supervisor.complete()
+        logger.trace("supervised command execution finished")
         return result
     }
 }

@@ -24,6 +24,6 @@ class ImportCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
     override fun build(): WorkspaceCommandInterpreter<Unit> = ImportCommandInterpreter(directory, fileUrl)
 
     override fun report(result: Result<Unit>) {
-        logger.info("import ${if (result.isSuccess) "successful" else "failed"}")
+        logger.info("import of \"$fileUrl\" ${if (result.isSuccess) "successful" else "failed"}")
     }
 }

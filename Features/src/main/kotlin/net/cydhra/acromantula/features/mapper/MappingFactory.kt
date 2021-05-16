@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.features.mapper
 
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import java.io.PushbackInputStream
 
 /**
  * Generates mappings for specific symbols and their references for a specific file type. May generate different
@@ -16,10 +17,10 @@ interface MappingFactory {
     /**
      * Returns true, if this factory wants to handle the given file to generate mappings for it
      */
-    fun handles(file: FileEntity, content: ByteArray): Boolean
+    fun handles(file: FileEntity, content: PushbackInputStream): Boolean
 
     /**
      * Generate mappings for the given file and content
      */
-    suspend fun generateMappings(file: FileEntity, content: ByteArray)
+    suspend fun generateMappings(file: FileEntity, content: PushbackInputStream)
 }

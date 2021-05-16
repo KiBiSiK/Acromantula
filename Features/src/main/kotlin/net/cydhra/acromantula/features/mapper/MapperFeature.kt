@@ -8,8 +8,9 @@ import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbol
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTypeDelegate
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
 import org.apache.logging.log4j.LogManager
+import java.io.ByteArrayInputStream
+import java.io.PushbackInputStream
 
 object MapperFeature {
 
@@ -144,20 +145,20 @@ object MapperFeature {
     /**
      * Generate mappings for a given file entity and its content
      */
-    private fun generateMappings(supervisor: CompletableJob, file: FileEntity, content: ByteArray) {
+    fun startMappingTasks(supervisor: CompletableJob, file: FileEntity, content: ByteArray?) {
+        val inputStream = if (content == null) {
+            PushbackInputStream(WorkspaceService.getFileContent(file), 512)
+        } else {
+            PushbackInputStream(ByteArrayInputStream(content), 512)
+        }
+
         this.mappingFactories
-            .filter { it.handles(file, content) }
+            .filter { it.handles(file, inputStream) }
             .forEach {
                 logger.debug("generating [${it.name}] mappings for ${file.name}...")
 
                 // start the mapper and forget the deferred result
-                WorkspaceService.getWorkerPool().submit(supervisor) { it.generateMappings(file, content) }.start()
+                WorkspaceService.getWorkerPool().submit(supervisor) { it.generateMappings(file, inputStream) }.start()
             }
-    }
-
-    @Suppress("RedundantSuspendModifier")
-    internal suspend fun onFileAdded(event: AddedResourceEvent) {
-        TODO("do not do this with events")
-//        generateMappings(event.file, event.content)
     }
 }

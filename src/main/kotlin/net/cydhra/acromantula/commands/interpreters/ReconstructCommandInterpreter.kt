@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.commands.interpreters
 
+import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -22,7 +23,7 @@ class ReconstructCommandInterpreter(
         private val logger = LogManager.getLogger()
     }
 
-    override suspend fun evaluate() {
+    override suspend fun evaluate(supervisor: CompletableJob) {
         val file = WorkspaceService.queryPath(fileEntityId)
         GenerateViewFeature.reconstructFromView(file, viewType, dataBuffer)
     }
