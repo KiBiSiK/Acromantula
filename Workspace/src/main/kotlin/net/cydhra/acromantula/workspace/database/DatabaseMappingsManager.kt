@@ -1,8 +1,11 @@
 package net.cydhra.acromantula.workspace.database
 
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.workspace.database.mapping.*
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.jetbrains.exposed.sql.Transaction
+import java.util.concurrent.Executors
 
 /**
  * Manager for mappings within the workspace. [ContentMappingReferenceType]s and [ContentMappingSymbolType]s must be
@@ -23,6 +26,8 @@ object DatabaseMappingsManager {
         mutableMapOf<ContentMappingSymbolType, ContentMappingSymbolTypeDelegate>()
     private val contentMappingReferenceDelegates =
         mutableMapOf<ContentMappingReferenceType, ContentMappingReferenceDelegate>()
+
+    private val singleThreadPool = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
     /**
      * Must be called when a new database is loaded. This is NOT done automatically through event notification. This
@@ -65,7 +70,8 @@ object DatabaseMappingsManager {
     }
 
     /**
-     * Retrieve or insert a new symbol type in the database and return the database entity
+     * Retrieve or insert a new symbol type in the database and return the database entity. This method is
+     * implicitly synchronized using a single threaded coroutine scheduler.
      *
      * @param uniqueIdentifier reference type identifier
      */
@@ -147,31 +153,53 @@ object DatabaseMappingsManager {
     }
 
     /**
-     * Insert a symbol into the database.
+     * Insert a symbol into the database or retrieve one with the same identifier. This method is implicitly
+     * synchronized using a single-threaded coroutine scheduler, because multiple insertions of the same symbol will
+     * cause race conditions. If a symbol already exists with this identifier but has a location or file of `null`, the
+     * values will be updated if possible.
      *
      * @param type type of symbol to insert
+     * @param file the origin file of the symbol if known
      * @param identifier preferably unique identifier for the symbol - this should (among all symbols of a given
      * type) uniquely describe wich symbol is meant. This is not enforced however.
      * @param name symbol name (may be part of the identifier, or the same). This is the part that is actually
      * changed by the (re-) mapper
-     * @param location an unstructured string that hints where to find this symbol within the file
+     * @param location an unstructured string that hints where to find this symbol within the file, if known and used
+     * by the implementation.
      *
      * @see ContentMappingSymbol
      */
-    fun insertSymbol(
+    suspend fun insertOrRetrieveSymbol(
         type: ContentMappingSymbolTypeDelegate,
-        file: FileEntity,
+        file: FileEntity?,
         identifier: String,
         name: String,
         location: String?
     ): ContentMappingSymbol {
-        return this.databaseClient.transaction {
-            ContentMappingSymbol.new {
-                this.type = type
-                this.file = file
-                this.identifier = identifier
-                this.name = name
-                this.location = location
+        return withContext(singleThreadPool) {
+            this@DatabaseMappingsManager.databaseClient.transaction {
+                val symbol =
+                    ContentMappingSymbol.find { ContentMappingSymbolTable.identifier eq identifier }.firstOrNull()
+
+                if (symbol != null) {
+                    if (location != null && symbol.location == null) {
+                        symbol.location = location
+                    }
+
+                    if (file != null && symbol.file == null) {
+                        symbol.file = file
+                    }
+
+                    symbol
+                } else {
+                    ContentMappingSymbol.new {
+                        this.type = type
+                        this.file = file
+                        this.identifier = identifier
+                        this.name = name
+                        this.location = location
+                    }
+                }
             }
         }
     }

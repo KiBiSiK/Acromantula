@@ -11,7 +11,7 @@ object ContentMappingSymbolTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val type = reference("type", ContentMappingSymbolTypeTable)
     val identifier = varchar("identifier", Short.MAX_VALUE - 1)
     val name = varchar("name", Short.MAX_VALUE - 1)
-    val file = reference("file", FileTable)
+    val file = reference("file", FileTable).nullable()
     val location = varchar("location", Short.MAX_VALUE - 1).nullable()
 }
 
@@ -34,7 +34,7 @@ class ContentMappingSymbol(entityId: EntityID<Int>) : IntEntity(entityId) {
     /**
      * The file that this symbol is contained within
      */
-    var file by FileEntity referencedOn ContentMappingSymbolTable.file
+    var file by FileEntity optionalReferencedOn ContentMappingSymbolTable.file
 
     /**
      * (Preferably) unique symbol identifier

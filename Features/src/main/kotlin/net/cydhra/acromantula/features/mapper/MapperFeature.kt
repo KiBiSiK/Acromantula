@@ -74,23 +74,38 @@ object MapperFeature {
      * @param location the location of the symbol within the file. The format of this parameter is chosen by the
      * implementation
      */
-    fun insertSymbolIntoDatabase(
+    suspend fun insertSymbolIntoDatabase(
         symbolType: AcromantulaSymbolType,
         file: FileEntity,
         symbolIdentifier: String,
         symbolName: String,
         location: String?
     ): ContentMappingSymbol {
-        if (!this.registeredSymbolTypes.containsKey(symbolType))
-            throw IllegalStateException("this symbol type has not been registered yet")
-
         logger.trace("insert \"${symbolType.symbolType}\" ($symbolIdentifier) at ($location) into database.")
-        return DatabaseMappingsManager.insertSymbol(
+        return DatabaseMappingsManager.insertOrRetrieveSymbol(
             this.registeredSymbolTypes[symbolType]!!,
             file,
             symbolIdentifier,
             symbolName,
             location
+        )
+    }
+
+    /**
+     * Retrieve a symbol from the database, inserting a dummy symbol if it does not exist yet. This is useful for
+     * references to symbols outside of the imported file.
+     */
+    suspend fun getSymbolFromDatabase(
+        symbolType: AcromantulaSymbolType,
+        symbolIdentifier: String,
+        symbolName: String
+    ): ContentMappingSymbol {
+        return DatabaseMappingsManager.insertOrRetrieveSymbol(
+            this.registeredSymbolTypes[symbolType]!!,
+            null,
+            symbolIdentifier,
+            symbolName,
+            null
         )
     }
 
