@@ -4,8 +4,10 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.workspace.database.mapping.*
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.sql.Transaction
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Manager for mappings within the workspace. [ContentMappingReferenceType]s and [ContentMappingSymbolType]s must be
@@ -27,7 +29,8 @@ object DatabaseMappingsManager {
     private val contentMappingReferenceDelegates =
         mutableMapOf<ContentMappingReferenceType, ContentMappingReferenceDelegate>()
 
-    private val singleThreadPool = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val singleThreadPool = Executors.newSingleThreadExecutor()
+    private val singleThreadDispatcher = singleThreadPool.asCoroutineDispatcher()
 
     /**
      * Must be called when a new database is loaded. This is NOT done automatically through event notification. This
@@ -176,7 +179,7 @@ object DatabaseMappingsManager {
         name: String,
         location: String?
     ): ContentMappingSymbol {
-        return withContext(singleThreadPool) {
+        return withContext(singleThreadDispatcher) {
             this@DatabaseMappingsManager.databaseClient.transaction {
                 val symbol =
                     ContentMappingSymbol.find { ContentMappingSymbolTable.identifier eq identifier }.firstOrNull()
@@ -239,5 +242,16 @@ object DatabaseMappingsManager {
      */
     internal fun <T> transaction(body: Transaction.() -> T): T {
         return this.databaseClient.transaction(body)
+    }
+
+    internal fun shutdown() {
+        LogManager.getLogger().info("shutting down thread for critical database access (timeout 60 seconds...)")
+        singleThreadPool.shutdown()
+        if (!singleThreadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+            LogManager.getLogger().info("timemout for thread for critical database access elapsed. forcing shutdown...")
+            singleThreadPool.shutdownNow()
+        }
+
+        LogManager.getLogger().info("thread for critical database access terminated.")
     }
 }
