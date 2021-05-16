@@ -40,6 +40,7 @@ object CommandDispatcherService : Service {
         val supervisor = SupervisorJob()
         val result = dispatchCommand(supervisor, commandInterpreter).await()
         supervisor.complete()
+        supervisor.join()
         logger.trace("supervised command execution finished")
         return result
     }
