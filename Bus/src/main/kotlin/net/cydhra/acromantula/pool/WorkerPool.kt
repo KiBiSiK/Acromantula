@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.pool
 
-import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -19,11 +18,6 @@ class WorkerPool {
     private val logger = LogManager.getLogger()
 
     /**
-     * A cached thread pool for low-utilisation/long-running or asymmetrical work load.
-     */
-    private val cachedThreadPool = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool())
-
-    /**
      * A work-stealing pool that is used for heavy-duty worker threads
      */
     private val workerPool = Executors.newWorkStealingPool()
@@ -33,16 +27,6 @@ class WorkerPool {
      * threads. Use this for actual work on data. The pool is limited to the number of logical cores available.
      */
     private val workerCoroutineScope = CoroutineScope(workerPool.asCoroutineDispatcher())
-
-    /**
-     * A list of tasks registered and not yet collected. They might have finished their work.
-     */
-    private val registeredTasks = mutableListOf<Task<*>>()
-
-    /**
-     * Unique id counter.
-     */
-    private var id: Int = 0
 
     /**
      * Submit a heavy duty task and return a deferred promise. The task is scheduled in a work stealing threadpool.
@@ -60,14 +44,6 @@ class WorkerPool {
     }
 
     fun shutdown() {
-        logger.info("awaiting cached thread pool termination (timeout 60 seconds)...")
-        this.cachedThreadPool.shutdown()
-        if (!this.cachedThreadPool.awaitTermination(60L, TimeUnit.SECONDS)) {
-            logger.info("timeout elapsed. attempting shutdown by force.")
-            this.cachedThreadPool.shutdownNow()
-        }
-        logger.info("cached thread pool terminated.")
-
         logger.info("awaiting worker thread pool termination (timeout 60 seconds)...")
         this.workerPool.shutdown()
         if (!this.workerPool.awaitTermination(60L, TimeUnit.SECONDS)) {
@@ -75,13 +51,5 @@ class WorkerPool {
             this.workerPool.shutdownNow()
         }
         logger.info("worker thread pool terminated.")
-    }
-
-    /**
-     * Get a list of all tasks currently registered in the pool. It includes running tasks and finished tasks that
-     * were not reaped yet.
-     */
-    fun listTasks(): List<Task<*>> {
-        return this.registeredTasks
     }
 }
