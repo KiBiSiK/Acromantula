@@ -89,7 +89,6 @@ object WorkspaceService : Service {
     @Suppress("RedundantSuspendModifier")
     private suspend fun onShutdown(@Suppress("UNUSED_PARAMETER") e: ApplicationShutdownEvent) {
         this.workspaceClient.shutdown()
-        DatabaseMappingsManager.shutdown()
     }
 
     /**
