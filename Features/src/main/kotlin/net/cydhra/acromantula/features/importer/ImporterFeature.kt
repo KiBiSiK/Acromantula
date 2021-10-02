@@ -2,8 +2,10 @@ package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.features.mapper.MapperFeature
+import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.InputStream
 import java.io.PushbackInputStream
@@ -37,13 +39,18 @@ object ImporterFeature {
     }
 
     /**
-     * Import a file into the workspace
+     * Import a file into the workspace.
      *
      * @param supervisor a [CompletableJob] that supervises this import and all subsequent tasks
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param file URL pointing to the file
      */
     suspend fun importFile(supervisor: CompletableJob, parent: FileEntity?, file: URL) {
+        DatabaseMappingsManager.initializeSymbolCache(100_000, 0.75f)
+        supervisor.invokeOnCompletion {
+            DatabaseMappingsManager.flushSymbolCache()
+        }
+
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -57,7 +64,7 @@ object ImporterFeature {
     }
 
     /**
-     * Import a file into the workspace
+     * Import a file into the workspace that is part of another file (like archives)
      *
      * @param supervisor a [CompletableJob] that supervises this import and all subsequent tasks
      * @param parent a parent entity in the file tree, that gets this file as a
@@ -75,8 +82,10 @@ object ImporterFeature {
         val (file, content) = importer.import(supervisor, parent, fileName, pushbackStream)
         logger.trace("finished importing \"$fileName\"")
 
-        if (!file.isDirectory && file.archiveEntity == null)
-            MapperFeature.startMappingTasks(supervisor, file, content)
+        transaction {
+            if (!file.isDirectory && file.archiveEntity == null)
+                MapperFeature.startMappingTasks(supervisor, file, content)
+        }
     }
 
     /**

@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.workspace.database
 
 import net.cydhra.acromantula.workspace.database.mapping.*
-import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Transaction
 
 /**
@@ -23,6 +23,25 @@ object DatabaseMappingsManager {
         mutableMapOf<ContentMappingSymbolType, ContentMappingSymbolTypeDelegate>()
     private val contentMappingReferenceDelegates =
         mutableMapOf<ContentMappingReferenceType, ContentMappingReferenceDelegate>()
+
+    /**
+     * Initialize an identifier cache with an initial capacity and load factor. This should be done before mass
+     * inserts to ensure speed of the cache during insertion. This MUST be done at least once before the first
+     * insertion during application lifetime
+     *
+     * @param capacity the initial cache capacity
+     * @param loadFactor how full the cache can get, before its capacity is automatically increased
+     */
+    fun initializeSymbolCache(capacity: Int, loadFactor: Float) {
+        databaseClient.initializeSymbolCache(capacity, loadFactor)
+    }
+
+    /**
+     * This should be called after mass insertions to reduce the cache size and free up its memory
+     */
+    fun flushSymbolCache() {
+        databaseClient.flushSymbolCache()
+    }
 
     /**
      * Must be called when a new database is loaded. This is NOT done automatically through event notification. This
@@ -164,38 +183,14 @@ object DatabaseMappingsManager {
      *
      * @see ContentMappingSymbol
      */
-    suspend fun insertOrRetrieveSymbol(
+    fun insertSymbol(
         type: ContentMappingSymbolTypeDelegate,
-        file: FileEntity?,
+        file: EntityID<Int>?,
         identifier: String,
         name: String,
         location: String?
-    ): ContentMappingSymbol {
-        return this@DatabaseMappingsManager.databaseClient.transaction {
-            val symbol =
-                ContentMappingSymbol.find { ContentMappingSymbolTable.identifier eq identifier }.firstOrNull()
-
-            if (symbol != null) {
-                if (location != null && symbol.location == null) {
-                    symbol.location = location
-                }
-
-                if (file != null && symbol.file == null) {
-                    symbol.file = file
-                }
-
-                symbol
-            } else {
-                ContentMappingSymbol.new {
-                    this.type = type
-                    this.file = file
-                    this.identifier = identifier
-                    this.name = name
-                    this.location = location
-                }
-            }
-
-        }
+    ) {
+        databaseClient.insertSymbolIntoCache(type, file, identifier, name, location)
     }
 
     /**
@@ -212,20 +207,22 @@ object DatabaseMappingsManager {
      */
     fun insertReference(
         type: ContentMappingReferenceDelegate,
-        symbol: ContentMappingSymbol,
-        owner: ContentMappingSymbol?,
-        file: FileEntity,
+        symbolIdentifier: String,
+        ownerIdentifier: String?,
+        file: EntityID<Int>,
         location: String?
-    ): ContentMappingReference {
-        return this.databaseClient.transaction {
-            ContentMappingReference.new {
-                this.type = type
-                this.symbol = symbol
-                this.owner = owner
-                this.file = file
-                this.location = location
-            }
-        }
+    ) {
+//        return this.databaseClient.transaction {
+//            ContentMappingReference.new {
+//                this.type = type
+//                this.symbol = symbol
+//                this.owner = owner
+//                this.file = file
+//                this.location = location
+//            }
+//        }
+
+        this.databaseClient.insertReferenceIntoCache(type, symbolIdentifier, ownerIdentifier, file, location)
     }
 
     /**

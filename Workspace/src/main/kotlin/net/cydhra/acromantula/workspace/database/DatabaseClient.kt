@@ -1,15 +1,20 @@
 package net.cydhra.acromantula.workspace.database
 
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceDelegate
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceTable
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTable
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTypeDelegate
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveTable
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.filesystem.IndexMetaDatumTable
+import org.apache.logging.log4j.LogManager
 import org.h2.jdbcx.JdbcDataSource
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import java.net.URL
@@ -30,6 +35,23 @@ internal class DatabaseClient(private val databasePath: String) {
 
     private lateinit var database: Database
 
+    /**
+     * A cache for symbol insertion, so while a lot of symbols are concurrently inserted into the database, they do not
+     * have to be retrieved constantly to guarantee uniqueness of their entity within the application.
+     *
+     * The cache must be initialized at least once and should be flushed (and thereby destroyed) after a mass
+     * insertion to free up the RAM
+     */
+    private lateinit var identifierCache: HashSet<Symbol>
+
+    /**
+     * A cache for reference insertion, so while symbols aren't being inserted yet due to caching in
+     * [identifierCache], references to those symbols can be held back, too.
+     */
+    private lateinit var referenceCache: HashSet<Reference>
+
+    private var cacheInitialized: Boolean = false
+
     fun connect() {
         dataSource = JdbcDataSource()
             .also {
@@ -47,6 +69,56 @@ internal class DatabaseClient(private val databasePath: String) {
                 ContentMappingSymbolTable,
                 ContentMappingReferenceTable
             )
+        }
+    }
+
+    /**
+     * Initialize the symbol cache with initial capacity, loadFactor and estimated number of accessing threads.
+     */
+    fun initializeSymbolCache(capacity: Int, loadFactor: Float) {
+        synchronized(cacheInitialized) {
+            if (!cacheInitialized) {
+                identifierCache = HashSet(capacity, loadFactor)
+                referenceCache = HashSet(capacity * 10, loadFactor)
+                cacheInitialized = true
+            } else
+                LogManager.getLogger().warn("skipped cache initialization because cache is in use")
+        }
+    }
+
+    /**
+     * Empty the symbol cache and reduce its size
+     */
+    fun flushSymbolCache() {
+        synchronized(cacheInitialized) {
+            transaction {
+                ContentMappingSymbolTable.batchInsert(
+                    data = identifierCache,
+                    ignore = false,
+                    shouldReturnGeneratedValues = false
+                ) { symbol ->
+                    this[ContentMappingSymbolTable.id] = symbol.identifier
+                    this[ContentMappingSymbolTable.type] = symbol.type.symbolType.id
+                    this[ContentMappingSymbolTable.file] = symbol.file
+                    this[ContentMappingSymbolTable.name] = symbol.name
+                    this[ContentMappingSymbolTable.location] = symbol.location
+                }
+
+                ContentMappingReferenceTable.batchInsert(
+                    data = referenceCache,
+                    ignore = false,
+                    shouldReturnGeneratedValues = false
+                ) { reference ->
+                    this[ContentMappingReferenceTable.symbol] = reference.symbolIdentifier
+//                    if (reference.ownerIdentifier != null)
+//                        this[ContentMappingReferenceTable.owner] = reference.ownerIdentifier
+                    this[ContentMappingReferenceTable.type] = reference.type.referenceType.id
+                    this[ContentMappingReferenceTable.file] = reference.file
+                    this[ContentMappingReferenceTable.location] = reference.location
+                }
+            }
+            identifierCache = HashSet()
+            cacheInitialized = false
         }
     }
 
@@ -85,4 +157,56 @@ internal class DatabaseClient(private val databasePath: String) {
             resultList
         }
     }
+
+    fun insertSymbolIntoCache(
+        type: ContentMappingSymbolTypeDelegate,
+        file: EntityID<Int>?,
+        identifier: String,
+        name: String,
+        location: String?
+    ) {
+        this.identifierCache.add(
+            Symbol(
+                type,
+                file,
+                identifier,
+                name,
+                location
+            )
+        )
+    }
+
+    fun insertReferenceIntoCache(
+        type: ContentMappingReferenceDelegate,
+        symbolIdentifier: String,
+        ownerIdentifier: String?,
+        file: EntityID<Int>,
+        location: String?
+    ) {
+        this.referenceCache.add(
+            Reference(
+                type, symbolIdentifier, ownerIdentifier, file, location
+            )
+        )
+    }
+
+    private class Symbol(
+        val type: ContentMappingSymbolTypeDelegate,
+        val file: EntityID<Int>?,
+        val identifier: String,
+        val name: String,
+        val location: String?
+    ) {
+        override fun hashCode(): Int {
+            return identifier.hashCode()
+        }
+    }
+
+    private data class Reference(
+        val type: ContentMappingReferenceDelegate,
+        val symbolIdentifier: String,
+        val ownerIdentifier: String?,
+        val file: EntityID<Int>,
+        val location: String?
+    )
 }

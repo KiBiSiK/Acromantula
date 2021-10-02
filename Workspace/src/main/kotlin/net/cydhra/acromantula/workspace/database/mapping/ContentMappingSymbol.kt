@@ -3,20 +3,22 @@ package net.cydhra.acromantula.workspace.database.mapping
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.Entity
+import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IdTable
+import org.jetbrains.exposed.sql.Column
 
-object ContentMappingSymbolTable : org.jetbrains.exposed.dao.id.IntIdTable() {
+object ContentMappingSymbolTable : IdTable<String>() {
+    override val id: Column<EntityID<String>> = varchar("identifier", Short.MAX_VALUE - 1).entityId()
     val type = reference("type", ContentMappingSymbolTypeTable)
-    val identifier = varchar("identifier", Short.MAX_VALUE - 1)
     val name = varchar("name", Short.MAX_VALUE - 1)
     val file = reference("file", FileTable).nullable()
     val location = varchar("location", Short.MAX_VALUE - 1).nullable()
 }
 
-class ContentMappingSymbol(entityId: EntityID<Int>) : IntEntity(entityId) {
-    companion object : IntEntityClass<ContentMappingSymbol>(ContentMappingSymbolTable)
+class ContentMappingSymbol(entityId: EntityID<String>) : Entity<String>(entityId) {
+    companion object : EntityClass<String, ContentMappingSymbol>(ContentMappingSymbolTable)
 
     private var databaseType by ContentMappingSymbolType referencedOn ContentMappingSymbolTable.type
 
@@ -39,7 +41,7 @@ class ContentMappingSymbol(entityId: EntityID<Int>) : IntEntity(entityId) {
     /**
      * (Preferably) unique symbol identifier
      */
-    var identifier by ContentMappingSymbolTable.identifier
+    var identifier by ContentMappingSymbolTable.id
         internal set
 
     /**

@@ -50,7 +50,7 @@ class ContentMappingReference(entityId: EntityID<Int>) : IntEntity(entityId) {
     var file by FileEntity referencedOn ContentMappingReferenceTable.file
 
     /**
-     * Optional symbol that can be seen as the parent of this reference (e.g. a method as the onwer of another method
+     * Optional symbol that can be seen as the parent of this reference (e.g. a method as the owner of another method
      * call)
      */
     var owner by ContentMappingSymbol optionalReferencedOn ContentMappingReferenceTable.owner

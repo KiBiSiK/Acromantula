@@ -82,54 +82,36 @@ object MapperFeature {
         symbolIdentifier: String,
         symbolName: String,
         location: String?
-    ): ContentMappingSymbol {
+    ) {
         logger.trace("insert \"${symbolType.symbolType}\" ($symbolIdentifier) at ($location) into database.")
-        return DatabaseMappingsManager.insertOrRetrieveSymbol(
+        DatabaseMappingsManager.insertSymbol(
             this.registeredSymbolTypes[symbolType]!!,
-            file,
+            file.id,
             symbolIdentifier,
             symbolName,
             location
         )
     }
 
-    /**
-     * Retrieve a symbol from the database, inserting a dummy symbol if it does not exist yet. This is useful for
-     * references to symbols outside of the imported file.
-     */
-    suspend fun getSymbolFromDatabase(
-        symbolType: AcromantulaSymbolType,
-        symbolIdentifier: String,
-        symbolName: String
-    ): ContentMappingSymbol {
-        return DatabaseMappingsManager.insertOrRetrieveSymbol(
-            this.registeredSymbolTypes[symbolType]!!,
-            null,
-            symbolIdentifier,
-            symbolName,
-            null
-        )
-    }
-
     fun insertReferenceIntoDatabase(
         referenceType: AcromantulaReferenceType,
         file: FileEntity,
-        symbol: ContentMappingSymbol,
-        owner: ContentMappingSymbol?,
+        symbolIdentifier: String,
+        ownerIdentifier: String?,
         location: String?
-    ): ContentMappingReference {
+    ) {
         if (!this.registeredReferenceTypes.containsKey(referenceType))
             throw IllegalStateException("this reference type has not been registered yet")
 
         logger.trace(
-            "insert \"${referenceType.referenceType}\" for (${symbol.identifier}) at ($location) into " +
+            "insert \"${referenceType.referenceType}\" for (${symbolIdentifier}) at ($location) into " +
                     "database."
         )
-        return DatabaseMappingsManager.insertReference(
+        DatabaseMappingsManager.insertReference(
             this.registeredReferenceTypes[referenceType]!!,
-            symbol,
-            owner,
-            file,
+            symbolIdentifier,
+            ownerIdentifier,
+            file.id,
             location
         )
     }
