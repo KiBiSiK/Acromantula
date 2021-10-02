@@ -69,7 +69,7 @@ object MapperFeature {
      * Insert a new symbol instance into the database.
      *
      * @param symbolType symbol type implementation
-     * @param file the symbol's origin file
+     * @param file the symbol's origin file, if known
      * @param symbolIdentifier a globally unique identifier for the symbol. The format of this parameter is chosen by
      * the implementation.
      * @param symbolName the local name of the symbol. The format of this parameter is chosen by the implementation.
@@ -78,7 +78,7 @@ object MapperFeature {
      */
     suspend fun insertSymbolIntoDatabase(
         symbolType: AcromantulaSymbolType,
-        file: FileEntity,
+        file: FileEntity?,
         symbolIdentifier: String,
         symbolName: String,
         location: String?
@@ -86,7 +86,7 @@ object MapperFeature {
         logger.trace("insert \"${symbolType.symbolType}\" ($symbolIdentifier) at ($location) into database.")
         DatabaseMappingsManager.insertSymbol(
             this.registeredSymbolTypes[symbolType]!!,
-            file.id,
+            file?.id,
             symbolIdentifier,
             symbolName,
             location

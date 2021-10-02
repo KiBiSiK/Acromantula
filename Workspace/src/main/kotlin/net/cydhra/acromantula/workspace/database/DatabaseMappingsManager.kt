@@ -212,16 +212,6 @@ object DatabaseMappingsManager {
         file: EntityID<Int>,
         location: String?
     ) {
-//        return this.databaseClient.transaction {
-//            ContentMappingReference.new {
-//                this.type = type
-//                this.symbol = symbol
-//                this.owner = owner
-//                this.file = file
-//                this.location = location
-//            }
-//        }
-
         this.databaseClient.insertReferenceIntoCache(type, symbolIdentifier, ownerIdentifier, file, location)
     }
 

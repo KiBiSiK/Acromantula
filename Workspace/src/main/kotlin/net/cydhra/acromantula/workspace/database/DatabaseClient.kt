@@ -18,6 +18,7 @@ import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import java.net.URL
+import java.util.*
 import javax.sql.DataSource
 
 /**
@@ -42,7 +43,7 @@ internal class DatabaseClient(private val databasePath: String) {
      * The cache must be initialized at least once and should be flushed (and thereby destroyed) after a mass
      * insertion to free up the RAM
      */
-    private lateinit var identifierCache: HashSet<Symbol>
+    private lateinit var identifierCache: Hashtable<String, Symbol>
 
     /**
      * A cache for reference insertion, so while symbols aren't being inserted yet due to caching in
@@ -78,7 +79,7 @@ internal class DatabaseClient(private val databasePath: String) {
     fun initializeSymbolCache(capacity: Int, loadFactor: Float) {
         synchronized(cacheInitialized) {
             if (!cacheInitialized) {
-                identifierCache = HashSet(capacity, loadFactor)
+                identifierCache = Hashtable(capacity, loadFactor)
                 referenceCache = HashSet(capacity * 10, loadFactor)
                 cacheInitialized = true
             } else
@@ -93,7 +94,7 @@ internal class DatabaseClient(private val databasePath: String) {
         synchronized(cacheInitialized) {
             transaction {
                 ContentMappingSymbolTable.batchInsert(
-                    data = identifierCache,
+                    data = identifierCache.values,
                     ignore = false,
                     shouldReturnGeneratedValues = false
                 ) { symbol ->
@@ -117,7 +118,7 @@ internal class DatabaseClient(private val databasePath: String) {
                     this[ContentMappingReferenceTable.location] = reference.location
                 }
             }
-            identifierCache = HashSet()
+            identifierCache = Hashtable()
             cacheInitialized = false
         }
     }
@@ -165,15 +166,22 @@ internal class DatabaseClient(private val databasePath: String) {
         name: String,
         location: String?
     ) {
-        this.identifierCache.add(
-            Symbol(
-                type,
-                file,
-                identifier,
-                name,
-                location
-            )
+        val newSymbol = Symbol(
+            type,
+            file,
+            identifier,
+            name,
+            location
         )
+        val hashCode = newSymbol.hashCode()
+        if (this.identifierCache.containsKey(identifier)) {
+            if (this.identifierCache[identifier]!!.file == null && newSymbol.file != null) {
+                this.identifierCache[identifier] = newSymbol
+            }
+        } else {
+            this.identifierCache[identifier] = newSymbol
+        }
+
     }
 
     fun insertReferenceIntoCache(
@@ -185,7 +193,11 @@ internal class DatabaseClient(private val databasePath: String) {
     ) {
         this.referenceCache.add(
             Reference(
-                type, symbolIdentifier, ownerIdentifier, file, location
+                type = type,
+                symbolIdentifier = symbolIdentifier,
+                ownerIdentifier = ownerIdentifier,
+                file = file,
+                location = location
             )
         )
     }
