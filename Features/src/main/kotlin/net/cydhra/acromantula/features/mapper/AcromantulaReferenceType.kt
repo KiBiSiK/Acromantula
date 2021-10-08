@@ -28,4 +28,9 @@ abstract class AcromantulaReferenceType(typeName: String) {
      * @param newName the new symbol name
      */
     abstract fun onUpdateSymbolName(symbol: ContentMappingSymbol, reference: ContentMappingReference, newName: String)
+
+    /**
+     * Get a string representation of a reference for output.
+     */
+    abstract fun stringRepresentation(ref: ContentMappingReference): String
 }
