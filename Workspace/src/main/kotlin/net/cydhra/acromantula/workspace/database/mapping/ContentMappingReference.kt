@@ -29,7 +29,7 @@ class ContentMappingReference(entityId: EntityID<Int>) : IntEntity(entityId) {
     private var typeEntity by ContentMappingReferenceType referencedOn ContentMappingReferenceTable.type
 
     /**
-     * The symbol type
+     * The reference type
      */
     var type: ContentMappingReferenceDelegate
         get() {
