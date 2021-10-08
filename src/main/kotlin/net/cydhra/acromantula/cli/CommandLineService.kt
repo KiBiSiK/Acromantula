@@ -138,7 +138,7 @@ object CommandLineService : Service {
 
         try {
             val parser = workspaceParser.build()
-            val result = CommandDispatcherService.dispatchCommand(parser).await()
+            val result = CommandDispatcherService.dispatchCommand(command, parser).await()
 
             result.onFailure {
                 logger.error("error during command evaluation", it)

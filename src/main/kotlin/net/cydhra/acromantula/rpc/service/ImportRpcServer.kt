@@ -10,6 +10,7 @@ class ImportRpcServer : ImportServiceGrpcKt.ImportServiceCoroutineImplBase() {
 
     override suspend fun importFile(request: ImportCommand): Empty {
         val result = CommandDispatcherService.dispatchCommand(
+            "[RPC] import ${request.fileUrl}",
             when {
                 request.directoryId != -1 ->
                     ImportCommandInterpreter(request.directoryId, request.fileUrl)

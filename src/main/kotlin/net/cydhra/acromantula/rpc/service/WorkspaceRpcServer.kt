@@ -13,10 +13,16 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
         val result =
             if (request.fileId != -1) {
-                CommandDispatcherService.dispatchCommand(ListFilesCommandInterpreter(request.fileId)).await()
+                CommandDispatcherService.dispatchCommand(
+                    "[RPC] list files",
+                    ListFilesCommandInterpreter(request.fileId)
+                )
+                    .await()
             } else {
                 CommandDispatcherService
-                    .dispatchCommand(ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })).await()
+                    .dispatchCommand("[RPC] list files",
+                        ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })
+                    ).await()
             }
 
         fun viewToProto(view: FileRepresentation): ViewEntity {

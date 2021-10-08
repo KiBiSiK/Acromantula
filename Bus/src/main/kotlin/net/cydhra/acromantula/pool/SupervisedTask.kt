@@ -56,7 +56,8 @@ class SupervisedTask<out T>(
 
         started = true
 
-        logger().debug("create fixed thread pool for $name with ${Runtime.getRuntime().availableProcessors()} threads")
+        logger()
+            .debug("create fixed thread pool for \"$name\" with ${Runtime.getRuntime().availableProcessors()} threads")
         threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
         supervisor.invokeOnCompletion { t ->

@@ -23,6 +23,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
 
     override suspend fun view(request: ViewCommand): ViewEntity {
         val result = CommandDispatcherService.dispatchCommand(
+            "[RPC] view $request",
             when {
                 request.fileId != -1 -> ViewCommandInterpreter(request.fileId, request.type)
                 request.filePath != null -> ViewCommandInterpreter(request.filePath, request.type)
@@ -44,6 +45,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
 
     override suspend fun exportView(request: ExportViewCommand): Empty {
         val result = CommandDispatcherService.dispatchCommand(
+            "[RPC] $request",
             when {
                 request.fileId != -1 -> ExportViewCommandInterpreter(
                     request.fileId, request.type, request.recursive,

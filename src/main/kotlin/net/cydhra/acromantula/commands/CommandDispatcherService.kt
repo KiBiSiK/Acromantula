@@ -22,12 +22,15 @@ object CommandDispatcherService : Service {
     /**
      * Dispatch a command that originates from anywhere at the workspace. Dispatching it will schedule the command to
      * the worker pool and attach it to the given supervisor job, so spawning child jobs can be awaited by the caller.
+     *
+     * @param taskName name of the dispatched task for displaying
      */
     fun <T> dispatchCommand(
+        taskName: String,
         commandInterpreter: WorkspaceCommandInterpreter<T>
     ): Deferred<Result<T>> {
         logger.trace("launching command handler task for $commandInterpreter")
-        return TaskScheduler.schedule(SupervisedTask("command") {
+        return TaskScheduler.schedule(SupervisedTask(taskName) {
             commandInterpreter.evaluate()
         })
     }
