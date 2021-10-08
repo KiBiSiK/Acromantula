@@ -1,8 +1,10 @@
 package net.cydhra.acromantula.workspace.database
 
 import net.cydhra.acromantula.workspace.database.mapping.*
+import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.and
 
 /**
  * Manager for mappings within the workspace. [ContentMappingReferenceType]s and [ContentMappingSymbolType]s must be
@@ -20,9 +22,9 @@ object DatabaseMappingsManager {
     private val registeredContentMappingReferenceTypes = mutableListOf<ContentMappingReferenceDelegate>()
 
     private val contentMappingSymbolDelegates =
-        mutableMapOf<ContentMappingSymbolType, ContentMappingSymbolTypeDelegate>()
+        mutableMapOf<String, ContentMappingSymbolTypeDelegate>()
     private val contentMappingReferenceDelegates =
-        mutableMapOf<ContentMappingReferenceType, ContentMappingReferenceDelegate>()
+        mutableMapOf<String, ContentMappingReferenceDelegate>()
 
     /**
      * Initialize an identifier cache with an initial capacity and load factor. This should be done before mass
@@ -57,12 +59,12 @@ object DatabaseMappingsManager {
         // breaks because the actual database entities are switched out transparently):
         registeredContentMappingSymbolTypes.forEach {
             it.symbolType = getOrInsertSymbolType(it.uniqueIdentifier)
-            contentMappingSymbolDelegates[it.symbolType] = it
+            contentMappingSymbolDelegates[it.symbolType.uniqueIdentifier] = it
         }
 
         registeredContentMappingReferenceTypes.forEach {
             it.referenceType = getOrInsertReferenceType(it.uniqueIdentifier, it.symbolType)
-            contentMappingReferenceDelegates[it.referenceType] = it
+            contentMappingReferenceDelegates[it.referenceType.uniqueIdentifier] = it
         }
     }
 
@@ -79,7 +81,7 @@ object DatabaseMappingsManager {
         val mappingSymbolTypeEntity = getOrInsertSymbolType(uniqueIdentifier)
         val mappingSymbolTypeDelegate = ContentMappingSymbolTypeDelegate(uniqueIdentifier, mappingSymbolTypeEntity)
         registeredContentMappingSymbolTypes.add(mappingSymbolTypeDelegate)
-        contentMappingSymbolDelegates[mappingSymbolTypeEntity] = mappingSymbolTypeDelegate
+        contentMappingSymbolDelegates[mappingSymbolTypeEntity.uniqueIdentifier] = mappingSymbolTypeDelegate
         return mappingSymbolTypeDelegate
     }
 
@@ -123,7 +125,7 @@ object DatabaseMappingsManager {
         val mappingReferenceTypeDelegate =
             ContentMappingReferenceDelegate(uniqueIdentifier, symbol, mappingReferenceTypeEntity)
         registeredContentMappingReferenceTypes.add(mappingReferenceTypeDelegate)
-        contentMappingReferenceDelegates[mappingReferenceTypeEntity] = mappingReferenceTypeDelegate
+        contentMappingReferenceDelegates[mappingReferenceTypeEntity.uniqueIdentifier] = mappingReferenceTypeDelegate
         return mappingReferenceTypeDelegate
     }
 
@@ -142,11 +144,13 @@ object DatabaseMappingsManager {
                 .find { ContentMappingReferenceTypeTable.identifier eq uniqueIdentifier }
 
             if (preRegisteredType.empty()) {
+                LogManager.getLogger().trace("inserting new mapping reference for $uniqueIdentifier")
                 ContentMappingReferenceType.new {
                     this.uniqueIdentifier = uniqueIdentifier
                     this.symbolType = symbol.symbolType
                 }
             } else {
+                LogManager.getLogger().trace("recovered preregistered type $uniqueIdentifier")
                 preRegisteredType.first()
             }
         }
@@ -156,14 +160,14 @@ object DatabaseMappingsManager {
      * Obtain the symbol delegate instance of the given symbol type
      */
     internal fun getSymbolDelegate(type: ContentMappingSymbolType): ContentMappingSymbolTypeDelegate {
-        return this.contentMappingSymbolDelegates[type]!!
+        return this.contentMappingSymbolDelegates[type.uniqueIdentifier]!!
     }
 
     /**
      * Obtain the reference delegate instance of the given reference type
      */
     internal fun getReferenceTypeDelegate(type: ContentMappingReferenceType): ContentMappingReferenceDelegate {
-        return this.contentMappingReferenceDelegates[type]!!
+        return this.contentMappingReferenceDelegates[type.uniqueIdentifier]!!
     }
 
     /**
@@ -213,6 +217,19 @@ object DatabaseMappingsManager {
         location: String?
     ) {
         this.databaseClient.insertReferenceIntoCache(type, symbolIdentifier, ownerIdentifier, file, location)
+    }
+
+    fun findReferences(
+        type: ContentMappingSymbolTypeDelegate,
+        symbolIdentifier: String
+    ): List<ContentMappingReference> {
+        return this.databaseClient.transaction {
+            ContentMappingReference.find {
+                ContentMappingReferenceTable.type eq type.symbolType.id and
+                        (ContentMappingReferenceTable.symbol eq symbolIdentifier)
+            }
+                .toList()
+        }
     }
 
     /**

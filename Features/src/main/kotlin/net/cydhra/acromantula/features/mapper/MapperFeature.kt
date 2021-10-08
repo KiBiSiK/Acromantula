@@ -3,12 +3,11 @@ package net.cydhra.acromantula.features.mapper
 import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
-import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceDelegate
-import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbol
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTypeDelegate
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
 import java.io.PushbackInputStream
 
@@ -56,7 +55,7 @@ object MapperFeature {
             throw IllegalStateException("the symbol type of this reference has not been registered yet")
 
         if (this.registeredReferenceTypes.containsKey(referenceType))
-            throw IllegalStateException("this reference tyoe has been registered before")
+            throw IllegalStateException("this reference type has been registered before")
 
         val delegate = DatabaseMappingsManager.registerContentMappingReferenceType(
             referenceType.referenceType,
@@ -116,12 +115,22 @@ object MapperFeature {
         )
     }
 
-    fun findSymbolsInFile(file: FileEntity): List<ContentMappingSymbol> {
-        TODO("not implemented yet")
+    fun getReferences(type: String, symbol: String): List<Pair<Int, String>> {
+        val typeDelegate = this.registeredSymbolTypes.entries
+            .filter { (symbolType, _) -> symbolType.symbolType == type }
+            .map { (_, delegate) -> delegate }
+            .firstOrNull() ?: throw IllegalArgumentException("invalid symbol type \"$type\"")
+
+        return DatabaseMappingsManager.findReferences(typeDelegate, symbol)
+            .map { ref ->
+                transaction {
+                    ref.id.value to translateReferenceType(ref.type).stringRepresentation(ref)
+                }
+            }
     }
 
-    fun findReferencesInFile(file: FileEntity): List<ContentMappingReference> {
-        TODO("not implemented yet")
+    private fun translateReferenceType(referenceDelegate: ContentMappingReferenceDelegate): AcromantulaReferenceType {
+        return this.registeredReferenceTypes.entries.find { (_, d) -> d == referenceDelegate }!!.key
     }
 
     /**
