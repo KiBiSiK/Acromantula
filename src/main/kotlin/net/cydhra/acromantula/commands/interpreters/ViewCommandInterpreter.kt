@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.view.GenerateViewFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -35,7 +34,7 @@ class ViewCommandInterpreter private constructor(
      */
     constructor(filePath: String? = null, type: String) : this(null, filePath, type)
 
-    override suspend fun evaluate(supervisor: CompletableJob): FileRepresentation? {
+    override suspend fun evaluate(): FileRepresentation? {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)

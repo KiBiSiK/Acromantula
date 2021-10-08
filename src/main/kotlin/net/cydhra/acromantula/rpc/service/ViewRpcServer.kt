@@ -22,13 +22,13 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
     }
 
     override suspend fun view(request: ViewCommand): ViewEntity {
-        val result = CommandDispatcherService.dispatchCommandSupervised(
+        val result = CommandDispatcherService.dispatchCommand(
             when {
                 request.fileId != -1 -> ViewCommandInterpreter(request.fileId, request.type)
                 request.filePath != null -> ViewCommandInterpreter(request.filePath, request.type)
                 else -> throw IllegalArgumentException("either fileId or filePath must be defined")
             }
-        )
+        ).await()
 
         result.onFailure { throw it }
 
@@ -43,7 +43,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
     }
 
     override suspend fun exportView(request: ExportViewCommand): Empty {
-        val result = CommandDispatcherService.dispatchCommandSupervised(
+        val result = CommandDispatcherService.dispatchCommand(
             when {
                 request.fileId != -1 -> ExportViewCommandInterpreter(
                     request.fileId, request.type, request.recursive,
@@ -55,7 +55,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
                 )
                 else -> throw IllegalArgumentException("either fileId or filePath must be defined")
             }
-        )
+        ).await()
 
         result.onFailure { throw it }
 

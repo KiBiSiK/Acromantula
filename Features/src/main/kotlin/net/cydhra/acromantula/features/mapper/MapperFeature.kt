@@ -1,6 +1,8 @@
 package net.cydhra.acromantula.features.mapper
 
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceDelegate
@@ -146,10 +148,10 @@ object MapperFeature {
         this.mappingFactories
             .filter { it.handles(file, inputStream) }
             .forEach {
-                logger.debug("generating [${it.name}] mappings for ${file.name}...")
+                logger.trace("generating [${it.name}] mappings for ${file.name}...")
 
                 // start the mapper and forget the deferred result
-                WorkspaceService.getWorkerPool().submit(supervisor) { it.generateMappings(file, inputStream) }.start()
+                CoroutineScope(supervisor).launch { it.generateMappings(file, inputStream) }
             }
     }
 }

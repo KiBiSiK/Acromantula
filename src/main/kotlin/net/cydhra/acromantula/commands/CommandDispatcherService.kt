@@ -1,10 +1,9 @@
 package net.cydhra.acromantula.commands
 
-import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.SupervisorJob
 import net.cydhra.acromantula.bus.Service
-import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.pool.SupervisedTask
+import net.cydhra.acromantula.pool.TaskScheduler
 import org.apache.logging.log4j.LogManager
 
 /**
@@ -25,23 +24,11 @@ object CommandDispatcherService : Service {
      * the worker pool and attach it to the given supervisor job, so spawning child jobs can be awaited by the caller.
      */
     fun <T> dispatchCommand(
-        supervisor: CompletableJob,
         commandInterpreter: WorkspaceCommandInterpreter<T>
     ): Deferred<Result<T>> {
         logger.trace("launching command handler task for $commandInterpreter")
-        return WorkspaceService.getWorkerPool().submit(supervisor) { commandInterpreter.evaluate(supervisor) }
-    }
-
-    /**
-     * Dispatch a command and await its completion, along with the completion of all child jobs that originated from
-     * this command.
-     */
-    suspend fun <T> dispatchCommandSupervised(commandInterpreter: WorkspaceCommandInterpreter<T>): Result<T> {
-        val supervisor = SupervisorJob()
-        val result = dispatchCommand(supervisor, commandInterpreter).await()
-        supervisor.complete()
-        supervisor.join()
-        logger.trace("supervised command execution finished")
-        return result
+        return TaskScheduler.schedule(SupervisedTask("command") {
+            commandInterpreter.evaluate()
+        })
     }
 }

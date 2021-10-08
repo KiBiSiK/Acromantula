@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
@@ -27,7 +26,7 @@ class ListFilesCommandInterpreter(
      */
     constructor(directoryId: Int? = null) : this(null, directoryId)
 
-    override suspend fun evaluate(supervisor: CompletableJob): List<TreeNode<FileEntity>> {
+    override suspend fun evaluate(): List<TreeNode<FileEntity>> {
         val directory = when {
             directoryId != null -> WorkspaceService.queryPath(directoryId)
             directoryPath != null -> WorkspaceService.queryPath(directoryPath)

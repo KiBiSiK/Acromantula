@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.pool.WorkerPool
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.events.ClosingWorkspaceEvent
@@ -24,11 +23,6 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     val databaseClient = DatabaseClient(databaseUrl)
 
     /**
-     * The thread pools used for work related to workspace content
-     */
-    val workerPool = WorkerPool()
-
-    /**
      * Initialize client connections, resources, etc
      */
     open fun initialize() {
@@ -41,7 +35,6 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      */
     open fun shutdown() {
         EventBroker.fireEvent(ClosingWorkspaceEvent())
-        workerPool.shutdown()
     }
 
     /**

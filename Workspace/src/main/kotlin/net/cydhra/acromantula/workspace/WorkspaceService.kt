@@ -3,7 +3,6 @@ package net.cydhra.acromantula.workspace
 import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
-import net.cydhra.acromantula.pool.WorkerPool
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
@@ -89,13 +88,6 @@ object WorkspaceService : Service {
     @Suppress("RedundantSuspendModifier")
     private suspend fun onShutdown(@Suppress("UNUSED_PARAMETER") e: ApplicationShutdownEvent) {
         this.workspaceClient.shutdown()
-    }
-
-    /**
-     * Get the common thread pool for the current workspace
-     */
-    fun getWorkerPool(): WorkerPool {
-        return workspaceClient.workerPool
     }
 
     fun loadNewWorkspace(workspaceFile: File) {

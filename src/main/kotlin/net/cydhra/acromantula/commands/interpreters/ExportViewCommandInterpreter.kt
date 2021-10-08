@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.exporter.ExporterFeature
 import net.cydhra.acromantula.features.exporter.GENERIC_EXPORTER_STRATEGY
@@ -73,7 +72,7 @@ class ExportViewCommandInterpreter private constructor(
         targetFileName: String
     ) : this(null, filePath, viewType, recursive, includeIncompatible, targetFileName)
 
-    override suspend fun evaluate(supervisor: CompletableJob) {
+    override suspend fun evaluate() {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             filePath != null -> WorkspaceService.queryPath(filePath)

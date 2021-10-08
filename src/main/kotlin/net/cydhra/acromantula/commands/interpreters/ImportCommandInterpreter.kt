@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.importer.ImporterFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -36,7 +37,7 @@ class ImportCommandInterpreter(
      */
     constructor(directoryPath: String? = null, fileUrl: String) : this(null, directoryPath, fileUrl)
 
-    override suspend fun evaluate(supervisor: CompletableJob) {
+    override suspend fun evaluate() {
         val sourceFile = try {
             // TODO how to parse URLs without blocking? Why does this block anyway?
             URL(fileUrl)
@@ -50,7 +51,11 @@ class ImportCommandInterpreter(
             else -> null
         }
 
-        ImporterFeature.importFile(supervisor, parentDirectoryEntity, sourceFile)
+        val supervisor = SupervisorJob()
+        withContext(supervisor) {
+            ImporterFeature.importFile(supervisor, parentDirectoryEntity, sourceFile)
+        }
+        supervisor.complete()
     }
 }
 
