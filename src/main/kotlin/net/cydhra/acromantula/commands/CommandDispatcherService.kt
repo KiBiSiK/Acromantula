@@ -1,6 +1,9 @@
 package net.cydhra.acromantula.commands
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.pool.SupervisedTask
 import net.cydhra.acromantula.pool.TaskScheduler
@@ -30,8 +33,19 @@ object CommandDispatcherService : Service {
         commandInterpreter: WorkspaceCommandInterpreter<T>
     ): Deferred<Result<T>> {
         logger.trace("launching command handler task for $commandInterpreter")
-        return TaskScheduler.schedule(SupervisedTask(taskName) {
-            commandInterpreter.evaluate()
-        })
+
+        return if (commandInterpreter.synchronous) {
+            CoroutineScope(Dispatchers.Unconfined).async {
+                try {
+                    Result.success(commandInterpreter.evaluate())
+                } catch (t: Throwable) {
+                    Result.failure(t)
+                }
+            }
+        } else {
+            TaskScheduler.schedule(SupervisedTask(taskName) {
+                commandInterpreter.evaluate()
+            })
+        }
     }
 }

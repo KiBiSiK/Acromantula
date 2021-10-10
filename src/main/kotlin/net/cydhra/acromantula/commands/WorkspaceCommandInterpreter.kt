@@ -7,6 +7,13 @@ package net.cydhra.acromantula.commands
 interface WorkspaceCommandInterpreter<T> {
 
     /**
+     * Whether this command interpreter should be executed by the invoking thread or asynchronous. By default, it
+     * returns `false`, indicating that the command should be executed concurrently.
+     */
+    val synchronous: Boolean
+        get() = false
+
+    /**
      * Evaluate the command. This function is suspendable and should be launched in a cached thread pool. The
      * function returns a result of the command
      */
