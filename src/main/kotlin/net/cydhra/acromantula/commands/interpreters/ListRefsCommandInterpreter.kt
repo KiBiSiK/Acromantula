@@ -13,6 +13,8 @@ class ListRefsCommandInterpreter(
     private val type: String,
     private val symbol: String
 ) : WorkspaceCommandInterpreter<List<Pair<Int, String>>> {
+    override val synchronous: Boolean = true
+
     override suspend fun evaluate(): List<Pair<Int, String>> {
         return MapperFeature.getReferences(type, symbol)
     }

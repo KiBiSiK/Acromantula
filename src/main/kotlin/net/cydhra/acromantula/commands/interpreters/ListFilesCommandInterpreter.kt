@@ -15,6 +15,7 @@ class ListFilesCommandInterpreter(
     val directoryPath: String? = null,
     val directoryId: Int? = null
 ) : WorkspaceCommandInterpreter<List<TreeNode<FileEntity>>> {
+    override val synchronous: Boolean = true
 
     /**
      * List files in the directory denoted by the given path
