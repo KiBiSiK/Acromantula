@@ -1,8 +1,7 @@
 package net.cydhra.acromantula.features.mapper
 
 import kotlinx.coroutines.CompletableJob
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceDelegate
@@ -138,7 +137,7 @@ object MapperFeature {
     /**
      * Generate mappings for a given file entity and its content
      */
-    fun startMappingTasks(supervisor: CompletableJob, file: FileEntity, content: ByteArray?) {
+    suspend fun startMappingTasks(supervisor: CompletableJob, file: FileEntity, content: ByteArray?) {
         val inputStream = if (content == null) {
             PushbackInputStream(WorkspaceService.getFileContent(file), 512)
         } else {
@@ -151,7 +150,7 @@ object MapperFeature {
                 logger.trace("generating [${it.name}] mappings for ${file.name}...")
 
                 // start the mapper and forget the deferred result
-                CoroutineScope(supervisor).launch { it.generateMappings(file, inputStream) }
+                supervisorScope { it.generateMappings(file, inputStream) }
             }
     }
 }
