@@ -173,7 +173,6 @@ internal class DatabaseClient(private val databasePath: String) {
             name,
             location
         )
-        val hashCode = newSymbol.hashCode()
         if (this.identifierCache.containsKey(identifier)) {
             if (this.identifierCache[identifier]!!.file == null && newSymbol.file != null) {
                 this.identifierCache[identifier] = newSymbol
