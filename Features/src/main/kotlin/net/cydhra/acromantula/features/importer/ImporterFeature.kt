@@ -5,7 +5,7 @@ import net.cydhra.acromantula.features.mapper.MapperFeature
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionAsync
 import java.io.File
 import java.io.InputStream
 import java.io.PushbackInputStream
@@ -82,7 +82,8 @@ object ImporterFeature {
         val (file, content) = importer.import(supervisor, parent, fileName, pushbackStream)
         logger.trace("finished importing \"$fileName\"")
 
-        transaction {
+        @Suppress("DeferredResultUnused")
+        suspendedTransactionAsync {
             if (!file.isDirectory && file.archiveEntity == null)
                 MapperFeature.startMappingTasks(supervisor, file, content)
         }
