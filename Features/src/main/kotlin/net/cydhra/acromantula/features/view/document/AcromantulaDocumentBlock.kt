@@ -171,6 +171,17 @@ class AcromantulaDocumentBlock internal constructor(
             fragmentElement.appendChild(f.generateXML())
         }
 
+        /**
+         * Append a line to this fragment
+         */
+        fun line(initializer: FragmentBuilder.() -> Unit) {
+            if (content.isNotEmpty())
+                throw IllegalStateException("a fragment must not contain both text content and child elements")
+
+            val f = FragmentBuilder(true).apply(initializer)
+            fragmentElement.appendChild(f.generateXML())
+        }
+
         override fun generateXML(): Element {
             fragmentElement.textContent = content
             if (this.line)
