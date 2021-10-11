@@ -183,9 +183,11 @@ class AcromantulaDocumentBlock internal constructor(
         }
 
         override fun generateXML(): Element {
-            fragmentElement.textContent = content
             if (this.line)
                 fragmentElement.setAttribute("line", "true")
+
+            if (content.isNotEmpty())
+                fragmentElement.textContent = content
             return fragmentElement
         }
     }
