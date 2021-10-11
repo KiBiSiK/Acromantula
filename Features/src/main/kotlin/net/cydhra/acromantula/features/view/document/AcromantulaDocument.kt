@@ -56,6 +56,10 @@ class AcromantulaDocument : DocumentNode {
     }
 
     fun finishDocument(): Document {
+        mainNode.appendChild(metaNode)
+        mainNode.appendChild(contentNode)
+        this.document.appendChild(mainNode)
+
         return this.document
     }
 }
