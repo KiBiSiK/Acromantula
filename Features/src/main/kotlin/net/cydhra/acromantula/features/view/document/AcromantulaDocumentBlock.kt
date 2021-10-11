@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.features.view.document
 
-import net.cydhra.acromantula.features.view.document.AcromantulaDocumentBlock.LineBuilder.FragmentBuilder
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -41,8 +40,8 @@ class AcromantulaDocumentBlock internal constructor(
     /**
      * DSL method to append a line to the body of a block
      */
-    fun line(initializer: LineBuilder.() -> Unit) {
-        val line = LineBuilder().apply(initializer)
+    fun line(initializer: FragmentBuilder.() -> Unit) {
+        val line = FragmentBuilder(true).apply(initializer)
         this.appendToBody(line)
     }
 
@@ -83,8 +82,8 @@ class AcromantulaDocumentBlock internal constructor(
         /**
          * DSL method to append a line to the header of a block
          */
-        fun line(initializer: LineBuilder.() -> Unit) {
-            val line = LineBuilder().apply(initializer)
+        fun line(initializer: FragmentBuilder.() -> Unit) {
+            val line = FragmentBuilder(true).apply(initializer)
             this@AcromantulaDocumentBlock.appendToHeader(line)
         }
     }
@@ -93,31 +92,66 @@ class AcromantulaDocumentBlock internal constructor(
         /**
          * DSL method to append a line to the footer of a block
          */
-        fun line(initializer: LineBuilder.() -> Unit) {
-            val line = LineBuilder().apply(initializer)
+        fun line(initializer: FragmentBuilder.() -> Unit) {
+            val line = FragmentBuilder(true).apply(initializer)
             this@AcromantulaDocumentBlock.appendToFooter(line)
         }
     }
 
-    /**
-     * A singular line in an [AcromantulaDocument]. It consists of multiple [Fragments][FragmentBuilder] and makes up
-     * part of a [AcromantulaDocumentBlock  ]
-     */
-    inner class LineBuilder : DocumentNode {
-        private val lineElement = this@AcromantulaDocumentBlock.document.createElement("line")
 
-        var designation: String
-            get() = lineElement.getAttribute("designation")
+    /**
+     * A fragment is a singular unit of uniformly formatted text with meta information for the back-end (see
+     * [designation]) and optionally context actions
+     */
+    inner class FragmentBuilder(private val line: Boolean = false) : DocumentNode {
+        private val fragmentElement = this@AcromantulaDocumentBlock.document.createElement("f")
+
+        /**
+         * Style classes. This is a space-separated list of css-like style classes.
+         */
+        var style: StyleClass
+            get() = StyleClass(fragmentElement.getAttribute("style"))
             set(value) {
-                lineElement.setAttribute("designation", value)
+                fragmentElement.setAttribute("style", value.cls)
             }
+
+        /**
+         * A designation what this fragment encodes. This is not supposed to be interpreted by the front-end, but
+         * required by the back-end to reconstruct the encoded complex file type from the document
+         */
+        var designation: String
+            get() = fragmentElement.getAttribute("designation")
+            set(value) {
+                fragmentElement.setAttribute("designation", value)
+            }
+
+        /**
+         * Textual content of this fragment. Use [unaryPlus] to easily append text.
+         */
+        var content: String = ""
+            set(value) {
+                if (fragmentElement.childNodes.length > 0)
+                    throw IllegalStateException("a fragment must not contain both text content and child elements")
+
+                field = value
+            }
+
+        /**
+         * Append textual content to this node
+         */
+        operator fun String.unaryPlus() {
+            content += this
+        }
 
         /**
          * Append a [Fragment][FragmentBuilder] to this line
          */
         fun f(initializer: FragmentBuilder.() -> Unit) {
+            if (content.isNotEmpty())
+                throw IllegalStateException("a fragment must not contain both text content and child elements")
+
             val f = FragmentBuilder().apply(initializer)
-            lineElement.appendChild(f.generateXML())
+            fragmentElement.appendChild(f.generateXML())
         }
 
         /**
@@ -125,62 +159,24 @@ class AcromantulaDocumentBlock internal constructor(
          * parameters
          */
         fun f(styleClass: StyleClass, designation: String = "", initializer: FragmentBuilder.() -> Unit) {
+            if (content.isNotEmpty())
+                throw IllegalStateException("a fragment must not contain both text content and child elements")
+
             val f = FragmentBuilder()
                 .apply {
                     this.style = styleClass
                     this.designation = designation
                 }
                 .apply(initializer)
-            lineElement.appendChild(f.generateXML())
+            fragmentElement.appendChild(f.generateXML())
         }
 
         override fun generateXML(): Element {
-            return lineElement
-        }
-
-        /**
-         * A fragment is a singular unit of uniformly formatted text with meta information for the back-end (see
-         * [designation]) and optionally context actions
-         */
-        inner class FragmentBuilder : DocumentNode {
-            private val fragmentElement = this@AcromantulaDocumentBlock.document.createElement("f")
-
-            /**
-             * Style classes. This is a space-separated list of css-like style classes.
-             * TODO: define default classes
-             */
-            var style: StyleClass
-                get() = StyleClass(fragmentElement.getAttribute("style"))
-                set(value) {
-                    fragmentElement.setAttribute("style", value.cls)
-                }
-
-            /**
-             * A designation what this fragment encodes. This is not supposed to be interpreted by the front-end, but
-             * required by the back-end to reconstruct the encoded complex file type from the document
-             */
-            var designation: String
-                get() = fragmentElement.getAttribute("designation")
-                set(value) {
-                    fragmentElement.setAttribute("designation", value)
-                }
-
-            /**
-             * Textual content of this fragment. Use [unaryPlus] to easily append text.
-             */
-            var content: String = ""
-
-            /**
-             * Append textual content to this node
-             */
-            operator fun String.unaryPlus() {
-                content += this
-            }
-
-            override fun generateXML(): Element {
-                fragmentElement.textContent = content
-                return fragmentElement
-            }
+            fragmentElement.textContent = content
+            if (this.line)
+                fragmentElement.setAttribute("line", "true")
+            return fragmentElement
         }
     }
+
 }
