@@ -26,6 +26,8 @@ class ViewCommandInterpreter private constructor(
      */
     constructor(fileEntityId: Int? = null, type: String) : this(fileEntityId, null, type)
 
+    override val synchronous: Boolean = true
+
     /**
      * Command to import files into workspace.
      *
