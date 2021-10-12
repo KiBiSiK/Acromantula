@@ -18,6 +18,7 @@ val STYLE_LABEL: StyleClass = StyleClass("label")
 
 val STYLE_PUNCTUATION: StyleClass = StyleClass("punctuation")
 val STYLE_PARENTHESIS: StyleClass = StyleClass("parenthesis")
+val STYLE_ERROR: StyleClass = StyleClass("error")
 
 operator fun StyleClass.plus(other: StyleClass): StyleClass {
     return StyleClass("${this.cls} ${other.cls}")
