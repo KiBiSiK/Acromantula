@@ -8,6 +8,7 @@ val STYLE_OPERATION: StyleClass = StyleClass("operation")
 
 val STYLE_IDENTIFIER: StyleClass = StyleClass("identifier")
 val STYLE_TYPE: StyleClass = StyleClass("type")
+val STYLE_DESCRIPTOR: StyleClass = StyleClass("descriptor")
 
 val STYLE_LITERAL = StyleClass("literal")
 val STYLE_LITERAL_STRING = STYLE_LITERAL + StyleClass("string")
