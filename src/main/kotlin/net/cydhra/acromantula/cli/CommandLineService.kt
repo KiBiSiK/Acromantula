@@ -62,6 +62,7 @@ object CommandLineService : Service {
         registerCommandParser(::QuitCommandParser, "quit", "exit")
         registerCommandParser(::ReconstructCommandParser, "reconstruct", "convert")
         registerCommandParser(::ListExportersCommandParser, "exporters", "listexporters")
+        registerCommandParser(::TransformCommandParser, "transform")
         registerCommandParser(::ListViewTypesCommandParser, "views", "viewgenerators", "listviewgenerators")
     }
 
