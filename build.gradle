@@ -7,7 +7,7 @@ buildscript {
         h2_database_version = '1.4.200' // mvcc support broke in an update (as of 10/2020). until fixed, use this ver
         jvm_target = '1.8'
         junit_version = '5.2.0'
-        log4j2_version = '2.11.1'
+        log4j2_version = '2.16.+'
         protobuf_plugin_version = '0.8.16'
         protobuf_version = '3.15.0'
         grpc_version = '1.37.+'
