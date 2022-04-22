@@ -7,7 +7,7 @@ import net.cydhra.acromantula.commands.interpreters.TransformCommandInterpreter
 import org.apache.logging.log4j.LogManager.getLogger as logger
 
 class TransformCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
-    val filePath by parser.positional("FILE", help = "file in workspace to export")
+    val filePath by parser.positional("FILE", help = "file in workspace to apply transformation")
 
     val transformer by parser.positional("TRANSFORMER", help = "transformer to use")
 
