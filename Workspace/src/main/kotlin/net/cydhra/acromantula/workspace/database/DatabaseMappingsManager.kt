@@ -232,6 +232,12 @@ object DatabaseMappingsManager {
         }
     }
 
+    fun updateSymbolName(symbol: ContentMappingSymbol, newName: String) {
+        this.databaseClient.transaction {
+            symbol.name = newName
+        }
+    }
+
     /**
      * Execute a transaction within the current database.
      */
