@@ -16,7 +16,7 @@ class ListRefsCommandInterpreter(
     override val synchronous: Boolean = true
 
     override suspend fun evaluate(): List<Pair<Int, String>> {
-        return MapperFeature.getReferences(type, symbol)
+        return MapperFeature.getReferencesRepresentation(type, symbol)
     }
 }
 

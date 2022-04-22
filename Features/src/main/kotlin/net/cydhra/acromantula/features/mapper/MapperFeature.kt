@@ -4,7 +4,9 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.supervisorScope
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReferenceDelegate
+import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbol
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingSymbolTypeDelegate
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
@@ -116,18 +118,37 @@ object MapperFeature {
         )
     }
 
-    fun getReferences(type: String, symbol: String): List<Pair<Int, String>> {
+    /**
+     * Get a list of references represented by a database id and a display name. This method is intended for user
+     * interaction. Use [getReferences] and its overloaded versions instead to get actual database entities
+     */
+    fun getReferencesRepresentation(type: String, symbol: String): List<Pair<Int, String>> {
         val typeDelegate = this.registeredSymbolTypes.entries
             .filter { (symbolType, _) -> symbolType.symbolType == type }
             .map { (_, delegate) -> delegate }
             .firstOrNull() ?: throw IllegalArgumentException("invalid symbol type \"$type\"")
 
-        return DatabaseMappingsManager.findReferences(typeDelegate, symbol)
-            .map { ref ->
-                transaction {
-                    ref.id.value to translateReferenceType(ref.type).stringRepresentation(ref)
-                }
+        return getReferences(typeDelegate, symbol).map { ref ->
+            transaction {
+                ref.id.value to translateReferenceType(ref.type).stringRepresentation(ref)
             }
+        }
+    }
+
+    /**
+     * Get all references to the given symbol
+     *
+     * @param symbol content mapping symbol
+     */
+    fun getReferences(symbol: ContentMappingSymbol): List<ContentMappingReference> {
+        return getReferences(symbol.type, symbol.name)
+    }
+
+    /**
+     * Get all references to a symbol using the symbol type and its name
+     */
+    fun getReferences(typeDelegate: ContentMappingSymbolTypeDelegate, symbol: String): List<ContentMappingReference> {
+        return DatabaseMappingsManager.findReferences(typeDelegate, symbol)
     }
 
     private fun translateReferenceType(referenceDelegate: ContentMappingReferenceDelegate): AcromantulaReferenceType {
