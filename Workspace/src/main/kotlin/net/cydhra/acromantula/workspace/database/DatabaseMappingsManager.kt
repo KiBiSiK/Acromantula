@@ -239,10 +239,7 @@ object DatabaseMappingsManager {
         symbolIdentifier: String
     ): List<ContentMappingReference> {
         return this.databaseClient.transaction {
-            ContentMappingReference.find {
-                ContentMappingReferenceTable.type eq type.symbolType.id and
-                        (ContentMappingReferenceTable.symbol eq symbolIdentifier)
-            }
+            ContentMappingReference.find { ContentMappingReferenceTable.symbol eq symbolIdentifier }
                 .toList()
         }
     }
