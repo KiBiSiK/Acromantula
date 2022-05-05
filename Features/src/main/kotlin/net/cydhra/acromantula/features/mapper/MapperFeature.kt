@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.features.mapper
 
+import com.google.common.collect.HashBiMap
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -26,8 +27,7 @@ object MapperFeature {
     private val registeredSymbolTypes =
         mutableMapOf<AcromantulaSymbolType, ContentMappingSymbolTypeDelegate>()
 
-    private val registeredReferenceTypes =
-        mutableMapOf<AcromantulaReferenceType, ContentMappingReferenceDelegate>()
+    private val registeredReferenceTypes = HashBiMap.create<AcromantulaReferenceType, ContentMappingReferenceDelegate>()
 
     /**
      * Register a factory to generate mappings
@@ -204,5 +204,12 @@ object MapperFeature {
                 // start the mapper and forget the deferred result
                 withContext(supervisor) { it.generateMappings(file, inputStream) }
             }
+    }
+
+    /**
+     * Get a [AcromantulaReferenceType] from a raw [ContentMappingReferenceDelegate]
+     */
+    fun getReferenceType(typeDelegate: ContentMappingReferenceDelegate): AcromantulaReferenceType {
+        return registeredReferenceTypes.inverse()[typeDelegate]!!
     }
 }
