@@ -21,7 +21,9 @@ abstract class AcromantulaReferenceType(typeName: String) {
     val referenceType = typeName
 
     /**
-     * Called before a symbol is renamed so the references to the symbol in affected files can be updated.
+     * To be called before a symbol is renamed so the references to the symbol in affected files can be updated. This
+     * method is not actually called by the mapper feature, as the order of operations is implementation-specific.
+     * This means the symbol being renamed is responsible to call this method for all its references
      *
      * @param symbol the symbol that is being renamed
      * @param reference the reference that is to be updated
