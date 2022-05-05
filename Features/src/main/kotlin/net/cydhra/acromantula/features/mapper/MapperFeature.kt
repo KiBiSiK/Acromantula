@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.features.mapper
 
 import kotlinx.coroutines.CompletableJob
-import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.database.mapping.ContentMappingReference
@@ -171,7 +171,7 @@ object MapperFeature {
                 logger.trace("generating [${it.name}] mappings for ${file.name}...")
 
                 // start the mapper and forget the deferred result
-                supervisorScope { it.generateMappings(file, inputStream) }
+                withContext(supervisor) { it.generateMappings(file, inputStream) }
             }
     }
 }
