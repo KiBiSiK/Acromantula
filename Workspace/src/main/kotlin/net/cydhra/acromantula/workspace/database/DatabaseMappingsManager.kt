@@ -229,7 +229,7 @@ object DatabaseMappingsManager {
         return this.databaseClient.transaction {
             ContentMappingSymbol.find {
                 ContentMappingSymbolTable.type eq type.symbolType.id and
-                        (ContentMappingSymbolTable.name eq symbolIdentifier)
+                        (ContentMappingSymbolTable.id eq symbolIdentifier)
             }.firstOrNull()
         }
     }
