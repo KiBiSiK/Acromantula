@@ -60,7 +60,9 @@ object ImporterFeature {
             return
         }
 
-        importFile(supervisor, parent, fileName, fileStream)
+        fileStream.use {
+            importFile(supervisor, parent, fileName, fileStream)
+        }
     }
 
     /**
