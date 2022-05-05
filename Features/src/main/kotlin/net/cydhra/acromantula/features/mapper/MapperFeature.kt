@@ -151,6 +151,37 @@ object MapperFeature {
         return DatabaseMappingsManager.findReferences(typeDelegate, symbol)
     }
 
+    /**
+     * Remap a symbol to a new identifier and update all its references in the process
+     *
+     * @param type symbol type identifier as defined in [AcromantulaSymbolType.symbolType]
+     * @param symbolIdentifier current symbol name
+     * @param newIdentifier new symbol name (must be unique within the database)
+     */
+    fun remapSymbol(type: String, symbolIdentifier: String, newIdentifier: String) {
+        val acromantulaSymbol = this.registeredSymbolTypes.keys.find { it.symbolType == type }
+        require(acromantulaSymbol != null) { "symbol type \"$type\" does not exist" }
+
+        remapSymbol(acromantulaSymbol, symbolIdentifier, newIdentifier)
+    }
+
+    /**
+     * Remap a symbol to a new identifier and update all its references in the process
+     *
+     * @param symbolType symbol type
+     * @param symbolIdentifier current symbol name
+     * @param newIdentifier new symbol name (must be unique within the database)
+     */
+    fun remapSymbol(symbolType: AcromantulaSymbolType, symbolIdentifier: String, newIdentifier: String) {
+        require(symbolType.doesSupportRenaming) { "symbol type \"${symbolType.symbolType}\" does not support renaming" }
+
+        val symbolEntity = DatabaseMappingsManager.findSymbol(registeredSymbolTypes[symbolType]!!, symbolIdentifier)
+        require(symbolEntity != null) { "symbol \"$symbolIdentifier\" does not exist" }
+
+        logger.debug("renaming $symbolEntity to \"$newIdentifier\"")
+        symbolType.onUpdateName(symbolEntity, newIdentifier)
+    }
+
     private fun translateReferenceType(referenceDelegate: ContentMappingReferenceDelegate): AcromantulaReferenceType {
         return this.registeredReferenceTypes.entries.find { (_, d) -> d == referenceDelegate }!!.key
     }

@@ -219,6 +219,21 @@ object DatabaseMappingsManager {
         this.databaseClient.insertReferenceIntoCache(type, symbolIdentifier, ownerIdentifier, file, location)
     }
 
+    /**
+     * Retrieve a database entity for the given symbol identifier
+     */
+    fun findSymbol(
+        type: ContentMappingSymbolTypeDelegate,
+        symbolIdentifier: String
+    ): ContentMappingSymbol? {
+        return this.databaseClient.transaction {
+            ContentMappingSymbol.find {
+                ContentMappingSymbolTable.type eq type.symbolType.id and
+                        (ContentMappingSymbolTable.name eq symbolIdentifier)
+            }.firstOrNull()
+        }
+    }
+
     fun findReferences(
         type: ContentMappingSymbolTypeDelegate,
         symbolIdentifier: String
