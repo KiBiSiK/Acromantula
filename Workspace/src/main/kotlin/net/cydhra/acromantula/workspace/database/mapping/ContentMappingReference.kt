@@ -6,12 +6,17 @@ import net.cydhra.acromantula.workspace.filesystem.FileTable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.ReferenceOption
 
 object ContentMappingReferenceTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val type = reference("type", ContentMappingReferenceTypeTable)
 
     // the referenced symbol
-    val symbol = reference("symbol", ContentMappingSymbolTable)
+    val symbol = reference(
+        "symbol", ContentMappingSymbolTable,
+        onUpdate = ReferenceOption.CASCADE,
+        onDelete = ReferenceOption.RESTRICT
+    )
 
     val file = reference("file", FileTable)
 
