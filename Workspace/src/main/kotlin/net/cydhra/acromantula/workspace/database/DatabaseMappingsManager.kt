@@ -250,6 +250,12 @@ object DatabaseMappingsManager {
         }
     }
 
+    fun updateSymbolIdentifier(symbol: ContentMappingSymbol, identifier: String) {
+        this.databaseClient.transaction {
+            symbol.identifier = EntityID(identifier, ContentMappingSymbolTable)
+        }
+    }
+
     /**
      * Execute a transaction within the current database.
      */
