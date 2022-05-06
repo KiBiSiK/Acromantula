@@ -111,8 +111,9 @@ internal class DatabaseClient(private val databasePath: String) {
                     shouldReturnGeneratedValues = false
                 ) { reference ->
                     this[ContentMappingReferenceTable.symbol] = reference.symbolIdentifier
-//                    if (reference.ownerIdentifier != null)
-//                        this[ContentMappingReferenceTable.owner] = reference.ownerIdentifier
+                    if (reference.ownerIdentifier != null)
+                        this[ContentMappingReferenceTable.owner] =
+                            EntityID(reference.ownerIdentifier, ContentMappingSymbolTable)
                     this[ContentMappingReferenceTable.type] = reference.type.referenceType.id
                     this[ContentMappingReferenceTable.file] = reference.file
                     this[ContentMappingReferenceTable.location] = reference.location
