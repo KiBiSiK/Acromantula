@@ -23,6 +23,10 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         this.workspaceFileSystem.updateResource(fileEntity, content)
     }
 
+    override fun renameFile(fileEntity: FileEntity, newName: String) {
+        this.workspaceFileSystem.renameResource(fileEntity, newName)
+    }
+
     override fun downloadFile(fileEntity: FileEntity): InputStream {
         return this.workspaceFileSystem.openResource(fileEntity)
     }

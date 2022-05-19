@@ -163,6 +163,12 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         EventBroker.fireEvent(UpdatedResourceEvent(file))
     }
 
+    fun renameResource(fileEntity: FileEntity, newName: String) {
+        this.databaseClient.transaction {
+            fileEntity.name = newName
+        }
+    }
+
     /**
      * Delete a resource's content from workspace. Does nothing if the resource did not exist.
      *

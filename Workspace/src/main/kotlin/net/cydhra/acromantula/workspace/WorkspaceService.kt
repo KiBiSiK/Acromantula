@@ -160,6 +160,17 @@ object WorkspaceService : Service {
     }
 
     /**
+     * Rename a file in workspace. This method cannot move the file.
+     *
+     * @param name unique file path suffix (see [queryPath])
+     * @param newName new file name (without the path, only the name)
+     */
+    fun renameFileEntry(name: String, newName: String) {
+        val fileEntity = queryPath(name)
+        this.workspaceClient.renameFile(fileEntity, newName)
+    }
+
+    /**
      * Upload the binary data of a file representation into the workspace to cache it for later access. It will be
      * automatically deleted when the reference file changes //TODO
      *

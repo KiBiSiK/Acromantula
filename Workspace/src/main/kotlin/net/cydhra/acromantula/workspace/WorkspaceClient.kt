@@ -51,6 +51,11 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     abstract fun updateFile(fileEntity: FileEntity, content: ByteArray)
 
     /**
+     * Rename a file. Does not move the file in the directory hierarchy.
+     */
+    abstract fun renameFile(fileEntity: FileEntity, newName: String)
+
+    /**
      * Download a file from the workspace. Returns the binary contents of the file as an input stream
      */
     abstract fun downloadFile(fileEntity: FileEntity): InputStream
@@ -74,7 +79,6 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      *  input stream
      */
     abstract fun downloadRepresentation(representation: FileRepresentation): InputStream
-
     /**
      * Get an URL that grants direct file access onto a file in workspace
      *
