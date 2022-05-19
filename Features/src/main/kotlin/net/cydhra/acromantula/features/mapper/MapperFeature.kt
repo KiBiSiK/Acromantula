@@ -178,7 +178,7 @@ object MapperFeature {
         val symbolEntity = DatabaseMappingsManager.findSymbol(registeredSymbolTypes[symbolType]!!, symbolIdentifier)
         require(symbolEntity != null) { "symbol \"$symbolIdentifier\" does not exist" }
 
-        logger.debug("renaming $symbolEntity to \"$newIdentifier\"")
+        logger.debug("renaming ${symbolEntity.name} to \"$newIdentifier\"")
         symbolType.onUpdateName(symbolEntity, newIdentifier)
     }
 

@@ -21,7 +21,12 @@ object ContentMappingReferenceTable : org.jetbrains.exposed.dao.id.IntIdTable() 
     val file = reference("file", FileTable)
 
     // an optional symbol that is the hierarchical owner of the reference. If this does not apply, it is null
-    val owner = reference("owner", ContentMappingSymbolTable).nullable()
+    val owner = reference(
+        "owner",
+        ContentMappingSymbolTable,
+        onUpdate = ReferenceOption.CASCADE,
+        onDelete = ReferenceOption.RESTRICT
+    ).nullable()
 
     // an unstructured hint about the precise location of the reference, so it can be used by tools
     val location = varchar("location", Short.MAX_VALUE - 1).nullable()
