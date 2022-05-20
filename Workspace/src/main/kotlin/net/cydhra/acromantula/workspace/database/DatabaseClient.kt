@@ -11,10 +11,10 @@ import net.cydhra.acromantula.workspace.filesystem.IndexMetaDatumTable
 import org.apache.logging.log4j.LogManager
 import org.h2.jdbcx.JdbcDataSource
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.statements.Statement
+import org.jetbrains.exposed.sql.statements.StatementType
+import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import java.net.URL
@@ -137,24 +137,33 @@ internal class DatabaseClient(private val databasePath: String) {
      */
     fun directQuery(query: String): List<List<String>> {
         return this.transaction {
-            database.transactionManager.currentOrNull()!!.exec(query) { resultSet ->
-                val columnCount = resultSet.metaData.columnCount
-                val resultList = mutableListOf<List<String>>()
+            database.transactionManager.currentOrNull()!!.exec(
+                object : Statement<List<List<String>>>(StatementType.SELECT, emptyList()) {
+                    override fun PreparedStatementApi.executeInternal(transaction: Transaction): List<List<String>> {
+                        return executeQuery().use { resultSet ->
+                            val columnCount = resultSet.metaData.columnCount
+                            val resultList = mutableListOf<List<String>>()
 
-                (1..columnCount)
-                    .map { resultSet.metaData.getColumnName(it) }
-                    .toList()
-                    .also(resultList::add)
+                            (1..columnCount)
+                                .map { resultSet.metaData.getColumnName(it) }
+                                .toList()
+                                .also(resultList::add)
 
-                while (resultSet.next()) {
-                    (1..columnCount)
-                        .map { resultSet.getObject(it)?.toString() ?: "null" }
-                        .toList()
-                        .also(resultList::add)
-                }
+                            while (resultSet.next()) {
+                                (1..columnCount)
+                                    .map { resultSet.getObject(it)?.toString() ?: "null" }
+                                    .toList()
+                                    .also(resultList::add)
+                            }
 
-                resultList
-            }
+                            resultList
+                        }
+                    }
+
+                    override fun prepareSQL(transaction: Transaction): String = query
+
+                    override fun arguments(): Iterable<Iterable<Pair<IColumnType, Any?>>> = listOf()
+                })
         }!!
     }
 
