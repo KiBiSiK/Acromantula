@@ -9,7 +9,6 @@ import net.cydhra.acromantula.workspace.filesystem.ArchiveTable
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.filesystem.IndexMetaDatumTable
 import org.apache.logging.log4j.LogManager
-import org.h2.jdbcx.JdbcDataSource
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.Statement
@@ -17,6 +16,7 @@ import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
+import org.sqlite.SQLiteDataSource
 import java.net.URL
 import java.util.*
 import javax.sql.DataSource
@@ -54,9 +54,9 @@ internal class DatabaseClient(private val databasePath: String) {
     private var cacheInitialized: Boolean = false
 
     fun connect() {
-        dataSource = JdbcDataSource()
+        dataSource = SQLiteDataSource()
             .also {
-                it.setURL("jdbc:h2:$databasePath;DB_CLOSE_DELAY=10")
+                it.url = "jdbc:sqlite:$databasePath"
             }
 
         database = Database.connect(dataSource)
