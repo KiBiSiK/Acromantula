@@ -4,9 +4,7 @@ import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.ProtoReflectionService
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
-import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.rpc.service.*
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
@@ -16,9 +14,7 @@ import java.util.concurrent.TimeUnit
  * Server that translates remote procedure calls into command invocations.
  * TODO: report back command results to caller
  */
-object RemoteProcedureService : Service {
-    override val name: String = "RPC Server"
-
+object RemoteProcedureService {
     private val logger = LogManager.getLogger()
 
     /**
@@ -28,10 +24,9 @@ object RemoteProcedureService : Service {
 
     private lateinit var server: Server
 
-    override suspend fun initialize() {
+    suspend fun initialize() {
         logger.info("running RPC server...")
 
-        EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
 
         server = ServerBuilder.forPort(26666)
@@ -45,8 +40,7 @@ object RemoteProcedureService : Service {
             .build()
     }
 
-    @Suppress("RedundantSuspendModifier")
-    private suspend fun onStartUp(@Suppress("UNUSED_PARAMETER") event: ApplicationStartupEvent) {
+    fun onStartUp() {
         server.start()
         logger.info("rpc service listening for clients...")
     }

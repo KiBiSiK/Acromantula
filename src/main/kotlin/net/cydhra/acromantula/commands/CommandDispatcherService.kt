@@ -4,7 +4,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.pool.SupervisedTask
 import net.cydhra.acromantula.pool.TaskScheduler
 import org.apache.logging.log4j.LogManager
@@ -12,11 +11,9 @@ import org.apache.logging.log4j.LogManager
 /**
  *
  */
-object CommandDispatcherService : Service {
+object CommandDispatcherService {
 
-    override val name: String = "command dispatcher"
-
-    override suspend fun initialize() {
+    fun initialize() {
 
     }
 

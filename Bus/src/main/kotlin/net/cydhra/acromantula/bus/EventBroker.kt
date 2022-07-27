@@ -13,15 +13,9 @@ import kotlin.reflect.KClass
  * dispatched. Components should not talk to each other but only to the broker using events. The broker
  * handles service and listener registration thread-safe and dispatches events in parallel.
  */
-object EventBroker : Service {
-    override val name: String = "event-broker"
-
+object EventBroker {
     private val logger = LogManager.getLogger()
 
-    /**
-     * A list of all services that are registered at the application
-     */
-    private val registeredServices = mutableListOf<Service>()
 
     /**
      * A map that maps registered event listeners to their registering service. The listeners are mapped to their
@@ -60,26 +54,8 @@ object EventBroker : Service {
         logger.error("error during event dispatch", exception)
     }
 
-    override suspend fun initialize() {
+    suspend fun initialize() {
         registerEventListener(ApplicationShutdownEvent::class, ::shutdown)
-    }
-
-    /**
-     * Register a new service at the system. The service is initialized before it is registered. As soon as it is
-     * registered, event dispatching considers the service.
-     */
-    suspend fun registerService(service: Service) {
-        logger.debug("attempting to register service: ${service.name}")
-        service.initialize()
-
-        withContext(singleThreadContext) {
-            try {
-                registeredServices += service
-                logger.info("registered service: ${service.name}")
-            } catch (t: Throwable) {
-                logger.error("error during service registration", t)
-            }
-        }
     }
 
     /**

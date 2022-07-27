@@ -4,9 +4,7 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.ShowHelpException
 import kotlinx.coroutines.runBlocking
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
-import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import org.apache.logging.log4j.LogManager
@@ -22,9 +20,7 @@ import kotlin.streams.toList
  * This service reads from standard in and parses the input as commands that are then dispatched at the
  * [CommandDispatcherService].
  */
-object CommandLineService : Service {
-    override val name: String = "CLI"
-
+object CommandLineService {
     private val logger = LogManager.getLogger()
 
     @Volatile
@@ -47,8 +43,7 @@ object CommandLineService : Service {
      */
     private val executor = Executors.newSingleThreadExecutor()
 
-    override suspend fun initialize() {
-        EventBroker.registerEventListener(ApplicationStartupEvent::class, this::onStartUp)
+    suspend fun initialize() {
         EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
 
         registerCommandParser(::ListCommandsCommandParser, "commands", "list")
@@ -67,8 +62,7 @@ object CommandLineService : Service {
         registerCommandParser(::ListViewTypesCommandParser, "views", "viewgenerators", "listviewgenerators")
     }
 
-    @Suppress("RedundantSuspendModifier")
-    private suspend fun onStartUp(@Suppress("UNUSED_PARAMETER") event: ApplicationStartupEvent) {
+    fun onStartUp() {
         this.executor.submit {
             commandLineParser()
         }

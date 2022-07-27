@@ -2,7 +2,6 @@ package net.cydhra.acromantula
 
 import kotlinx.coroutines.runBlocking
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.events.ApplicationStartupEvent
 import net.cydhra.acromantula.cli.CommandLineService
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.config.ConfigurationService
@@ -12,14 +11,15 @@ import net.cydhra.acromantula.workspace.WorkspaceService
 
 fun main() {
     runBlocking {
-        EventBroker.registerService(EventBroker)
-        EventBroker.registerService(ConfigurationService)
-        EventBroker.registerService(WorkspaceService)
-        EventBroker.registerService(CommandDispatcherService)
-        EventBroker.registerService(RemoteProcedureService)
-        EventBroker.registerService(CommandLineService)
-        EventBroker.registerService(PluginService)
+        EventBroker.initialize()
+        ConfigurationService.initialize()
+        WorkspaceService.initialize()
+        CommandDispatcherService.initialize()
+        RemoteProcedureService.initialize()
+        CommandLineService.initialize()
+        PluginService.initialize()
 
-        EventBroker.fireEvent(ApplicationStartupEvent())
+        RemoteProcedureService.onStartUp()
+        CommandLineService.onStartUp()
     }
 }

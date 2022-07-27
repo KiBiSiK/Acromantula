@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.Service
 import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
@@ -62,10 +61,7 @@ private val FILE_TREE_QUERY_RELATIVE_CLAUSE = "parent = (?)"
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
  * from here.
  */
-object WorkspaceService : Service {
-
-    override val name: String = "workspace-service"
-
+object WorkspaceService {
     private val logger = LogManager.getLogger()
 
     /**
@@ -76,7 +72,7 @@ object WorkspaceService : Service {
     /**
      * Called upon application startup. Load default workspace and subscribe to events if necessary.
      */
-    override suspend fun initialize() {
+    suspend fun initialize() {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
 

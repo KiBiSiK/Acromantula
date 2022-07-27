@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.plugins
 
-import net.cydhra.acromantula.bus.Service
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*
@@ -8,9 +7,7 @@ import java.util.*
 /**
  * Facade service for the plugin sub-system. Plugin loading and management is delegated from here.
  */
-object PluginService : Service {
-
-    override val name: String = "plugin-service"
+object PluginService {
 
     /**
      * The folder where plugin JARs are located
@@ -25,7 +22,7 @@ object PluginService : Service {
     /**
      * Initialize all resources.
      */
-    override suspend fun initialize() {
+    fun initialize() {
         val classLoader = URLClassLoader(
             (pluginsFolder.listFiles() ?: emptyArray())
                 .filter { it.name.endsWith("jar") }
