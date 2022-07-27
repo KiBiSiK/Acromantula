@@ -11,12 +11,12 @@ fun main() {
     ConfigurationService.initialize()
     WorkspaceService.initialize()
     CommandDispatcherService.initialize()
-    RemoteProcedureService.initialize()
     CommandLineService.initialize()
     PluginService.initialize()
+    RemoteProcedureService.initialize()
 
-    RemoteProcedureService.onStartUp()
     CommandLineService.onStartUp()
+    RemoteProcedureService.onStartUp()
 }
 
 /**
