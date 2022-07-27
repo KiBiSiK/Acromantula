@@ -1,10 +1,7 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
-import net.cydhra.acromantula.workspace.events.ClosingWorkspaceEvent
-import net.cydhra.acromantula.workspace.events.DatabaseConnectedEvent
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.InputStream
 import java.io.OutputStream
@@ -27,14 +24,13 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      */
     open fun initialize() {
         databaseClient.connect()
-        EventBroker.fireEvent(DatabaseConnectedEvent())
     }
 
     /**
      * Shutdown connections, release resources and terminate thread pools.
      */
     open fun shutdown() {
-        EventBroker.fireEvent(ClosingWorkspaceEvent())
+
     }
 
     /**
