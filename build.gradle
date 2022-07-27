@@ -106,7 +106,6 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
 
     // modules
-    api project(':Bus')
     api project(':Workspace')
     api project(':Features')
 

@@ -1,5 +1,4 @@
 rootProject.name = 'acromantula'
 
-include 'Bus'
 include 'Workspace'
 include 'Features'

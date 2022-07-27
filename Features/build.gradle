@@ -1,5 +1,4 @@
 dependencies {
-    implementation project(':Bus')
     implementation project(':Workspace')
 
     // logging
