@@ -1,14 +1,10 @@
 package net.cydhra.acromantula.workspace
 
 import com.google.gson.GsonBuilder
-import net.cydhra.acromantula.bus.EventBroker
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.filesystem.events.AddedResourceEvent
-import net.cydhra.acromantula.workspace.filesystem.events.DeletedResourceEvent
-import net.cydhra.acromantula.workspace.filesystem.events.UpdatedResourceEvent
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -90,7 +86,6 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         }
 
         saveIndex()
-        EventBroker.fireEvent(AddedResourceEvent(file, content))
     }
 
     /**
@@ -159,8 +154,6 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
 
             FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq file.id.value }
         }
-
-        EventBroker.fireEvent(UpdatedResourceEvent(file))
     }
 
     fun renameResource(fileEntity: FileEntity, newName: String) {
@@ -196,7 +189,6 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
             }
 
         }
-        EventBroker.fireEvent(DeletedResourceEvent(file))
     }
 
     /**
