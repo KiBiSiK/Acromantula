@@ -2,17 +2,10 @@
 
 import com.google.protobuf.Empty
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.runBlocking
-import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.proto.Bus
 import net.cydhra.acromantula.proto.BusServiceGrpcKt
-import net.cydhra.acromantula.proto.bus_ApplicationShutdownEvent
-import net.cydhra.acromantula.proto.bus_Event
 
  class BusRpcServer : BusServiceGrpcKt.BusServiceCoroutineImplBase() {
 
@@ -24,21 +17,7 @@ import net.cydhra.acromantula.proto.bus_Event
          // coroutines in the EventBroker suspend and never wake up. However, since the coroutines suspend without
          // blocking the thread, the EventBroker should retain functionality.
          return callbackFlow {
-             val applicationShutdownListener: suspend (ApplicationShutdownEvent) -> Unit = {
-                offer(bus_Event {
-                    this.shutdownEvent = bus_ApplicationShutdownEvent {}
-                })
-                this.cancel("graceful shutdown")
-            }
 
-            EventBroker.registerEventListener(ApplicationShutdownEvent::class, applicationShutdownListener)
-
-            awaitClose {
-                // unregister the listeners of this flow, if the flow is closed (most likely by the client)
-                runBlocking {
-                    EventBroker.unregisterEventListener(ApplicationShutdownEvent::class, applicationShutdownListener)
-                }
-            }
-        }
+         }
     }
 }

@@ -3,8 +3,6 @@ package net.cydhra.acromantula.cli
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.ShowHelpException
 import kotlinx.coroutines.runBlocking
-import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.cli.parsers.*
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import org.apache.logging.log4j.LogManager
@@ -43,9 +41,7 @@ object CommandLineService {
      */
     private val executor = Executors.newSingleThreadExecutor()
 
-    suspend fun initialize() {
-        EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
-
+    fun initialize() {
         registerCommandParser(::ListCommandsCommandParser, "commands", "list")
         registerCommandParser(::ImportCommandParser, "import")
         registerCommandParser(::ExportCommandParser, "export")
@@ -68,8 +64,7 @@ object CommandLineService {
         }
     }
 
-    @Suppress("RedundantSuspendModifier")
-    private suspend fun onShutdown(@Suppress("UNUSED_PARAMETER") event: ApplicationShutdownEvent) {
+    fun onShutdown() {
         this.running = false
 
         this.executor.shutdown()

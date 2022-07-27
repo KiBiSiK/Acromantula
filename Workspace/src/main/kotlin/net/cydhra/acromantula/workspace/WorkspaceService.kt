@@ -1,7 +1,5 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
@@ -72,17 +70,14 @@ object WorkspaceService {
     /**
      * Called upon application startup. Load default workspace and subscribe to events if necessary.
      */
-    suspend fun initialize() {
+    fun initialize() {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
 
         DatabaseMappingsManager.setActiveDatabase(workspaceClient.databaseClient)
-
-        EventBroker.registerEventListener(ApplicationShutdownEvent::class, ::onShutdown)
     }
 
-    @Suppress("RedundantSuspendModifier")
-    private suspend fun onShutdown(@Suppress("UNUSED_PARAMETER") e: ApplicationShutdownEvent) {
+    fun onShutdown() {
         this.workspaceClient.shutdown()
     }
 

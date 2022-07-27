@@ -1,8 +1,7 @@
 package net.cydhra.acromantula.commands.interpreters
 
-import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
+import net.cydhra.acromantula.shutdownServer
 import org.apache.logging.log4j.LogManager.getLogger as logger
 
 /**
@@ -14,7 +13,7 @@ class QuitCommandInterpreter : WorkspaceCommandInterpreter<Unit> {
 
     override suspend fun evaluate() {
         logger().info("quitting...")
-        EventBroker.fireEvent(ApplicationShutdownEvent())
+        shutdownServer()
     }
 }
 

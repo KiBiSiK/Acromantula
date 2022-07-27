@@ -3,8 +3,6 @@ package net.cydhra.acromantula.rpc
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.ProtoReflectionService
-import net.cydhra.acromantula.bus.EventBroker
-import net.cydhra.acromantula.bus.events.ApplicationShutdownEvent
 import net.cydhra.acromantula.rpc.service.*
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
@@ -24,10 +22,8 @@ object RemoteProcedureService {
 
     private lateinit var server: Server
 
-    suspend fun initialize() {
+    fun initialize() {
         logger.info("running RPC server...")
-
-        EventBroker.registerEventListener(ApplicationShutdownEvent::class, this::onShutdown)
 
         server = ServerBuilder.forPort(26666)
             .executor(this.executor)
@@ -45,7 +41,7 @@ object RemoteProcedureService {
         logger.info("rpc service listening for clients...")
     }
 
-    private suspend fun onShutdown(@Suppress("UNUSED_PARAMETER") event: ApplicationShutdownEvent) {
+    fun onShutdown() {
         logger.info("shut down rpc server and its thread pool (timeout 60 seconds...)")
         server.shutdown()
         executor.shutdown()
