@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
@@ -73,8 +72,6 @@ object WorkspaceService {
     fun initialize() {
         workspaceClient = LocalWorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
-
-        DatabaseMappingsManager.setActiveDatabase(workspaceClient.databaseClient)
     }
 
     fun onShutdown() {
@@ -90,9 +87,6 @@ object WorkspaceService {
 
         logger.info("initializing new workspace...")
         workspaceClient.initialize()
-
-        logger.info("updating database manager...")
-        DatabaseMappingsManager.setActiveDatabase(workspaceClient.databaseClient)
     }
 
     /**

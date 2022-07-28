@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.commands.interpreters
 
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
-import net.cydhra.acromantula.features.mapper.MapperFeature
 
 /**
  * Command to rename symbols in the workspace.
@@ -17,7 +16,8 @@ class RenameCommandInterpreter constructor(
 ) : WorkspaceCommandInterpreter<Unit> {
 
     override suspend fun evaluate() {
-        MapperFeature.remapSymbol(symbolType, symbolIdentifier, newIdentifier)
+//        MapperFeature.remapSymbol(symbolType, symbolIdentifier, newIdentifier)
+        TODO("implement symbol remapping")
     }
 }
 

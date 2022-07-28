@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.commands.interpreters
 
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
-import net.cydhra.acromantula.features.mapper.MapperFeature
 
 /**
  * Command to list all references to a given symbol.
@@ -16,7 +15,8 @@ class ListRefsCommandInterpreter(
     override val synchronous: Boolean = true
 
     override suspend fun evaluate(): List<Pair<Int, String>> {
-        return MapperFeature.getReferencesRepresentation(type, symbol)
+//        return MapperFeature.getReferencesRepresentation(type, symbol)
+        TODO("implement symbol reference navigation")
     }
 }
 

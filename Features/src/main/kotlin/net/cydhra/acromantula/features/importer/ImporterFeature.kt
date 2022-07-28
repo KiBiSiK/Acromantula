@@ -1,8 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.CompletableJob
-import net.cydhra.acromantula.features.mapper.MapperFeature
-import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionAsync
@@ -46,11 +44,6 @@ object ImporterFeature {
      * @param file URL pointing to the file
      */
     suspend fun importFile(supervisor: CompletableJob, parent: FileEntity?, file: URL) {
-        DatabaseMappingsManager.initializeSymbolCache(100_000, 0.75f)
-        supervisor.invokeOnCompletion {
-            DatabaseMappingsManager.flushSymbolCache()
-        }
-
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -86,8 +79,9 @@ object ImporterFeature {
 
         @Suppress("DeferredResultUnused")
         suspendedTransactionAsync {
-            if (!file.isDirectory && file.archiveEntity == null)
-                MapperFeature.startMappingTasks(supervisor, file, content)
+            if (!file.isDirectory && file.archiveEntity == null) {
+//                MapperFeature.startMappingTasks(supervisor, file, content)
+            }
         }
     }
 
