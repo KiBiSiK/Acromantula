@@ -2,7 +2,6 @@ package net.cydhra.acromantula.pool
 
 import kotlinx.coroutines.*
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import org.apache.logging.log4j.LogManager.getLogger as logger
 
 /**
@@ -21,12 +20,6 @@ class SupervisedTask<out T>(
     private val supervisor: CompletableJob = SupervisorJob()
 
     /**
-     * An internal thread pool that uses all available system threads. This means that multiple jobs potentially all
-     * use every available core, which may reduce throughput. However, this approach is favoured for its modularization.
-     */
-    private lateinit var threadPool: ExecutorService
-
-    /**
      * Whether the job has already started
      */
     private var started = false
@@ -37,7 +30,7 @@ class SupervisedTask<out T>(
     private val completionHandlers = mutableListOf<CompletionHandler>()
 
     /**
-     * Invoke an [action] on completion of the task. The [CompletionHandler] must be registered before [start] is
+     * Invoke an [action] on completion of the task. The [CompletionHandler] must be registered before [startAsync] is
      * called.
      */
     fun onCompletion(action: CompletionHandler) {
@@ -50,15 +43,11 @@ class SupervisedTask<out T>(
     /**
      * Start the long-running job and return a [Deferred] result
      */
-    internal fun start(): Deferred<Result<T>> {
+    internal fun startAsync(threadPool: ExecutorService): Deferred<Result<T>> {
         if (started)
             throw IllegalStateException("supervised job already started")
 
         started = true
-
-        logger()
-            .debug("create fixed thread pool for \"$name\" with ${Runtime.getRuntime().availableProcessors()} threads")
-        threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
         supervisor.invokeOnCompletion { t ->
             if (t != null) {
@@ -68,9 +57,6 @@ class SupervisedTask<out T>(
             }
 
             this@SupervisedTask.completionHandlers.forEach { it.invoke(t) }
-
-            logger().debug("shutdown fixed thread pool for $name...")
-            threadPool.shutdown()
         }
 
         return CoroutineScope(threadPool.asCoroutineDispatcher()).async {

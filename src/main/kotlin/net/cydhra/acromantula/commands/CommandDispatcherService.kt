@@ -40,7 +40,7 @@ object CommandDispatcherService {
                 }
             }
         } else {
-            TaskScheduler.schedule(SupervisedTask(taskName) {
+            TaskScheduler.scheduleAsync(SupervisedTask(taskName) {
                 commandInterpreter.evaluate()
             })
         }
