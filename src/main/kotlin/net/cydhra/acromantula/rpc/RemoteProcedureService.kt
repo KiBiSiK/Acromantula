@@ -3,7 +3,10 @@ package net.cydhra.acromantula.rpc
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.ProtoReflectionService
-import net.cydhra.acromantula.rpc.service.*
+import net.cydhra.acromantula.rpc.service.ExportRpcServer
+import net.cydhra.acromantula.rpc.service.ImportRpcServer
+import net.cydhra.acromantula.rpc.service.ViewRpcServer
+import net.cydhra.acromantula.rpc.service.WorkspaceRpcServer
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -27,7 +30,6 @@ object RemoteProcedureService {
 
         server = ServerBuilder.forPort(26666)
             .executor(this.executor)
-            .addService(BusRpcServer())
             .addService(WorkspaceRpcServer())
             .addService(ImportRpcServer())
             .addService(ExportRpcServer())
