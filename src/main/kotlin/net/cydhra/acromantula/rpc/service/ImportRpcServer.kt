@@ -14,7 +14,10 @@ class ImportRpcServer : ImportServiceGrpcKt.ImportServiceCoroutineImplBase() {
             when {
                 request.directoryId != -1 ->
                     ImportCommandInterpreter(request.directoryId, request.fileUrl)
-                request.directoryPath != null -> ImportCommandInterpreter(request.directoryPath, request.fileUrl)
+
+                !request.directoryPath.isNullOrBlank() ->
+                    ImportCommandInterpreter(request.directoryPath, request.fileUrl)
+
                 else -> ImportCommandInterpreter(null as? String?, request.fileUrl)
             }
         ).await()
