@@ -15,7 +15,7 @@ class ImportRpcServer : ImportServiceGrpcKt.ImportServiceCoroutineImplBase() {
                 request.directoryId != -1 ->
                     ImportCommandInterpreter(request.directoryId, request.fileUrl)
                 request.directoryPath != null -> ImportCommandInterpreter(request.directoryPath, request.fileUrl)
-                else -> throw IllegalArgumentException("either directoryId or directoryPath must be defined")
+                else -> ImportCommandInterpreter(null as? String?, request.fileUrl)
             }
         ).await()
 
