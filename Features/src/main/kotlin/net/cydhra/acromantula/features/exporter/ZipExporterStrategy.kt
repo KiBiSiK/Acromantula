@@ -3,6 +3,7 @@ package net.cydhra.acromantula.features.exporter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.OutputStream
+import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -12,13 +13,13 @@ class ZipExporterStrategy : ExporterStrategy {
     override val defaultFileExtension: String = "zip"
 
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
-        if (!fileEntity.isDirectory) {
-            throw IllegalArgumentException("only directories can be exported as zip files")
-        }
-
         val zipOutputStream = ZipOutputStream(outputStream)
-        val subFiles = WorkspaceService.getDirectoryContent(fileEntity)
-        addToZipFile(zipOutputStream, "", subFiles)
+        if (!fileEntity.isDirectory) {
+            val subFiles = WorkspaceService.getDirectoryContent(fileEntity)
+            addToZipFile(zipOutputStream, "", subFiles)
+        } else {
+            addToZipFile(zipOutputStream, "", Collections.singletonList(fileEntity))
+        }
         zipOutputStream.close()
     }
 
