@@ -9,6 +9,8 @@ import java.util.zip.ZipOutputStream
 class ZipExporterStrategy : ExporterStrategy {
     override val name: String = "zip"
 
+    override val defaultFileExtension: String = "zip"
+
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         if (!fileEntity.isDirectory) {
             throw IllegalArgumentException("only directories can be exported as zip files")

@@ -1,13 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Acromantula" type="JetRunConfigurationType">
-    <module name="acromantula.main" />
-    <option name="VM_PARAMETERS" value="" />
-    <option name="PROGRAM_PARAMETERS" value="" />
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-    <option name="ALTERNATIVE_JRE_PATH" />
-    <option name="PASS_PARENT_ENVS" value="true" />
     <option name="MAIN_CLASS_NAME" value="net.cydhra.acromantula.AcromantulaServiceKt" />
-    <option name="WORKING_DIRECTORY" value="file://run" />
+    <module name="Acromantula" />
+    <shortenClasspath name="NONE" />
+    <option name="WORKING_DIRECTORY" value="run" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

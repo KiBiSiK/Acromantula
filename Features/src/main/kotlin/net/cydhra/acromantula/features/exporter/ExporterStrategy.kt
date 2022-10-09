@@ -12,6 +12,14 @@ interface ExporterStrategy {
     val name: String
 
     /**
+     * The default extension this exporter uses. This will not be appended to a file name, but can be used by the
+     * front-end to auto-complete user actions. The extension is given without path delimiters or wildcards. Example:
+     * "zip"
+     */
+    val defaultFileExtension: String
+        get() = ""
+
+    /**
      * Export the contents of [fileEntity] into the given [outputStream]
      */
     fun exportFile(fileEntity: FileEntity, outputStream: OutputStream)

@@ -33,7 +33,8 @@ class ExportRpcServer : ExportServiceGrpcKt.ExportServiceCoroutineImplBase() {
                 ExporterFeature.getExporters()
                     .map { exporter ->
                         exporter {
-                            this.name = exporter
+                            this.name = exporter.name
+                            this.defaultExtension = exporter.defaultFileExtension
                         }
                     }
                     .toList()

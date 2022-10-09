@@ -10,7 +10,7 @@ class ListExportersCommandInterpreter() : WorkspaceCommandInterpreter<List<Strin
     override val synchronous: Boolean = true
 
     override suspend fun evaluate(): List<String> {
-        return ExporterFeature.getExporters().toList()
+        return ExporterFeature.getExporters().map { it.name }.toList()
     }
 }
 

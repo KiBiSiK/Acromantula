@@ -48,7 +48,7 @@ object ExporterFeature {
     /**
      * Get a list of names for all available exporters
      */
-    fun getExporters(): Collection<String> {
-        return this.registeredExporterStrategies.keys
+    fun getExporters(): Collection<ExporterStrategy> {
+        return this.registeredExporterStrategies.values
     }
 }

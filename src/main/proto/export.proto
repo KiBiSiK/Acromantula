@@ -18,6 +18,7 @@ message ExportersList {
 
 message Exporter {
   string name = 1;
+  string defaultExtension = 2;
 }
 
 message ExportCommand {
