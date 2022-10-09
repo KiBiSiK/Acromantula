@@ -14,7 +14,7 @@ class ZipExporterStrategy : ExporterStrategy {
 
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         val zipOutputStream = ZipOutputStream(outputStream)
-        if (!fileEntity.isDirectory) {
+        if (fileEntity.isDirectory) {
             val subFiles = WorkspaceService.getDirectoryContent(fileEntity)
             addToZipFile(zipOutputStream, "", subFiles)
         } else {
