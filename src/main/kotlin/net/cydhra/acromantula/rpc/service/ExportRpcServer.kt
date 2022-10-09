@@ -9,10 +9,10 @@ import net.cydhra.acromantula.proto.*
 class ExportRpcServer : ExportServiceGrpcKt.ExportServiceCoroutineImplBase() {
     override suspend fun exportFile(request: ExportCommand): Empty {
         val interpreter = when {
-            request.fileId != -1 -> ExportCommandInterpreter(request.fileId, request.exporter, request.targetPath)
+            request.fileId != -1 -> ExportCommandInterpreter(request.fileId, request.exporter.name, request.targetPath)
             request.filePath != null -> ExportCommandInterpreter(
                 request.filePath,
-                request.exporter,
+                request.exporter.name,
                 request.targetPath
             )
             else -> throw IllegalArgumentException("either fileId or filePath must be defined")

@@ -25,5 +25,5 @@ message ExportCommand {
   int32 fileId = 1;
   string filePath = 2;
   string targetPath = 3;
-  string exporter = 4;
+  Exporter exporter = 4;
 }
