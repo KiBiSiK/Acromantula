@@ -12,6 +12,8 @@ service WorkspaceService {
   rpc showFile (ShowFileCommand) returns (ShowFileResponse);
 
   rpc createFile(CreateFileCommand) returns (FileEntity);
+
+  rpc replaceFile(ReplaceFileCommand) returns (google.protobuf.Empty);
 }
 
 message ListFilesCommand {
@@ -58,4 +60,13 @@ message CreateFileCommand {
 
   string name = 3;
   bool isDirectory = 4;
+}
+
+message ReplaceFileCommand {
+  oneof fileId {
+    int32 id = 1;
+    string path = 2;
+  }
+
+  bytes newContent = 3;
 }

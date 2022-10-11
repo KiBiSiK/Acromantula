@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.rpc.service
 
+import com.google.protobuf.Empty
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.proto.*
@@ -80,5 +81,16 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         // tree node is usually used by WorkspaceService.listFilesRecursively, but we know our new file has no
         // children, so we can use it here without constructing a tree
         return fileTreeToProto(TreeNode(newFile))
+    }
+
+    override suspend fun replaceFile(request: ReplaceFileCommand): Empty {
+        val fileEntity = when (request.fileIdCase) {
+            ReplaceFileCommand.FileIdCase.ID -> WorkspaceService.queryPath(request.id)
+            ReplaceFileCommand.FileIdCase.PATH -> WorkspaceService.queryPath(request.path)
+            null, ReplaceFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
+        }
+
+        WorkspaceService.updateFileEntry(fileEntity, request.newContent.toByteArray())
+        return Empty.getDefaultInstance()
     }
 }
