@@ -46,4 +46,8 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     override fun getFileUrl(fileEntity: Int): URL {
         return this.workspaceFileSystem.getFileUrl(fileEntity)
     }
+
+    override fun deleteFile(fileEntity: FileEntity) {
+        this.workspaceFileSystem.deleteResource(fileEntity)
+    }
 }

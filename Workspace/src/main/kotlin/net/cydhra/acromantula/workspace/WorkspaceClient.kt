@@ -85,4 +85,9 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      */
     abstract fun getFileUrl(fileEntity: Int): URL
 
+    /**
+     * Delete File from workspace and database
+     */
+    abstract fun deleteFile(fileEntity: FileEntity)
+
 }

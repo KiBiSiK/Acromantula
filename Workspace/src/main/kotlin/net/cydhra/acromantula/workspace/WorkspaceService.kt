@@ -17,6 +17,7 @@ import org.jetbrains.exposed.sql.statements.Statement
 import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -434,5 +435,24 @@ object WorkspaceService {
      */
     fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         this.workspaceClient.exportFile(fileEntity, outputStream)
+    }
+
+    /**
+     * Delete a file or directory, and its associated resource from the workspace. All directory contents will be
+     * deleted as well.
+     */
+    fun deleteFile(fileEntity: FileEntity) {
+        if (fileEntity.isDirectory) {
+            val children = transaction {
+                FileEntity.find { FileTable.parent eq fileEntity.id }
+            }
+            children.forEach(::deleteFile)
+        } else {
+            this.workspaceClient.deleteFile(fileEntity)
+        }
+
+        transaction {
+            fileEntity.delete()
+        }
     }
 }

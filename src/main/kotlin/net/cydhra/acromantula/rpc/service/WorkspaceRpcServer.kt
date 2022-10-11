@@ -93,4 +93,16 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         WorkspaceService.updateFileEntry(fileEntity, request.newContent.toByteArray())
         return Empty.getDefaultInstance()
     }
+
+    override suspend fun deleteFile(request: DeleteFileCommand): Empty {
+        val fileEntity = when (request.fileIdCase) {
+            DeleteFileCommand.FileIdCase.ID -> WorkspaceService.queryPath(request.id)
+            DeleteFileCommand.FileIdCase.PATH -> WorkspaceService.queryPath(request.path)
+            null, DeleteFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
+        }
+
+        WorkspaceService.deleteFile(fileEntity)
+
+        return Empty.getDefaultInstance()
+    }
 }
