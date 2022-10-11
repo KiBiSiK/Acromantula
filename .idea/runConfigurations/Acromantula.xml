@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Acromantula" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="net.cydhra.acromantula.AcromantulaServiceKt" />
-    <module name="Acromantula" />
+    <module name="acromantula.main" />
     <shortenClasspath name="NONE" />
     <option name="WORKING_DIRECTORY" value="run" />
     <method v="2">
