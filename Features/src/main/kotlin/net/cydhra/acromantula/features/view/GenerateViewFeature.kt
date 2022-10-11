@@ -34,6 +34,10 @@ object GenerateViewFeature {
             return null
 
         logger.info("creating representation for \"${fileEntity.name}\"")
+        // TODO this is insanely bad design. I recon I did this to prevent mass-view generation to cancel when view
+        //  generation of a single file fails. But instead the supervisor tasks must catch the error and resume all
+        //  other tasks instead of failing all tasks because of one exception. This error is not supposed to be
+        //  caught here.
         return try {
             registeredGenerators[viewType]!!.generateView(fileEntity)
         } catch (t: Throwable) {

@@ -420,6 +420,16 @@ object WorkspaceService {
     }
 
     /**
+     * Get a URL pointing to the file system address of a view/representation. This is mainly used to instruct the
+     * front-end where to find something and should not be used by the back-end for direct file manipulation.
+     *
+     * @param resource the view entity id
+     */
+    fun getRepresentationUrl(resource: Int): URL {
+        return this.workspaceClient.getFileUrl(resource)
+    }
+
+    /**
      * Export a file into the given output stream
      */
     fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {

@@ -8,6 +8,10 @@ option java_multiple_files = true;
 
 service WorkspaceService {
   rpc listFiles (ListFilesCommand) returns (ListFilesResponse);
+
+  rpc showFile (ShowFileCommand) returns (ShowFileResponse);
+
+  rpc showView (ShowViewCommand) returns (ShowViewResponse);
 }
 
 message ListFilesCommand {
@@ -31,4 +35,27 @@ message ViewEntity {
   int32 id = 1;
   string type = 2;
   string url = 3;
+}
+
+message ShowFileCommand {
+  oneof fileId {
+    int32 id = 1;
+    string path = 2;
+  }
+}
+
+message ShowFileResponse {
+  string url = 1;
+}
+
+message ShowViewCommand {
+  oneof fileId {
+    int32 id = 1;
+    string path = 2;
+  }
+  string viewType = 3;
+}
+
+message ShowViewResponse {
+  string url = 1;
 }
