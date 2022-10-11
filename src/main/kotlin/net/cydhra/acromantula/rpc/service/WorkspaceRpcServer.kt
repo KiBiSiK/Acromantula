@@ -2,7 +2,6 @@ package net.cydhra.acromantula.rpc.service
 
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
-import net.cydhra.acromantula.commands.interpreters.ViewCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
@@ -59,29 +58,5 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
         return ShowFileResponse.newBuilder().setUrl(fileUrl.toExternalForm()).build()
-    }
-
-    override suspend fun showView(request: ShowViewCommand): ShowViewResponse {
-        val fileId = when (request.fileIdCase) {
-            ShowViewCommand.FileIdCase.ID -> request.id
-            ShowViewCommand.FileIdCase.PATH -> WorkspaceService.queryPath(request.path).id.value
-            null, ShowViewCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
-        }
-
-        val result = CommandDispatcherService.dispatchCommand(
-            "[RPC View File]",
-            ViewCommandInterpreter(fileId, request.viewType)
-        ).await()
-
-        result.onFailure {
-            throw it
-        }
-
-        val viewRepresentation = result.getOrNull()
-            ?: throw IllegalArgumentException("file type cannot be viewed as \"${request.viewType}\"")
-
-        return ShowViewResponse.newBuilder()
-            .setUrl(WorkspaceService.getRepresentationUrl(viewRepresentation.resource).toExternalForm())
-            .build()
     }
 }
