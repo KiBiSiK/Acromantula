@@ -71,10 +71,17 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             null, ShowViewCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
 
-        val viewRepresentation = CommandDispatcherService.dispatchCommand(
+        val result = CommandDispatcherService.dispatchCommand(
             "[RPC View File]",
             ViewCommandInterpreter(fileId, request.viewType)
-        ).await().getOrNull() ?: throw IllegalArgumentException("file type cannot be viewed as \"${request.viewType}\"")
+        ).await()
+
+        result.onFailure {
+            throw it
+        }
+
+        val viewRepresentation = result.getOrNull()
+            ?: throw IllegalArgumentException("file type cannot be viewed as \"${request.viewType}\"")
 
         return ShowViewResponse.newBuilder()
             .setUrl(WorkspaceService.getRepresentationUrl(viewRepresentation.resource).toExternalForm())
