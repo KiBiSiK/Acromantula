@@ -59,8 +59,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
                 WorkspaceService.queryPath(request.path).id.value
             )
 
-            null, ShowFileCommand.FileIdCase.FILEID_NOT_SET ->
-                throw IllegalArgumentException("missing either file id or file path as unique identifier")
+            null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
         return ShowFileResponse.newBuilder().setUrl(fileUrl.toExternalForm()).build()
     }
@@ -69,8 +68,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         val fileId = when (request.fileIdCase) {
             ShowViewCommand.FileIdCase.ID -> request.id
             ShowViewCommand.FileIdCase.PATH -> WorkspaceService.queryPath(request.path).id.value
-            null, ShowViewCommand.FileIdCase.FILEID_NOT_SET ->
-                throw IllegalArgumentException("missing either file id or file path as unique identifier")
+            null, ShowViewCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
 
         val viewRepresentation = CommandDispatcherService.dispatchCommand(
