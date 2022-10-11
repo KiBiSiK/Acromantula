@@ -22,8 +22,10 @@ message Exporter {
 }
 
 message ExportCommand {
-  int32 fileId = 1;
-  string filePath = 2;
+  oneof fileId {
+    int32 id = 1;
+    string filePath = 2;
+  }
   string targetPath = 3;
   Exporter exporter = 4;
 }

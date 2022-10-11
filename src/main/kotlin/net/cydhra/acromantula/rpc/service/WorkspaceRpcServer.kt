@@ -12,20 +12,17 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
     override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
 
-        val result =
-            if (request.fileId != -1) {
-                CommandDispatcherService.dispatchCommand(
-                    "[RPC] list files",
-                    ListFilesCommandInterpreter(request.fileId)
-                )
-                    .await()
-            } else {
-                CommandDispatcherService
-                    .dispatchCommand(
-                        "[RPC] list files",
-                        ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })
-                    ).await()
-            }
+        val interpreter = when (request.fileIdCase) {
+            ListFilesCommand.FileIdCase.ID ->
+                ListFilesCommandInterpreter(request.id)
+
+            ListFilesCommand.FileIdCase.FILEPATH ->
+                ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })
+
+            null, ListFilesCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
+        }
+
+        val result = CommandDispatcherService.dispatchCommand("[RPC] list files", interpreter).await()
 
         fun viewToProto(view: FileRepresentation): ViewEntity {
             return viewEntity {

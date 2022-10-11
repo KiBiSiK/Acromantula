@@ -15,8 +15,10 @@ service WorkspaceService {
 }
 
 message ListFilesCommand {
-  int32 fileId = 1;
-  string filePath = 2;
+  oneof fileId {
+    int32 id = 1;
+    string filePath = 2;
+  }
 }
 
 message ListFilesResponse {

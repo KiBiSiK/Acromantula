@@ -11,7 +11,9 @@ service ImportService {
 }
 
 message ImportCommand {
-  int32 directoryId = 1;
-  string directoryPath = 2;
+  oneof directoryId {
+    int32 id = 1;
+    string directoryPath = 2;
+  }
   string fileUrl = 3;
 }

@@ -11,12 +11,14 @@ class ImportRpcServer : ImportServiceGrpcKt.ImportServiceCoroutineImplBase() {
     override suspend fun importFile(request: ImportCommand): Empty {
         val result = CommandDispatcherService.dispatchCommand(
             "[RPC] import ${request.fileUrl}",
-            when {
-                request.directoryId != -1 ->
-                    ImportCommandInterpreter(request.directoryId, request.fileUrl)
-
-                !request.directoryPath.isNullOrBlank() ->
-                    ImportCommandInterpreter(request.directoryPath, request.fileUrl)
+            when (request.directoryIdCase) {
+                ImportCommand.DirectoryIdCase.ID -> ImportCommandInterpreter(request.id, request.fileUrl)
+                ImportCommand.DirectoryIdCase.DIRECTORYPATH ->
+                    if (request.directoryPath.isBlank()) {
+                        ImportCommandInterpreter(null as? String?, request.fileUrl)
+                    } else {
+                        ImportCommandInterpreter(request.directoryPath, request.fileUrl)
+                    }
 
                 else -> ImportCommandInterpreter(null as? String?, request.fileUrl)
             }

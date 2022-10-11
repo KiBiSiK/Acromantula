@@ -24,38 +24,41 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
     override suspend fun view(request: ViewCommand): ViewEntity {
         val result = CommandDispatcherService.dispatchCommand(
             "[RPC] view $request",
-            when {
-                request.fileId != -1 -> ViewCommandInterpreter(request.fileId, request.type)
-                request.filePath != null -> ViewCommandInterpreter(request.filePath, request.type)
-                else -> throw IllegalArgumentException("either fileId or filePath must be defined")
+            when (request.fileIdCase) {
+                ViewCommand.FileIdCase.ID -> ViewCommandInterpreter(request.id, request.type)
+                ViewCommand.FileIdCase.FILEPATH -> ViewCommandInterpreter(request.filePath, request.type)
+                null, ViewCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
             }
         ).await()
 
         result.onFailure { throw it }
 
+        // TODO there is error handling here that is supposed to be already handled. Look at GenerateViewFeature
+        //  .generateView for more info
         val view = result.getOrThrow() ?: throw java.lang.IllegalArgumentException("cannot generate view of given type")
 
         return viewEntity {
             id = view.id.value
             type = view.type
             url = WorkspaceService.getFileUrl(view.resource).toExternalForm()
-
         }
     }
 
     override suspend fun exportView(request: ExportViewCommand): Empty {
         val result = CommandDispatcherService.dispatchCommand(
             "[RPC] $request",
-            when {
-                request.fileId != -1 -> ExportViewCommandInterpreter(
-                    request.fileId, request.type, request.recursive,
+            when (request.fileIdCase) {
+                ExportViewCommand.FileIdCase.ID -> ExportViewCommandInterpreter(
+                    request.id, request.type, request.recursive,
                     request.includeIncompatible, request.targetPath
                 )
-                request.filePath != null -> ExportViewCommandInterpreter(
+
+                ExportViewCommand.FileIdCase.FILEPATH -> ExportViewCommandInterpreter(
                     request.filePath, request.type, request.recursive,
                     request.includeIncompatible, request.targetPath
                 )
-                else -> throw IllegalArgumentException("either fileId or filePath must be defined")
+
+                null, ExportViewCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
             }
         ).await()
 
