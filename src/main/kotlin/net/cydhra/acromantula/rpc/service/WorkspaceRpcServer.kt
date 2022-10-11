@@ -9,8 +9,26 @@ import net.cydhra.acromantula.workspace.util.TreeNode
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
 
-    override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
+    private fun viewToProto(view: FileRepresentation): ViewEntity {
+        return viewEntity {
+            id = view.id.value
+            type = view.type
+            url = WorkspaceService.getFileUrl(view.resource).toExternalForm()
+        }
+    }
 
+    private fun fileTreeToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity {
+        val children = treeNode.childList.map(::fileTreeToProto)
+        return fileEntity {
+            id = treeNode.value.id.value
+            name = treeNode.value.name
+            isDirectory = treeNode.value.isDirectory
+            children(*children.toTypedArray())
+            views(*treeNode.value.getViews().map(::viewToProto).toTypedArray())
+        }
+    }
+
+    override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
         val interpreter = when (request.fileIdCase) {
             ListFilesCommand.FileIdCase.ID ->
                 ListFilesCommandInterpreter(request.id)
@@ -23,28 +41,9 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
         val result = CommandDispatcherService.dispatchCommand("[RPC] list files", interpreter).await()
 
-        fun viewToProto(view: FileRepresentation): ViewEntity {
-            return viewEntity {
-                id = view.id.value
-                type = view.type
-                url = WorkspaceService.getFileUrl(view.resource).toExternalForm()
-            }
-        }
-
-        fun mapResultToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity {
-            val children = treeNode.childList.map(::mapResultToProto)
-            return fileEntity {
-                id = treeNode.value.id.value
-                name = treeNode.value.name
-                isDirectory = treeNode.value.isDirectory
-                children(*children.toTypedArray())
-                views(*treeNode.value.getViews().map(::viewToProto).toTypedArray())
-            }
-        }
-
         val entries = result.getOrElse { throw it }
         return listFilesResponse {
-            trees(*entries.map(::mapResultToProto).toTypedArray())
+            trees(*entries.map(::fileTreeToProto).toTypedArray())
         }
     }
 
@@ -58,5 +57,28 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
         return ShowFileResponse.newBuilder().setUrl(fileUrl.toExternalForm()).build()
+    }
+
+    override suspend fun createFile(request: CreateFileCommand): FileEntity {
+        val parentEntity = when (request.parentIdCase) {
+            CreateFileCommand.ParentIdCase.ID -> WorkspaceService.queryPath(request.id)
+            CreateFileCommand.ParentIdCase.PATH ->
+                if (request.path.isNotBlank())
+                    WorkspaceService.queryPath(request.path)
+                else
+                    null
+
+            null, CreateFileCommand.ParentIdCase.PARENTID_NOT_SET -> null
+        }
+
+        val newFile = if (request.isDirectory) {
+            WorkspaceService.addFileEntry(request.name, parentEntity, ByteArray(0))
+        } else {
+            WorkspaceService.addDirectoryEntry(request.name, parentEntity)
+        }
+
+        // tree node is usually used by WorkspaceService.listFilesRecursively, but we know our new file has no
+        // children, so we can use it here without constructing a tree
+        return fileTreeToProto(TreeNode(newFile))
     }
 }

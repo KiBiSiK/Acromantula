@@ -10,6 +10,8 @@ service WorkspaceService {
   rpc listFiles (ListFilesCommand) returns (ListFilesResponse);
 
   rpc showFile (ShowFileCommand) returns (ShowFileResponse);
+
+  rpc createFile(CreateFileCommand) returns (FileEntity);
 }
 
 message ListFilesCommand {
@@ -46,4 +48,14 @@ message ShowFileCommand {
 
 message ShowFileResponse {
   string url = 1;
+}
+
+message CreateFileCommand {
+  oneof parentId {
+    int32 id = 1;
+    string path = 2;
+  }
+
+  string name = 3;
+  bool isDirectory = 4;
 }
