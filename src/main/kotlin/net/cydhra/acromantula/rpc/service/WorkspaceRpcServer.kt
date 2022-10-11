@@ -2,6 +2,7 @@ package net.cydhra.acromantula.rpc.service
 
 import com.google.protobuf.Empty
 import net.cydhra.acromantula.commands.CommandDispatcherService
+import net.cydhra.acromantula.commands.interpreters.DeleteCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
@@ -95,13 +96,16 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
     }
 
     override suspend fun deleteFile(request: DeleteFileCommand): Empty {
-        val fileEntity = when (request.fileIdCase) {
-            DeleteFileCommand.FileIdCase.ID -> WorkspaceService.queryPath(request.id)
-            DeleteFileCommand.FileIdCase.PATH -> WorkspaceService.queryPath(request.path)
+        val cmd = when (request.fileIdCase) {
+            DeleteFileCommand.FileIdCase.ID -> DeleteCommandInterpreter(request.id)
+            DeleteFileCommand.FileIdCase.PATH -> DeleteCommandInterpreter(request.path)
             null, DeleteFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
 
-        WorkspaceService.deleteFile(fileEntity)
+        val result = CommandDispatcherService.dispatchCommand("[RPC] delete file", cmd).await()
+        result.onFailure {
+            throw it
+        }
 
         return Empty.getDefaultInstance()
     }
