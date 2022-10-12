@@ -31,7 +31,6 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             name = treeNode.value.name
             isDirectory = treeNode.value.isDirectory
             children(*children.toTypedArray())
-            views(*treeNode.value.getViews().map(::viewToProto).toTypedArray())
         }
     }
 
