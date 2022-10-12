@@ -36,12 +36,6 @@ message FileEntity {
   repeated FileEntity children = 4;
 }
 
-message ViewEntity {
-  int32 id = 1;
-  string type = 2;
-  string url = 3;
-}
-
 message ShowFileCommand {
   oneof fileId {
     int32 id = 1;

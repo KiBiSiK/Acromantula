@@ -10,7 +10,7 @@ option java_multiple_files = true;
 service ViewService {
   rpc getViewTypes (google.protobuf.Empty) returns (ViewTypes);
 
-  rpc view (ViewCommand) returns (ViewEntity);
+  rpc view (ViewCommand) returns (stream FileChunk);
 
   rpc exportView (ExportViewCommand) returns (google.protobuf.Empty);
 }
@@ -42,5 +42,6 @@ message ViewCommand {
     string filePath = 2;
   }
 
-  string type = 3;
+  ViewType type = 3;
+  int32 chunkSize = 4;
 }

@@ -1,6 +1,11 @@
 package net.cydhra.acromantula.rpc.service
 
+import com.google.protobuf.ByteString
 import com.google.protobuf.Empty
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.ExportViewCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ViewCommandInterpreter
@@ -21,12 +26,12 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
         }
     }
 
-    override suspend fun view(request: ViewCommand): ViewEntity {
+    override fun view(request: ViewCommand): Flow<FileChunk> = flow {
         val result = CommandDispatcherService.dispatchCommand(
             "[RPC] view $request",
             when (request.fileIdCase) {
-                ViewCommand.FileIdCase.ID -> ViewCommandInterpreter(request.id, request.type)
-                ViewCommand.FileIdCase.FILEPATH -> ViewCommandInterpreter(request.filePath, request.type)
+                ViewCommand.FileIdCase.ID -> ViewCommandInterpreter(request.id, request.type.name)
+                ViewCommand.FileIdCase.FILEPATH -> ViewCommandInterpreter(request.filePath, request.type.name)
                 null, ViewCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
             }
         ).await()
@@ -36,13 +41,20 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
         // TODO there is error handling here that is supposed to be already handled. Look at GenerateViewFeature
         //  .generateView for more info
         val view = result.getOrThrow() ?: throw java.lang.IllegalArgumentException("cannot generate view of given type")
-
-        return viewEntity {
-            id = view.id.value
-            type = view.type
-            url = WorkspaceService.getFileUrl(view.resource).toExternalForm()
-        }
-    }
+        WorkspaceService.getRepresentationContent(view)
+            .buffered()
+            .iterator()
+            .asSequence()
+            .chunked(request.chunkSize)
+            .map {
+                FileChunk.newBuilder()
+                    .setStatus(FileTransferStatus.TRANSFER_STATUS_PROGRESS)
+                    .setTotalBytes(-1)
+                    .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray()))
+                    .build()
+            }
+            .forEach { emit(it) }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun exportView(request: ExportViewCommand): Empty {
         val result = CommandDispatcherService.dispatchCommand(

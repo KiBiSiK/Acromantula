@@ -11,18 +11,9 @@ import net.cydhra.acromantula.commands.interpreters.DeleteCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.util.TreeNode
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
-
-    private fun viewToProto(view: FileRepresentation): ViewEntity {
-        return viewEntity {
-            id = view.id.value
-            type = view.type
-            url = WorkspaceService.getFileUrl(view.resource).toExternalForm()
-        }
-    }
 
     private fun fileTreeToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity {
         val children = treeNode.childList.map(::fileTreeToProto)
