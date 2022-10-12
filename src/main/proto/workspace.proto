@@ -9,7 +9,7 @@ option java_multiple_files = true;
 service WorkspaceService {
   rpc listFiles (ListFilesCommand) returns (ListFilesResponse);
 
-  rpc showFile (ShowFileCommand) returns (ShowFileResponse);
+  rpc showFile (ShowFileCommand) returns (stream FileChunk);
 
   rpc createFile(CreateFileCommand) returns (FileEntity);
 
@@ -48,10 +48,39 @@ message ShowFileCommand {
     int32 id = 1;
     string path = 2;
   }
+
+  int32 chunkSize = 3;
 }
 
-message ShowFileResponse {
-  string url = 1;
+enum FileTransferStatus {
+  /**
+  Received file chunk contains data and more chunks will follow
+   */
+  TRANSFER_STATUS_PROGRESS = 0;
+
+  /**
+  Received file chunk may contain data but no more chunks will follow
+   */
+  TRANSFER_STATUS_FINISHED = 1;
+
+  /**
+  File transfer failed. This packet does not contain data.
+   */
+  TRANSFER_STATUS_CANCELLED = 2;
+}
+
+/*
+Chunked message for file transfer
+ */
+message FileChunk {
+  FileTransferStatus status = 1;
+
+  /*
+  How many bytes the total file contains. This number stays constant for an entire transmission and can be used to
+  calculate transmission progress
+   */
+  int32 totalBytes = 2;
+  bytes content = 3;
 }
 
 message CreateFileCommand {

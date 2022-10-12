@@ -1,6 +1,11 @@
 package net.cydhra.acromantula.rpc.service
 
+import com.google.protobuf.ByteString
 import com.google.protobuf.Empty
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOn
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.DeleteCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
@@ -49,16 +54,31 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         }
     }
 
-    override suspend fun showFile(request: ShowFileCommand): ShowFileResponse {
-        val fileUrl = when (request.fileIdCase) {
-            ShowFileCommand.FileIdCase.ID -> WorkspaceService.getFileUrl(request.id)
-            ShowFileCommand.FileIdCase.PATH -> WorkspaceService.getFileUrl(
+    override fun showFile(request: ShowFileCommand): Flow<FileChunk> {
+        val fileEntity = when (request.fileIdCase) {
+            ShowFileCommand.FileIdCase.ID -> WorkspaceService.queryPath(request.id)
+            ShowFileCommand.FileIdCase.PATH -> WorkspaceService.queryPath(
                 WorkspaceService.queryPath(request.path).id.value
             )
 
             null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
-        return ShowFileResponse.newBuilder().setUrl(fileUrl.toExternalForm()).build()
+
+        // TODO status and file size are not set correctly yet
+        return WorkspaceService.getFileContent(fileEntity)
+            .buffered()
+            .iterator()
+            .asSequence()
+            .chunked(request.chunkSize)
+            .map {
+                FileChunk.newBuilder()
+                    .setStatus(FileTransferStatus.TRANSFER_STATUS_PROGRESS)
+                    .setTotalBytes(-1)
+                    .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray()))
+                    .build()
+            }
+            .asFlow()
+            .flowOn(Dispatchers.IO)
     }
 
     override suspend fun createFile(request: CreateFileCommand): FileEntity {
