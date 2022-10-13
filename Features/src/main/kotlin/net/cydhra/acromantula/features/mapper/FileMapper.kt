@@ -21,5 +21,8 @@ interface FileMapper {
      * @param file file entity
      * @param predicate optional filter rule to select specific symbols
      */
-    suspend fun getSymbolsInFile(file: FileEntity, predicate: ((AcromantulaSymbol) -> Boolean)? = null)
+    suspend fun getSymbolsInFile(
+        file: FileEntity,
+        predicate: ((AcromantulaSymbol) -> Boolean)? = null
+    ): Collection<AcromantulaSymbol>
 }

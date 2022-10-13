@@ -20,4 +20,18 @@ object MapperFeature {
     fun CoroutineScope.mapFile(file: FileEntity, content: ByteArray) {
         registeredMappers.forEach { launch { it.mapFile(file, content) } }
     }
+
+    suspend fun getSymbolsInFile(file: FileEntity, predicate: ((AcromantulaSymbol) -> Boolean)? = null) {
+        // todo we could fork-join here, but retrieving should be so fast that the overhead isn't worth it? maybe
+        //  check against a large workspace
+        // fork-join would utilize
+        // ```coroutineScope { registeredMappers.map {
+        //        async {
+        //          it.getSymbolsInFile(file, predicate)
+        //        }
+        //      }.awaitAll().flatten()
+        //    }
+        registeredMappers.flatMap { it.getSymbolsInFile(file, predicate) }
+    }
+
 }
