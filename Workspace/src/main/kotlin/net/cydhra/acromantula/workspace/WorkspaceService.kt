@@ -16,6 +16,7 @@ import org.jetbrains.exposed.sql.statements.Statement
 import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -66,6 +67,8 @@ object WorkspaceService {
      */
     private lateinit var workspaceClient: WorkspaceClient
 
+    private val databaseInitializers = mutableListOf<Transaction.() -> Unit>()
+
     /**
      * Called upon application startup. Load default workspace and subscribe to events if necessary.
      */
@@ -87,6 +90,23 @@ object WorkspaceService {
 
         logger.info("initializing new workspace...")
         workspaceClient.initialize()
+
+        logger.info("adding plugin specific database relations...")
+        this.databaseInitializers.forEach { stmt ->
+            transaction(statement = stmt)
+        }
+    }
+
+    /**
+     * Register new tables and similar SQL constructs at the workspace database. Those will be automatically applied
+     * to any database that is opened as part of a workspace. This is intended for plugins to add their own tables to
+     * the workspace.
+     */
+    fun registerAtDatabase(block: Transaction.() -> Unit) {
+        databaseInitializers += block
+
+        // plugins are initialized after the workspace, so the initial database has to be updated as well
+        transaction(statement = block)
     }
 
     /**
@@ -207,6 +227,7 @@ object WorkspaceService {
                         results = results.filter { it.parent?.name?.equals(folderPath[currentFolderIndex]) == true }
                         currentFolderIndex--
                     }
+
                     else -> error("the specified path was not unique")
                 }
             } while (currentFolderIndex > -1)
