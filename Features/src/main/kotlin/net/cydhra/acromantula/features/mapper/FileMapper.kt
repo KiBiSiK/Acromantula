@@ -25,4 +25,20 @@ interface FileMapper {
         file: FileEntity,
         predicate: ((AcromantulaSymbol) -> Boolean)? = null
     ): Collection<AcromantulaSymbol>
+
+    /**
+     * Retrieve all references in a file that are managed by this mapper implementation
+     */
+    suspend fun getReferencesInFile(
+        file: FileEntity,
+        predicate: ((AcromantulaReference) -> Boolean)?
+    ): Collection<AcromantulaReference>
+
+    /**
+     * Retrieve all references to a symbol that are managed by this mapper. The symbol is not necessarily managed by
+     * this mapper.
+     *
+     * @param symbol any symbol implementation by any plugin
+     */
+    suspend fun getReferencesToSymbol(symbol: AcromantulaSymbol): Collection<AcromantulaReference>
 }

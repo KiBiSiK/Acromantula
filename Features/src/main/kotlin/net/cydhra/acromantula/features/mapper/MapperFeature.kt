@@ -21,7 +21,15 @@ object MapperFeature {
         registeredMappers.forEach { launch { it.mapFile(file, content) } }
     }
 
-    suspend fun getSymbolsInFile(file: FileEntity, predicate: ((AcromantulaSymbol) -> Boolean)? = null) {
+    /**
+     * Get all symbols in a file that match a given predicate
+     *
+     * @param file queried file
+     * @param predicate optional predicate to filter the symbols
+     */
+    suspend fun getSymbolsInFile(
+        file: FileEntity, predicate: ((AcromantulaSymbol) -> Boolean)? = null
+    ): Collection<AcromantulaSymbol> {
         // todo we could fork-join here, but retrieving should be so fast that the overhead isn't worth it? maybe
         //  check against a large workspace
         // fork-join would utilize
@@ -31,7 +39,31 @@ object MapperFeature {
         //        }
         //      }.awaitAll().flatten()
         //    }
-        registeredMappers.flatMap { it.getSymbolsInFile(file, predicate) }
+        return registeredMappers.flatMap { it.getSymbolsInFile(file, predicate) }
     }
 
+    /**
+     * Get all references in a file that match a given predicate
+     *
+     * @param file queried file
+     * @param predicate optional predicate to filter the references
+     */
+    suspend fun getReferencesInFile(
+        file: FileEntity,
+        predicate: ((AcromantulaReference) -> Boolean)?
+    ): Collection<AcromantulaReference> {
+        // todo see fork-join todo above
+        return registeredMappers.flatMap { it.getReferencesInFile(file, predicate) }
+    }
+
+    /**
+     * Get all references to a given symbol. This includes references that have been added by mappers that are not
+     * the origin of the symbol
+     *
+     * @param symbol an acromantula symbol
+     */
+    suspend fun getReferencesToSymbol(symbol: AcromantulaSymbol): Collection<AcromantulaReference> {
+        // todo see fork-join todo above
+        return registeredMappers.flatMap { it.getReferencesToSymbol(symbol) }
+    }
 }
