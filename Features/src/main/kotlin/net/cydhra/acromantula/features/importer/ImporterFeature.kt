@@ -1,14 +1,16 @@
 package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.withContext
+import net.cydhra.acromantula.features.mapper.MapperFeature.mapFile
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransactionAsync
 import java.io.File
 import java.io.InputStream
 import java.io.PushbackInputStream
 import java.net.URL
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 /**
  * Imports files into the workspace. [ImporterStrategies][ImporterStrategy] can be registered to handle files
@@ -77,11 +79,8 @@ object ImporterFeature {
         val (file, content) = importer.import(supervisor, parent, fileName, pushbackStream)
         logger.trace("finished importing \"$fileName\"")
 
-        @Suppress("DeferredResultUnused")
-        suspendedTransactionAsync {
-            if (!file.isDirectory && file.archiveEntity == null) {
-//                MapperFeature.startMappingTasks(supervisor, file, content)
-            }
+        withContext(coroutineContext) {
+            mapFile(file, content)
         }
     }
 

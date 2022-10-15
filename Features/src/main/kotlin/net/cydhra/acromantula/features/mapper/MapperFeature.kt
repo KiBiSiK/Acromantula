@@ -15,9 +15,9 @@ object MapperFeature {
     /**
      * Generate mappings for a new file.
      * @param file database file entity
-     * @param content file binary content
+     * @param content file binary content or null if the file is a directory
      */
-    fun CoroutineScope.mapFile(file: FileEntity, content: ByteArray) {
+    fun CoroutineScope.mapFile(file: FileEntity, content: ByteArray?) {
         registeredMappers.forEach { launch { it.mapFile(file, content) } }
     }
 

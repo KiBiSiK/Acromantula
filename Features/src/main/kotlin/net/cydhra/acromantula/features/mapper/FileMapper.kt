@@ -11,9 +11,9 @@ interface FileMapper {
      * Called by the import feature after importing a file into workspace
      *
      * @param file database file entity
-     * @param content file binary content
+     * @param content file binary content or null if the file is a directory
      */
-    suspend fun mapFile(file: FileEntity, content: ByteArray)
+    suspend fun mapFile(file: FileEntity, content: ByteArray?)
 
     /**
      * Retrieve all symbols in a file that are managed by this mapper implementation
