@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import net.cydhra.acromantula.workspace.database.DatabaseMappingsManager
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
 import org.jetbrains.exposed.dao.IntEntity
@@ -9,6 +8,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
+import org.jetbrains.exposed.sql.transactions.transaction
 
 // This table is NOT private, so external models can reference files.
 object FileTable : IntIdTable("TreeFile") {
@@ -49,7 +49,7 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
      * Get all views associated with this file
      */
     fun getViews(): List<FileRepresentation> {
-        return DatabaseMappingsManager.transaction {
+        return transaction {
             this@FileEntity.views.toList()
         }
     }
