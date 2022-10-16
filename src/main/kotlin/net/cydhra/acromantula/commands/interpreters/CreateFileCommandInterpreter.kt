@@ -39,7 +39,7 @@ class CreateFileCommandInterpreter private constructor(
     override suspend fun evaluate() {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
-            filePath != null -> WorkspaceService.queryPath(filePath)
+            !filePath.isNullOrBlank() -> WorkspaceService.queryPath(filePath)
             else -> null
         }
 

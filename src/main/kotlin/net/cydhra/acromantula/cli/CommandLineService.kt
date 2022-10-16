@@ -42,6 +42,7 @@ object CommandLineService {
     private val executor = Executors.newSingleThreadExecutor()
 
     fun initialize() {
+        registerCommandParser(::CreateFileCommandParser, "create", "touch")
         registerCommandParser(::DeleteCommandParser, "delete", "del", "rm")
         registerCommandParser(::ListCommandsCommandParser, "commands", "list")
         registerCommandParser(::ImportCommandParser, "import")
