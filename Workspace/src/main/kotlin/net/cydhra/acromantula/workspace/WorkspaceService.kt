@@ -448,6 +448,10 @@ object WorkspaceService {
         this.workspaceClient.exportFile(fileEntity, outputStream)
     }
 
+    fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
+        TODO("not implemented")
+    }
+
     /**
      * Delete a file or directory, and its associated resource from the workspace. All directory contents will be
      * deleted as well.

@@ -52,6 +52,7 @@ object CommandLineService {
         registerCommandParser(::DirectQueryCommandParser, "query")
         registerCommandParser(::ViewCommandCommandParser, "view")
         registerCommandParser(::ExportViewCommandCommandParser, "exportview")
+        registerCommandParser(::MoveFileCommandParser, "move", "mv")
         registerCommandParser(::QuitCommandParser, "quit", "exit")
         registerCommandParser(::ReconstructCommandParser, "reconstruct", "convert")
         registerCommandParser(::ListExportersCommandParser, "exporters", "listexporters")

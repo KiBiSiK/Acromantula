@@ -70,6 +70,15 @@ object ArchiveFeature {
         }
     }
 
+    fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
+        require(targetDirectory?.isDirectory ?: true) { "target must be a directory or null" }
+        transaction {
+            require(canMoveFile(file.parent, targetDirectory)) { "source or target does not allow moving files" }
+        }
+
+        WorkspaceService.moveFile(file, targetDirectory)
+    }
+
     /**
      * Whether a file can be deleted from the given directory
      *
