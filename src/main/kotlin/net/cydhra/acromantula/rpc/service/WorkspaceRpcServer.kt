@@ -73,7 +73,22 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
     }
 
     override suspend fun createFile(request: CreateFileCommand): FileEntity {
-        val cmd = CreateFileCommandInterpreter(request.id, request.path, request.name, request.isDirectory)
+        val cmd = when (request.parentIdCase) {
+            CreateFileCommand.ParentIdCase.ID -> CreateFileCommandInterpreter(
+                request.id,
+                request.name,
+                request.isDirectory
+            )
+
+            CreateFileCommand.ParentIdCase.PATH -> CreateFileCommandInterpreter(
+                request.path,
+                request.name,
+                request.isDirectory
+            )
+
+            null, CreateFileCommand.ParentIdCase.PARENTID_NOT_SET -> throw MissingTargetFileException()
+        }
+
         val result = CommandDispatcherService.dispatchCommand("[RPC] create file", cmd).await()
 
         result.onFailure {

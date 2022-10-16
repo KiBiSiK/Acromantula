@@ -14,7 +14,7 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
  * @param fileName name of the new file
  * @param createDirectory whether to create a directory instead of a file
  */
-class CreateFileCommandInterpreter(
+class CreateFileCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val fileName: String,
