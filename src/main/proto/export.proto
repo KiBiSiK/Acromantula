@@ -19,6 +19,9 @@ message ExportersList {
 message Exporter {
   string name = 1;
   string defaultExtension = 2;
+
+  /** list of archive types this exporter supports. Exporter can export anything if list is empty */
+  repeated string supportedArchives = 3;
 }
 
 message ExportCommand {

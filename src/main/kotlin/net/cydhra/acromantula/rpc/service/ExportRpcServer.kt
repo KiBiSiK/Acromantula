@@ -39,6 +39,7 @@ class ExportRpcServer : ExportServiceGrpcKt.ExportServiceCoroutineImplBase() {
                         exporter {
                             this.name = exporter.name
                             this.defaultExtension = exporter.defaultFileExtension
+                            this.supportedArchives = exporter.supportedArchiveTypes.toList()
                         }
                     }
                     .toList()
