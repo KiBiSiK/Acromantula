@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.features.mapper.MapperFeature.mapFile
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
@@ -49,7 +50,9 @@ object ImporterFeature {
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
-            file.openConnection().getInputStream()
+            withContext(Dispatchers.IO) {
+                file.openConnection().getInputStream()
+            }
         } catch (e: Exception) {
             logger.error("Error while importing File['$fileName']:", e)
             return
