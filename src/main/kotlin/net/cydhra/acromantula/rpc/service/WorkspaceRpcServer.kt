@@ -101,6 +101,8 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             null, ReplaceFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
 
+        // todo this should be done through a command interpreter (analogous to reconstructFile) and routed through
+        //  the mapping feature for re-mapping
         WorkspaceService.updateFileEntry(fileEntity, request.newContent.toByteArray())
         return Empty.getDefaultInstance()
     }

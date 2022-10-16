@@ -1,9 +1,8 @@
 package net.cydhra.acromantula.commands.interpreters
 
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
-import net.cydhra.acromantula.features.view.GenerateViewFeature
+import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 
 /**
  * Command to delete file(s) from workspace.
@@ -17,20 +16,18 @@ class DeleteCommandInterpreter private constructor(
 ) : WorkspaceCommandInterpreter<Unit> {
 
     /**
-     * Command to import files into workspace.
+     * Command to delete file(s) from workspace.
      *
-     * @param fileEntityId optional. the entity id of parent directory
-     * @param type name of the generator strategy to use
+     * @param fileEntityId optional. the entity id of the file or directory to be deleted
      */
     constructor(fileEntityId: Int? = null) : this(fileEntityId, null)
 
     override val synchronous: Boolean = true
 
     /**
-     * Command to import files into workspace.
+     * Command to delete file(s) from workspace.
      *
-     * @param filePath optional. the path of the directory in workspace
-     * @param type name of the generator strategy to use
+     * @param filePath optional. the path of the file or directory to be deleted
      */
     constructor(filePath: String? = null) : this(null, filePath)
 
@@ -41,7 +38,7 @@ class DeleteCommandInterpreter private constructor(
             else -> throw IllegalStateException("either the entity id or the path of the file must be present")
         }
 
-        WorkspaceService.deleteFile(file)
+        ArchiveFeature.deleteFile(file)
     }
 }
 
