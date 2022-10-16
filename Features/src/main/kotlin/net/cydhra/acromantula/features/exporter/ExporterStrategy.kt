@@ -20,6 +20,11 @@ interface ExporterStrategy {
         get() = ""
 
     /**
+     * Supported archive types this strategy can export. No restrictions if empty.
+     */
+    val supportedArchiveTypes: Collection<String>
+
+    /**
      * Export the contents of [fileEntity] into the given [outputStream]
      */
     fun exportFile(fileEntity: FileEntity, outputStream: OutputStream)

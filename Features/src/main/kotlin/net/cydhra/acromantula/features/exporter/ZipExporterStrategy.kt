@@ -12,6 +12,8 @@ class ZipExporterStrategy : ExporterStrategy {
 
     override val defaultFileExtension: String = "zip"
 
+    override val supportedArchiveTypes: Collection<String> = emptyList()
+
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         val zipOutputStream = ZipOutputStream(outputStream)
         if (fileEntity.isDirectory) {

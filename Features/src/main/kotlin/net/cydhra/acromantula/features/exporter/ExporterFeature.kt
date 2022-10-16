@@ -2,6 +2,7 @@ package net.cydhra.acromantula.features.exporter
 
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.OutputStream
 
@@ -34,6 +35,19 @@ object ExporterFeature {
     fun exportFile(fileEntity: FileEntity, exporterStrategyName: String, outputStream: OutputStream) {
         val strategy = registeredExporterStrategies[exporterStrategyName]
             ?: throw IllegalArgumentException("exporter strategy \"$exporterStrategyName\" is unknown")
+
+        transaction {
+            if (fileEntity.archiveEntity != null) {
+                if (strategy.supportedArchiveTypes.isNotEmpty()
+                    && fileEntity.archiveEntity!!.typeIdent !in strategy.supportedArchiveTypes
+                ) {
+                    throw IllegalArgumentException(
+                        "$exporterStrategyName cannot export " +
+                                "${fileEntity.archiveEntity!!.typeIdent} archives"
+                    )
+                }
+            }
+        }
 
         strategy.exportFile(fileEntity, outputStream)
     }

@@ -9,6 +9,8 @@ const val GENERIC_EXPORTER_STRATEGY = "generic"
 class GenericExporterStrategy : ExporterStrategy {
     override val name: String = GENERIC_EXPORTER_STRATEGY
 
+    override val supportedArchiveTypes: Collection<String> = emptyList()
+
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         WorkspaceService.exportFile(fileEntity, outputStream)
     }
