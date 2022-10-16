@@ -116,7 +116,7 @@ object WorkspaceService {
      * @param type archive type identifier
      */
     fun addArchiveEntry(directory: FileEntity, type: String) {
-        require(!directory.isDirectory) { "cannot mark files as archives" }
+        require(directory.isDirectory) { "cannot mark files as archives" }
 
         logger.trace("creating archive entry in file tree: \"${directory.name}\"")
         workspaceClient.databaseClient.transaction {
