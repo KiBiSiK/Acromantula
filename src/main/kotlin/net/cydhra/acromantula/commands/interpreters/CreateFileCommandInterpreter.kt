@@ -3,6 +3,7 @@ package net.cydhra.acromantula.commands.interpreters
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 
 /**
  * Command to delete file(s) from workspace.
@@ -13,12 +14,12 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  * @param fileName name of the new file
  * @param createDirectory whether to create a directory instead of a file
  */
-class CreateFileCommandInterpreter private constructor(
+class CreateFileCommandInterpreter(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
     val fileName: String,
     val createDirectory: Boolean,
-) : WorkspaceCommandInterpreter<Unit> {
+) : WorkspaceCommandInterpreter<FileEntity> {
 
     /**
      * Command to create a new file in workspace.
@@ -42,14 +43,14 @@ class CreateFileCommandInterpreter private constructor(
     constructor(filePath: String? = null, fileName: String, createDirectory: Boolean)
             : this(null, filePath, fileName, createDirectory)
 
-    override suspend fun evaluate() {
+    override suspend fun evaluate(): FileEntity {
         val file = when {
             fileEntityId != null -> WorkspaceService.queryPath(fileEntityId)
             !filePath.isNullOrBlank() -> WorkspaceService.queryPath(filePath)
             else -> null
         }
 
-        if (createDirectory) {
+        return if (createDirectory) {
             ArchiveFeature.addDirectory(fileName, file)
         } else {
             ArchiveFeature.createFile(fileName, file, ByteArray(0))
