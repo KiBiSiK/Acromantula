@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.CompletableJob
-import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.PushbackInputStream
 
@@ -21,7 +21,7 @@ internal class GenericFileImporterStrategy : ImporterStrategy {
         fileContent: PushbackInputStream
     ): Pair<FileEntity, ByteArray> {
         val content = fileContent.readBytes()
-        val file = WorkspaceService.addFileEntry(fileName, parent, content)
+        val file = ArchiveFeature.createFile(fileName, parent, content)
         return Pair(file, content)
     }
 }

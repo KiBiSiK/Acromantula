@@ -36,6 +36,15 @@ object ArchiveFeature {
     }
 
     /**
+     * Create a file in [parent] directory (or workspace root if null) with given name and content. Throws
+     * [IllegalArgumentException] if the containing archive does not support adding files
+     */
+    fun createFile(fileName: String, parent: FileEntity?, content: ByteArray): FileEntity {
+        require(canAddFile(parent)) { "${getArchiveType(parent)} archive does not support adding files" }
+        return WorkspaceService.addFileEntry(fileName, parent, content)
+    }
+
+    /**
      * Whether a file can be moved between two directories
      *
      * @param fromDirectory the move source directory or null if it is the workspace root
@@ -74,6 +83,21 @@ object ArchiveFeature {
     }
 
     /**
+     * Delete a file. Throws an [IllegalArgumentException] if the containing archive format does not support deleting
+     * files.
+     */
+    fun deleteFile(file: FileEntity) {
+        transaction {
+            require(canDeleteFile(file.parent)) {
+                "${getArchiveType(file.parent)} archive does not support " +
+                        "deleting files"
+            }
+        }
+
+        WorkspaceService.deleteFile(file)
+    }
+
+    /**
      * Whether a directory can be added under the given directory
      *
      * @param directory a directory in the workspace file tree or null, if the directory is added at workspace root
@@ -83,6 +107,11 @@ object ArchiveFeature {
 
         val (_, type) = findArchiveRoot(directory) ?: return true
         return type.canAddDirectory()
+    }
+
+    fun addDirectory(name: String, parent: FileEntity?): FileEntity {
+        require(canAddDirectory(parent)) { "${getArchiveType(parent)} archive does not support adding directories" }
+        return WorkspaceService.addDirectoryEntry(name, parent)
     }
 
     /**

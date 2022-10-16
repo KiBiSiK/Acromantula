@@ -4,7 +4,6 @@ import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.features.archives.ZipArchiveType
 import net.cydhra.acromantula.features.util.FileTreeBuilder
-import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import java.io.ByteArrayInputStream
@@ -30,7 +29,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
         fileContent: PushbackInputStream
     ):
             Pair<FileEntity, ByteArray?> {
-        val archive = WorkspaceService.addDirectoryEntry(fileName, parent)
+        val archive = ArchiveFeature.addDirectory(fileName, parent)
         val treeBuilder = FileTreeBuilder(archive)
 
         val zipInputStream = ZipInputStream(fileContent)

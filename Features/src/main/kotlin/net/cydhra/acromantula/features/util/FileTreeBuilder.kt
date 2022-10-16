@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.util
 
-import net.cydhra.acromantula.workspace.WorkspaceService
+import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 
 /**
@@ -33,7 +33,7 @@ class FileTreeBuilder(archiveFile: FileEntity) {
             val directoryParent = getParentDirectory(parentDirectoryPath)
             val directoryParentPath = getParentPath(parentDirectoryPath)
 
-            WorkspaceService.addDirectoryEntry(
+            ArchiveFeature.addDirectory(
                 name = parentDirectoryPath.removePrefix(directoryParentPath),
                 parent = directoryParent
             )
