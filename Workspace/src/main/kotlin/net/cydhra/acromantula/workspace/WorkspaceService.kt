@@ -110,21 +110,18 @@ object WorkspaceService {
     }
 
     /**
-     * Add an archive entry into the workspace file tree. Since the archive is only parent to its content, no actual
-     * data is associated with it. It is simply a [FileEntity] that has an [ArchiveEntity] associated
+     * Mark a directory entry as an archive of the given type
      *
-     * @param archiveName simple name of the archive
+     * @param directory directory to be marked as an archive
+     * @param type archive type identifier
      */
-    fun addArchiveEntry(archiveName: String, parent: FileEntity?): FileEntity {
-        logger.trace("creating archive entry in file tree: \"$archiveName\"")
-        return workspaceClient.databaseClient.transaction {
-            val archive = ArchiveEntity.new {}
+    fun addArchiveEntry(directory: FileEntity, type: String) {
+        require(!directory.isDirectory) { "cannot mark files as archives" }
 
-            FileEntity.new {
-                this.name = archiveName
-                this.parent = parent
-                this.isDirectory = true
-                this.archiveEntity = archive
+        logger.trace("creating archive entry in file tree: \"${directory.name}\"")
+        workspaceClient.databaseClient.transaction {
+            directory.archiveEntity = ArchiveEntity.new {
+                this.typeIdent = type
             }
         }
     }

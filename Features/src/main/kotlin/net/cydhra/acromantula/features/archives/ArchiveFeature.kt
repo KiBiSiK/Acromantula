@@ -124,6 +124,15 @@ object ArchiveFeature {
     }
 
     /**
+     * Mark an existing directory as an archive. This is only meant for use during import. Use
+     * [createArchiveFromScratch] to mark directories as an archive at a later point. This method does not perform
+     * any sanity checks on the directory content
+     */
+    fun markDirectoryAsArchive(directory: FileEntity, archiveType: ArchiveType) {
+        WorkspaceService.addArchiveEntry(directory, archiveType.fileTypeIdentifier)
+    }
+
+    /**
      * Checks whether a file tree is applicable to become an archive of the given type
      *
      * @param subFiles all files that will be at root-level in the new archive
