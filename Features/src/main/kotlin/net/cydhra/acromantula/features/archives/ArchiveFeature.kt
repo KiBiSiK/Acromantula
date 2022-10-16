@@ -25,8 +25,12 @@ object ArchiveFeature {
 
     /**
      * Whether a file can be added in the given directory
+     *
+     * @param directory parent directory or null, if file is being added at w
      */
-    fun canAddFile(directory: FileEntity): Boolean {
+    fun canAddFile(directory: FileEntity?): Boolean {
+        if (directory == null) return true
+
         val (_, type) = findArchiveRoot(directory) ?: return true
         return type.canAddFile()
     }
@@ -82,18 +86,6 @@ object ArchiveFeature {
     }
 
     /**
-     * Whether an archive can be created/imported under the given directory
-     *
-     * @param directory a directory in the workspace file tree or null, if the archive is added at workspace root
-     */
-    fun canAddSubArchive(directory: FileEntity?): Boolean {
-        if (directory == null) return true
-
-        val (_, type) = findArchiveRoot(directory) ?: return true
-        return type.canAddSubArchive()
-    }
-
-    /**
      * Whether given archive type can be created from scratch. This will allow a user to create a directory and mark
      * is as an archive of this format, so that subsequent actions are subject to the capabilities of this archive type.
      *
@@ -125,6 +117,13 @@ object ArchiveFeature {
     }
 
     /**
+     * Get the archive type identifier for a given directory, or null if the directory is not in an archive
+     */
+    fun getArchiveType(directory: FileEntity?): String? {
+        return findArchiveRoot(directory)?.second?.fileTypeIdentifier
+    }
+
+    /**
      * Checks whether a file tree is applicable to become an archive of the given type
      *
      * @param subFiles all files that will be at root-level in the new archive
@@ -132,12 +131,6 @@ object ArchiveFeature {
      */
     private fun checkCapabilitiesRecursively(subFiles: List<TreeNode<FileEntity>>, type: ArchiveType) {
         for (file in subFiles) {
-            transaction {
-                if (file.value.archiveEntity != null && !type.canAddSubArchive()) {
-                    throw IllegalStateException("cannot create ${type.fileTypeIdentifier} archive containing other archives")
-                }
-            }
-
             if (file.value.isDirectory) {
                 if (!type.canAddDirectory())
                     throw IllegalStateException("cannot create ${type.fileTypeIdentifier} archive with sub-directories")

@@ -36,11 +36,6 @@ interface ArchiveType {
     fun canAddDirectory(): Boolean
 
     /**
-     * Whether directories in this archive can be different archives
-     */
-    fun canAddSubArchive(): Boolean
-
-    /**
      * Whether this archive type can be created from scratch. This will allow a user to create a directory and mark
      * is as an archive of this format, so that subsequent actions are subject to the capabilities of this archive type.
      */
