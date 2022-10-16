@@ -3,6 +3,7 @@ package net.cydhra.acromantula.features.importer
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.features.mapper.MapperFeature.mapFile
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
@@ -73,6 +74,13 @@ object ImporterFeature {
      */
     suspend fun importFile(supervisor: CompletableJob, parent: FileEntity?, fileName: String, fileStream: InputStream) {
         logger.trace("importing \"$fileName\"")
+
+        if (!ArchiveFeature.canAddFile(parent)) {
+            throw IllegalArgumentException(
+                ArchiveFeature.getArchiveType(parent)
+                        + " archives do not support adding external files"
+            )
+        }
 
         val pushbackStream = if (fileStream is PushbackInputStream) fileStream else
             PushbackInputStream(fileStream, 512)
