@@ -10,9 +10,11 @@ import org.apache.logging.log4j.LogManager
 class CreateFileCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
     val filePath by parser.storing("-p", "--parent", help = "directory in workspace where to create file").default("")
 
+    val directory by parser.flagging("-d", "--directory", help = "create a directory").default(false)
+
     val name by parser.positional("NAME", help = "file name")
 
-    override fun build(): WorkspaceCommandInterpreter<Unit> = CreateFileCommandInterpreter(filePath, name)
+    override fun build(): WorkspaceCommandInterpreter<Unit> = CreateFileCommandInterpreter(filePath, name, directory)
 
     override fun report(result: Result<Unit>) {
         result.onSuccess {
