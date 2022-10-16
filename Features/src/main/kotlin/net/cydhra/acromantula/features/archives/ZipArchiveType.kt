@@ -23,6 +23,13 @@ object ZipArchiveType : ArchiveType {
     override fun canCreateArchiveFromScratch(): Boolean = true
 
     override fun createArchiveFromScratch(directory: FileEntity) {
+        markAsZipArchvie(directory)
+    }
+
+    /**
+     * Mark a directory as a zip archive. This can be called during import as well
+     */
+    internal fun markAsZipArchvie(directory: FileEntity) {
         transaction {
             directory.archiveEntity = ArchiveEntity.new {
                 typeIdent = ""

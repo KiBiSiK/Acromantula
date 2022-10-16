@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.CompletableJob
+import net.cydhra.acromantula.features.archives.ZipArchiveType
 import net.cydhra.acromantula.features.util.FileTreeBuilder
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
@@ -58,6 +59,9 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
 
             currentEntry = zipInputStream.nextEntry
         }
+
+        // mark as zip archive for the archive feature
+        ZipArchiveType.markAsZipArchvie(archive)
 
         return Pair(archive, null)
     }
