@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOn
 import net.cydhra.acromantula.commands.CommandDispatcherService
+import net.cydhra.acromantula.commands.interpreters.CreateFileCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.DeleteCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.proto.*
@@ -72,26 +73,16 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
     }
 
     override suspend fun createFile(request: CreateFileCommand): FileEntity {
-        val parentEntity = when (request.parentIdCase) {
-            CreateFileCommand.ParentIdCase.ID -> WorkspaceService.queryPath(request.id)
-            CreateFileCommand.ParentIdCase.PATH ->
-                if (request.path.isNotBlank())
-                    WorkspaceService.queryPath(request.path)
-                else
-                    null
+        val cmd = CreateFileCommandInterpreter(request.id, request.path, request.name, request.isDirectory)
+        val result = CommandDispatcherService.dispatchCommand("[RPC] create file", cmd).await()
 
-            null, CreateFileCommand.ParentIdCase.PARENTID_NOT_SET -> null
-        }
-
-        val newFile = if (request.isDirectory) {
-            WorkspaceService.addFileEntry(request.name, parentEntity, ByteArray(0))
-        } else {
-            WorkspaceService.addDirectoryEntry(request.name, parentEntity)
+        result.onFailure {
+            throw it
         }
 
         // tree node is usually used by WorkspaceService.listFilesRecursively, but we know our new file has no
         // children, so we can use it here without constructing a tree
-        return fileTreeToProto(TreeNode(newFile))
+        return fileTreeToProto(TreeNode(result.getOrThrow()))
     }
 
     override suspend fun replaceFile(request: ReplaceFileCommand): Empty {
