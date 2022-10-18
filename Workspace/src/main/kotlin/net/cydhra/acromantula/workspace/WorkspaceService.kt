@@ -164,11 +164,10 @@ object WorkspaceService {
     /**
      * Rename a file in workspace. This method cannot move the file.
      *
-     * @param name unique file path suffix (see [queryPath])
+     * @param fileEntity file to be renamed
      * @param newName new file name (without the path, only the name)
      */
-    fun renameFileEntry(name: String, newName: String) {
-        val fileEntity = queryPath(name)
+    fun renameFileEntry(fileEntity: FileEntity, newName: String) {
         this.workspaceClient.renameFile(fileEntity, newName)
     }
 
