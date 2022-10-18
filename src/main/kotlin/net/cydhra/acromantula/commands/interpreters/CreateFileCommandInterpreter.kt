@@ -53,7 +53,7 @@ class CreateFileCommandInterpreter private constructor(
         return if (createDirectory) {
             ArchiveFeature.addDirectory(fileName, file)
         } else {
-            ArchiveFeature.createFile(fileName, file, ByteArray(0))
+            ArchiveFeature.addFile(fileName, file, ByteArray(0))
         }
     }
 }

@@ -21,7 +21,7 @@ internal class GenericFileImporterStrategy : ImporterStrategy {
         fileContent: PushbackInputStream
     ): Pair<FileEntity, ByteArray> {
         val content = fileContent.readBytes()
-        val file = ArchiveFeature.createFile(fileName, parent, content)
+        val file = ArchiveFeature.addFile(fileName, parent, content)
         return Pair(file, content)
     }
 }

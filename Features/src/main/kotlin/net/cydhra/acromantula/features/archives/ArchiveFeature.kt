@@ -39,7 +39,7 @@ object ArchiveFeature {
      * Create a file in [parent] directory (or workspace root if null) with given name and content. Throws
      * [IllegalArgumentException] if the containing archive does not support adding files
      */
-    fun createFile(fileName: String, parent: FileEntity?, content: ByteArray): FileEntity {
+    fun addFile(fileName: String, parent: FileEntity?, content: ByteArray): FileEntity {
         require(canAddFile(parent)) { "${getArchiveType(parent)} archive does not support adding files" }
         return WorkspaceService.addFileEntry(fileName, parent, content)
     }
