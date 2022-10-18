@@ -2,7 +2,6 @@ package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
-import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.util.TreeNode
@@ -119,11 +118,7 @@ object WorkspaceService {
         require(directory.isDirectory) { "cannot mark files as archives" }
 
         logger.trace("creating archive entry in file tree: \"${directory.name}\"")
-        workspaceClient.databaseClient.transaction {
-            directory.archiveEntity = ArchiveEntity.new {
-                this.typeIdent = type
-            }
-        }
+        workspaceClient.markAsArchive(directory, type)
     }
 
     /**
@@ -467,5 +462,9 @@ object WorkspaceService {
 
             fileEntity.delete()
         }
+    }
+
+    fun registerArchiveType(fileTypeIdentifier: String) {
+        workspaceClient.registerArchiveType(fileTypeIdentifier)
     }
 }

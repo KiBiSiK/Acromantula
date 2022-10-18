@@ -34,6 +34,11 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     }
 
     /**
+     * Register a new type of archives at the database
+     */
+    abstract fun registerArchiveType(fileTypeIdentifier: String)
+
+    /**
      * Upload a file into the workspace
      *
      * @param fileEntity database entry to reference the file
@@ -97,5 +102,10 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * @param targetDirectory target directory or null, if file is to be moved to workspace root
      */
     abstract fun moveFile(file: FileEntity, targetDirectory: FileEntity?)
+
+    /**
+     * Mark a directory as an archive of the given type
+     */
+    abstract fun markAsArchive(directory: FileEntity, type: String)
 
 }

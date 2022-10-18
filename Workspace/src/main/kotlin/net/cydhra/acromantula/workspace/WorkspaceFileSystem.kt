@@ -4,8 +4,11 @@ import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
+import net.cydhra.acromantula.workspace.filesystem.ArchiveEntity
+import net.cydhra.acromantula.workspace.filesystem.ArchiveTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insertIgnoreAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.File
@@ -36,6 +39,11 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
 
     private val index: WorkspaceIndex
     private val gson = GsonBuilder().create()
+
+    /**
+     * Registered archive types
+     */
+    private val archiveTypes = mutableMapOf<String, ArchiveEntity>()
 
     init {
         if (!resourceDirectory.exists())
@@ -242,6 +250,32 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         }
 
         return File(resourceDirectory, id.toString()).inputStream()
+    }
+
+    /**
+     * Register an archive type by its identifier. The identifier is expected to be unique. If it is already present
+     * in the database, the existing id will be reused. This means registering an archive twice will not fail
+     */
+    fun registerArchiveType(fileTypeIdentifier: String) {
+        transaction {
+            archiveTypes.put(
+                fileTypeIdentifier,
+                ArchiveEntity.findById(
+                    ArchiveTable.insertIgnoreAndGetId {
+                        it[typeIdent] = fileTypeIdentifier
+                    }!!
+                )!!
+            )
+        }
+    }
+
+    /**
+     * Mark a directory as an archive using the archive type identifier
+     */
+    fun markAsArchive(directory: FileEntity, type: String) {
+        transaction {
+            directory.archiveEntity = archiveTypes[type]!!
+        }
     }
 
     /**

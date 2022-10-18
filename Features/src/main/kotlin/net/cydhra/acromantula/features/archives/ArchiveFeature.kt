@@ -21,6 +21,7 @@ object ArchiveFeature {
      */
     fun registerArchiveType(type: ArchiveType) {
         registeredArchiveTypes += type
+        WorkspaceService.registerArchiveType(type.fileTypeIdentifier)
     }
 
     /**

@@ -15,6 +15,10 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
      */
     private val workspaceFileSystem = WorkspaceFileSystem(directory, this.databaseClient)
 
+    override fun registerArchiveType(fileTypeIdentifier: String) {
+        this.workspaceFileSystem.registerArchiveType(fileTypeIdentifier)
+    }
+
     override fun uploadFile(fileEntity: FileEntity, content: ByteArray) {
         this.workspaceFileSystem.addResource(fileEntity, content)
     }
@@ -53,5 +57,9 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
 
     override fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
         this.workspaceFileSystem.moveResource(file, targetDirectory)
+    }
+
+    override fun markAsArchive(directory: FileEntity, type: String) {
+        this.workspaceFileSystem.markAsArchive(directory, type)
     }
 }
