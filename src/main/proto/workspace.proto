@@ -16,6 +16,8 @@ service WorkspaceService {
   rpc replaceFile(ReplaceFileCommand) returns (google.protobuf.Empty);
 
   rpc deleteFile(DeleteFileCommand) returns (google.protobuf.Empty);
+
+  rpc renameFile(RenameFileCommand) returns (google.protobuf.Empty);
 }
 
 message ListFilesCommand {
@@ -100,4 +102,13 @@ message DeleteFileCommand {
     int32 id = 1;
     string path = 2;
   }
+}
+
+message RenameFileCommand {
+  oneof fileId {
+    int32 id = 1;
+    string path = 2;
+  }
+
+  string newName = 3;
 }

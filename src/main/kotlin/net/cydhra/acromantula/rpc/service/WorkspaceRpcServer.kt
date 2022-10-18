@@ -10,6 +10,7 @@ import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.commands.interpreters.CreateFileCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.DeleteCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
+import net.cydhra.acromantula.commands.interpreters.RenameFileCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.util.TreeNode
@@ -98,6 +99,22 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         // tree node is usually used by WorkspaceService.listFilesRecursively, but we know our new file has no
         // children, so we can use it here without constructing a tree
         return fileTreeToProto(TreeNode(result.getOrThrow()))
+    }
+
+    override suspend fun renameFile(request: RenameFileCommand): Empty {
+        val command = when (request.fileIdCase) {
+            RenameFileCommand.FileIdCase.ID -> RenameFileCommandInterpreter(request.id, request.newName)
+            RenameFileCommand.FileIdCase.PATH -> RenameFileCommandInterpreter(request.path, request.newName)
+            null, RenameFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
+        }
+
+        val result = CommandDispatcherService.dispatchCommand("[RPC] rename file", command).await()
+
+        result.onFailure {
+            throw it
+        }
+
+        return Empty.getDefaultInstance()
     }
 
     override suspend fun replaceFile(request: ReplaceFileCommand): Empty {
