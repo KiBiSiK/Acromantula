@@ -192,6 +192,17 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     }
 
     /**
+     * Move a file to a new location in the file tree.
+     *
+     * @param targetDirectory target directory or null if target is workspace root
+     */
+    fun moveResource(file: FileEntity, targetDirectory: FileEntity?) {
+        transaction {
+            file.parent = targetDirectory
+        }
+    }
+
+    /**
      * Export a resource from the workspace by copying it into a channel. The channel is not closed afterwards. The
      * resource is read from disk.
      *

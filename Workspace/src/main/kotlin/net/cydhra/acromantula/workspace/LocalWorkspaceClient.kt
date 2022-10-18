@@ -50,4 +50,8 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     override fun deleteFile(fileEntity: FileEntity) {
         this.workspaceFileSystem.deleteResource(fileEntity)
     }
+
+    override fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
+        this.workspaceFileSystem.moveResource(file, targetDirectory)
+    }
 }

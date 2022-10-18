@@ -449,7 +449,9 @@ object WorkspaceService {
     }
 
     fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
-        TODO("not implemented")
+        require(targetDirectory?.isDirectory ?: true) { "target must be a directory or null" }
+
+        this.workspaceClient.moveFile(file, targetDirectory)
     }
 
     /**

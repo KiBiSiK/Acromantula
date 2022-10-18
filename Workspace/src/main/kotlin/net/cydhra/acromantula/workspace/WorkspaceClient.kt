@@ -90,4 +90,12 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      */
     abstract fun deleteFile(fileEntity: FileEntity)
 
+    /**
+     * Move a file to another directory. If the file is a directory, all contents will be moved as well
+     *
+     * @param file file or directory to move
+     * @param targetDirectory target directory or null, if file is to be moved to workspace root
+     */
+    abstract fun moveFile(file: FileEntity, targetDirectory: FileEntity?)
+
 }
