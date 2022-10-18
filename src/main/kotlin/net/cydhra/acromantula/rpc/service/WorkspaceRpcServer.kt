@@ -14,18 +14,25 @@ import net.cydhra.acromantula.commands.interpreters.RenameFileCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.util.TreeNode
+import org.jetbrains.exposed.sql.transactions.transaction
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
 
-    private fun fileTreeToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity {
-        val children = treeNode.childList.map(::fileTreeToProto)
-        return fileEntity {
-            id = treeNode.value.id.value
-            name = treeNode.value.name
-            isDirectory = treeNode.value.isDirectory
-            children(*children.toTypedArray())
+    private fun fileTreeToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity =
+        transaction {
+            val children = treeNode.childList.map(::fileTreeToProto)
+            fileEntity {
+                id = treeNode.value.id.value
+                name = treeNode.value.name
+                isDirectory = treeNode.value.isDirectory
+
+                if (treeNode.value.archiveEntity != null) {
+                    archiveFormat = treeNode.value.archiveEntity!!.typeIdent
+                }
+
+                children(*children.toTypedArray())
+            }
         }
-    }
 
     override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
         val interpreter = when (request.fileIdCase) {
