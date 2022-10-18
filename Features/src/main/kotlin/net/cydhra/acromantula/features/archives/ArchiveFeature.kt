@@ -41,7 +41,9 @@ object ArchiveFeature {
      */
     fun addFile(fileName: String, parent: FileEntity?, content: ByteArray): FileEntity {
         require(canAddFile(parent)) { "${getArchiveType(parent)} archive does not support adding files" }
-        return WorkspaceService.addFileEntry(fileName, parent, content)
+        val newFile = WorkspaceService.addFileEntry(fileName, parent, content)
+        findArchiveRoot(parent)?.also { (archive, type) -> type.onFileAdded(archive, newFile) }
+        return newFile
     }
 
     /**
@@ -72,11 +74,24 @@ object ArchiveFeature {
 
     fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
         require(targetDirectory?.isDirectory ?: true) { "target must be a directory or null" }
-        transaction {
-            require(canMoveFile(file.parent, targetDirectory)) { "source or target does not allow moving files" }
+        val parent = transaction {
+            val parent = file.parent
+            require(canMoveFile(parent, targetDirectory)) { "source or target does not allow moving files" }
+            parent
         }
 
-        WorkspaceService.moveFile(file, targetDirectory)
+        // move file and update affected archives
+        if (parent == targetDirectory) {
+            WorkspaceService.moveFile(file, targetDirectory)
+
+            if (parent != null) {
+                findArchiveRoot(parent)?.also { (archive, type) -> type.onFileMoved(archive, parent, file) }
+            }
+        } else {
+            findArchiveRoot(parent)?.also { (archive, type) -> type.onFileDelete(archive, file) }
+            WorkspaceService.moveFile(file, targetDirectory)
+            findArchiveRoot(targetDirectory)?.also { (archive, type) -> type.onFileAdded(archive, file) }
+        }
     }
 
     /**
@@ -103,6 +118,7 @@ object ArchiveFeature {
             }
         }
 
+        findArchiveRoot(file)?.also { (archive, type) -> type.onFileDelete(archive, file) }
         WorkspaceService.deleteFile(file)
     }
 
@@ -120,7 +136,9 @@ object ArchiveFeature {
 
     fun addDirectory(name: String, parent: FileEntity?): FileEntity {
         require(canAddDirectory(parent)) { "${getArchiveType(parent)} archive does not support adding directories" }
-        return WorkspaceService.addDirectoryEntry(name, parent)
+        val directory = WorkspaceService.addDirectoryEntry(name, parent)
+        findArchiveRoot(parent)?.also { (archive, type) -> type.onDirectoryAdded(archive, directory) }
+        return directory
     }
 
     /**
