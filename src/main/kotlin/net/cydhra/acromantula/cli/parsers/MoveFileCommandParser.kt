@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.cli.parsers
 
 import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.default
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.MoveFileCommandInterpreter
@@ -13,8 +14,9 @@ class MoveFileCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {
 
     val targetPath by parser.positional(
         "TARGET",
-        help = "directory where to move the file. Will throw an error if it is not an existing directory"
-    )
+        help = "directory where to move the file. Will throw an error if it is not an existing directory." +
+                " Leave empty to move to repository root."
+    ).default("")
 
     override fun build(): WorkspaceCommandInterpreter<Unit> =
         MoveFileCommandInterpreter(null, filePath, null, targetPath)
