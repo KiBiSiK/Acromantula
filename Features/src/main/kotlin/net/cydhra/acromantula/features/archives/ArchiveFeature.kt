@@ -94,6 +94,19 @@ object ArchiveFeature {
         }
     }
 
+    fun canRenameFile(file: FileEntity, name: String): Boolean {
+        val (_, type) = findArchiveRoot(file) ?: return true
+        return type.canRenameFile(name)
+    }
+
+    fun renameFile(file: FileEntity, newName: String) {
+        require(canRenameFile(file, newName)) {
+            "${getArchiveType(file)} archive does not support renaming or the given name is invalid for archive format"
+        }
+        findArchiveRoot(file)?.also { (archive, type) -> type.onFileRename(archive, file, newName) }
+        WorkspaceService.renameFileEntry(file, newName)
+    }
+
     /**
      * Whether a file can be deleted from the given directory
      *

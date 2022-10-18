@@ -46,6 +46,21 @@ interface ArchiveType {
     fun onFileMoved(archive: FileEntity, source: FileEntity, file: FileEntity)
 
     /**
+     * Whether this archive supports renaming of files and whether the given name is a valid file name for this
+     * archive format
+     */
+    fun canRenameFile(name: String): Boolean
+
+    /**
+     * Called before a file is renamed. The file still has its old name, and will be renamed after this method call.
+     *
+     * @param archive modified archive
+     * @param file modified file
+     * @param newName new file name
+     */
+    fun onFileRename(archive: FileEntity, file: FileEntity, newName: String)
+
+    /**
      * Whether this archive type supports deleting files
      */
     fun canDeleteFile(): Boolean
