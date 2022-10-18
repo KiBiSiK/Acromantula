@@ -459,16 +459,13 @@ object WorkspaceService {
      * deleted as well.
      */
     fun deleteFile(fileEntity: FileEntity) {
-        if (fileEntity.isDirectory) {
-            val children = transaction {
-                FileEntity.find { FileTable.parent eq fileEntity.id }
-            }
-            children.forEach(::deleteFile)
-        } else {
-            this.workspaceClient.deleteFile(fileEntity)
-        }
-
         transaction {
+            if (fileEntity.isDirectory) {
+                FileEntity.find { FileTable.parent eq fileEntity.id }.forEach(::deleteFile)
+            } else {
+                workspaceClient.deleteFile(fileEntity)
+            }
+
             fileEntity.delete()
         }
     }
