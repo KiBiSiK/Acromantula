@@ -56,7 +56,8 @@ object CommandLineService {
         registerCommandParser(::QuitCommandParser, "quit", "exit")
         registerCommandParser(::ReconstructCommandParser, "reconstruct", "convert")
         registerCommandParser(::ListExportersCommandParser, "exporters", "listexporters")
-        registerCommandParser(::RenameCommandParser, "rename", "remap")
+        registerCommandParser(::RenameCommandParser, "remap")
+        registerCommandParser(::RenameFileCommandParser, "rename")
         registerCommandParser(::TransformCommandParser, "transform")
         registerCommandParser(::ListViewTypesCommandParser, "views", "viewgenerators", "listviewgenerators")
     }
