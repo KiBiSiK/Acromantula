@@ -168,7 +168,7 @@ object WorkspaceService {
 
     /**
      * Upload the binary data of a file representation into the workspace to cache it for later access. It will be
-     * automatically deleted when the reference file changes //TODO
+     * automatically deleted when the reference file changes
      *
      * @param file reference file for the representation data
      * @param type representation type identifier

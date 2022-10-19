@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Server that translates remote procedure calls into command invocations.
- * TODO: report back command results to caller
  */
 object RemoteProcedureService {
     private val logger = LogManager.getLogger()
