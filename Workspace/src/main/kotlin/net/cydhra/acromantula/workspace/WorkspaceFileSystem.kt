@@ -59,27 +59,6 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     }
 
     /**
-     * Import a resource into the workspace. This will create the file entity and save the resource content into the
-     * workspace. This method will read the contents of the specified url. It is assumed, that it is a trusted source.
-     *
-     * @param name the name this resource will get in the file tree
-     * @param url the url where to load the resource from
-     * @param parent an optional parent for the resource to integrate it into the file tree
-     */
-    fun importResource(name: String, url: URL, parent: FileEntity? = null): FileEntity {
-        val content = url.openStream().use { it.readBytes() }
-        return databaseClient.transaction {
-            val newEntity = FileEntity.new {
-                this.name = name
-                this.parent = parent
-            }
-
-            this@WorkspaceFileSystem.addResource(newEntity, content)
-            return@transaction newEntity
-        }
-    }
-
-    /**
      * Add a resource to the workspace and associate it with the given file entity.
      *
      * @param file the internal representation of the new entity. Gets modified to store the location of data
