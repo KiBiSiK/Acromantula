@@ -69,8 +69,6 @@ enum FileTransferStatus {
 Chunked message for file transfer
  */
 message FileChunk {
-  FileTransferStatus status = 1;
-
   /*
   How many bytes the total file contains. This number stays constant for an entire transmission and can be used to
   calculate transmission progress

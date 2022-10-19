@@ -48,7 +48,6 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
             .chunked(request.chunkSize)
             .map {
                 FileChunk.newBuilder()
-                    .setStatus(FileTransferStatus.TRANSFER_STATUS_PROGRESS)
                     .setTotalBytes(-1)
                     .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray()))
                     .build()
