@@ -19,8 +19,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.URL
-import java.sql.ResultSet
 import java.util.*
 
 /**
@@ -254,16 +252,6 @@ object WorkspaceService {
         }
     }
 
-    fun <T : Any> String.execAndMap(transform: (ResultSet) -> T): List<T> {
-        val result = arrayListOf<T>()
-        TransactionManager.current().exec(this) { rs ->
-            while (rs.next()) {
-                result += transform(rs)
-            }
-        }
-        return result
-    }
-
     /**
      * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
      * repository root is used.
@@ -411,28 +399,6 @@ object WorkspaceService {
      */
     fun getRepresentationContent(representation: FileRepresentation): InputStream {
         return this.workspaceClient.downloadRepresentation(representation)
-    }
-
-    /**
-     * Get an URL pointing to the file system address of a file. This is mainly used to instruct the front-end where
-     * to find something and should not be used by the back-end for direct file manipulation
-     *
-     * @param resource the resource id assigned by the workspace
-     *
-     * @return an URL pointing to the file on the filesystem
-     */
-    fun getFileUrl(resource: Int): URL {
-        return this.workspaceClient.getFileUrl(resource)
-    }
-
-    /**
-     * Get a URL pointing to the file system address of a view/representation. This is mainly used to instruct the
-     * front-end where to find something and should not be used by the back-end for direct file manipulation.
-     *
-     * @param resource the view entity id
-     */
-    fun getRepresentationUrl(resource: Int): URL {
-        return this.workspaceClient.getFileUrl(resource)
     }
 
     /**
