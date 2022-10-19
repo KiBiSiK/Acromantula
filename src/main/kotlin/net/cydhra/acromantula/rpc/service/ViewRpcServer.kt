@@ -41,6 +41,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
         // TODO there is error handling here that is supposed to be already handled. Look at GenerateViewFeature
         //  .generateView for more info
         val view = result.getOrThrow() ?: throw java.lang.IllegalArgumentException("cannot generate view of given type")
+        val size = WorkspaceService.getRepresentationSize(view)
         WorkspaceService.getRepresentationContent(view)
             .buffered()
             .iterator()
@@ -48,7 +49,7 @@ class ViewRpcServer : ViewServiceGrpcKt.ViewServiceCoroutineImplBase() {
             .chunked(request.chunkSize)
             .map {
                 FileChunk.newBuilder()
-                    .setTotalBytes(-1)
+                    .setTotalBytes(size)
                     .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray()))
                     .build()
             }

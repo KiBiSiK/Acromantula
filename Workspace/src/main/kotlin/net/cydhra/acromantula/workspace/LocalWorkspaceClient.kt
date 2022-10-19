@@ -62,4 +62,12 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     override fun markAsArchive(directory: FileEntity, type: String) {
         this.workspaceFileSystem.markAsArchive(directory, type)
     }
+
+    override fun getFileSize(fileEntity: FileEntity): Long {
+        return this.workspaceFileSystem.getResourceSize(fileEntity)
+    }
+
+    override fun getRepresentationSize(fileRepresentation: FileRepresentation): Long {
+        return this.workspaceFileSystem.getFileRepresentationSize(fileRepresentation)
+    }
 }

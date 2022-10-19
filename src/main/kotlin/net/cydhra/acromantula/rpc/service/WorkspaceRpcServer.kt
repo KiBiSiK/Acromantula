@@ -63,7 +63,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
 
-        // TODO file size is not set correctly yet
+        val size = WorkspaceService.getFileSize(fileEntity)
         return WorkspaceService.getFileContent(fileEntity)
             .buffered()
             .iterator()
@@ -71,7 +71,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
             .chunked(request.chunkSize)
             .map {
                 FileChunk.newBuilder()
-                    .setTotalBytes(-1)
+                    .setTotalBytes(size)
                     .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray()))
                     .build()
             }

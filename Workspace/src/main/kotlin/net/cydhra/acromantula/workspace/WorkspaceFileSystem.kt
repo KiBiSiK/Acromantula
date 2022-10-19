@@ -203,6 +203,19 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     }
 
     /**
+     * Get the file size of a resource without reading the resource from disk
+     */
+    fun getResourceSize(file: FileEntity): Long {
+        val id = this.databaseClient.transaction {
+            file.refresh()
+            require(file.resource != null) { "this file (\"${file.name}\") is not associated with a resource." }
+            file.resource!!
+        }
+
+        return File(resourceDirectory, id.toString()).length()
+    }
+
+    /**
      * Creates a file representation resource in workspace.
      */
     fun createFileRepresentation(file: FileEntity, type: String, content: ByteArray): FileRepresentation {
@@ -229,6 +242,13 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         }
 
         return File(resourceDirectory, id.toString()).inputStream()
+    }
+
+    /**
+     * Get the file size of a representation resource without reading the resource from disk
+     */
+    fun getFileRepresentationSize(representation: FileRepresentation): Long {
+        return File(resourceDirectory, representation.resource.toString()).length()
     }
 
     /**

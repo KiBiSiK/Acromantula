@@ -387,11 +387,19 @@ object WorkspaceService {
         return this.workspaceClient.databaseClient.directQuery(query)
     }
 
+    fun getFileSize(fileEntity: FileEntity): Long {
+        return this.workspaceClient.getFileSize(fileEntity)
+    }
+
     /**
      * Get an [InputStream] of the file contents of the given [fileEntity]
      */
     fun getFileContent(fileEntity: FileEntity): InputStream {
         return this.workspaceClient.downloadFile(fileEntity)
+    }
+
+    fun getRepresentationSize(fileRepresentation: FileRepresentation): Long {
+        return workspaceClient.getRepresentationSize(fileRepresentation)
     }
 
     /**

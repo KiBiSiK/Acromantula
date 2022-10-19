@@ -108,4 +108,13 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      */
     abstract fun markAsArchive(directory: FileEntity, type: String)
 
+    /**
+     * Get the size of a file without reading the file
+     */
+    abstract fun getFileSize(fileEntity: FileEntity): Long
+
+    /**
+     * Get the size of a file representation without reading its resource
+     */
+    abstract fun getRepresentationSize(fileRepresentation: FileRepresentation): Long
 }

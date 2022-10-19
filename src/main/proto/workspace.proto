@@ -73,7 +73,7 @@ message FileChunk {
   How many bytes the total file contains. This number stays constant for an entire transmission and can be used to
   calculate transmission progress
    */
-  int32 totalBytes = 2;
+  int64 totalBytes = 2;
   bytes content = 3;
 }
 
