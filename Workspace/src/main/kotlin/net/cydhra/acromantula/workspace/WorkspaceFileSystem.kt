@@ -61,18 +61,24 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Add a resource to the workspace and associate it with the given file entity.
      *
-     * @param file the internal representation of the new entity. Gets modified to store the location of data
+     * @param name name of the new file
+     * @param parent database entity of the parent file. optional
      * @param content the resource's content in raw binary form
      */
-    fun addResource(file: FileEntity, content: ByteArray) {
+    fun addResource(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
         val newFile = File(this.resourceDirectory, (++this.index.currentFileIndex).toString())
         newFile.writeBytes(content)
 
-        this.databaseClient.transaction {
-            file.resource = this@WorkspaceFileSystem.index.currentFileIndex
+        val file = this.databaseClient.transaction {
+            FileEntity.new {
+                this.name = name
+                this.parent = parent
+                this.resource = this@WorkspaceFileSystem.index.currentFileIndex
+            }
         }
 
         saveIndex()
+        return file
     }
 
     /**

@@ -143,15 +143,7 @@ object WorkspaceService {
      */
     fun addFileEntry(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
         logger.trace("creating file entry in file tree: \"$name\"")
-        val fileEntity = workspaceClient.databaseClient.transaction {
-            FileEntity.new {
-                this.name = name
-                this.parent = parent
-            }
-        }
-
-        workspaceClient.uploadFile(fileEntity, content)
-        return fileEntity
+        return workspaceClient.uploadFile(name, parent, content)
     }
 
     /**

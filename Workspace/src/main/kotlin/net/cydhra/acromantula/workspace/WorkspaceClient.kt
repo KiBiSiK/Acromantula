@@ -41,10 +41,13 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     /**
      * Upload a file into the workspace
      *
-     * @param fileEntity database entry to reference the file
+     * @param name of the file
+     * @param parent database entry of the parent file, optional
      * @param content file binary content
+     *
+     * @return generated database entry
      */
-    abstract fun uploadFile(fileEntity: FileEntity, content: ByteArray)
+    abstract fun uploadFile(name: String, parent: FileEntity?, content: ByteArray): FileEntity
 
     /**
      * Update binary content of a file

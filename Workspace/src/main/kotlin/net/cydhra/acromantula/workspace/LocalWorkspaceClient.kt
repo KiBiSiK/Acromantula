@@ -19,8 +19,8 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         this.workspaceFileSystem.registerArchiveType(fileTypeIdentifier)
     }
 
-    override fun uploadFile(fileEntity: FileEntity, content: ByteArray) {
-        this.workspaceFileSystem.addResource(fileEntity, content)
+    override fun uploadFile(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
+        return this.workspaceFileSystem.addResource(name, parent, content)
     }
 
     override fun updateFile(fileEntity: FileEntity, content: ByteArray) {
