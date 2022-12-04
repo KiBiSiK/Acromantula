@@ -3,6 +3,7 @@ package net.cydhra.acromantula
 import net.cydhra.acromantula.cli.CommandLineService
 import net.cydhra.acromantula.commands.CommandDispatcherService
 import net.cydhra.acromantula.config.ConfigurationService
+import net.cydhra.acromantula.features.PrefabFeatures
 import net.cydhra.acromantula.plugins.PluginService
 import net.cydhra.acromantula.pool.TaskScheduler
 import net.cydhra.acromantula.rpc.RemoteProcedureService
@@ -16,6 +17,7 @@ fun main() {
     CommandLineService.initialize()
     PluginService.initialize()
     RemoteProcedureService.initialize()
+    PrefabFeatures.initialize()
 
     CommandLineService.onStartUp()
     RemoteProcedureService.onStartUp()
