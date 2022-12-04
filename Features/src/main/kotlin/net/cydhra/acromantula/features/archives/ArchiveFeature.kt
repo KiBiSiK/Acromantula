@@ -2,8 +2,10 @@ package net.cydhra.acromantula.features.archives
 
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.util.Either
 import net.cydhra.acromantula.workspace.util.TreeNode
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.*
 
 /**
  * This feature provides a way to express capabilities of imported archive formats. Since not every archive can
@@ -31,9 +33,18 @@ object ArchiveFeature {
      */
     fun canAddFile(directory: FileEntity?): Boolean {
         if (directory == null) return true
+        if (directory.canAddFile.isPresent) return directory.canAddFile.get();
 
-        val (_, type) = findArchiveRoot(directory) ?: return true
-        return type.canAddFile()
+        val archiveRootPair = findArchiveRoot(directory)
+        if (archiveRootPair == null) {
+            directory.canAddFile = Optional.of(true)
+            return true
+        } else {
+            val type = archiveRootPair.second
+            val canAddFile = type.canAddFile()
+            directory.canAddFile = Optional.of(canAddFile)
+            return canAddFile
+        }
     }
 
     /**
@@ -229,12 +240,25 @@ object ArchiveFeature {
     private fun findArchiveRoot(file: FileEntity?): Pair<FileEntity, ArchiveType>? {
         // if we are at workspace root, we are not in an archive
         if (file == null) return null
+        if (file.archiveRoot.isPresent) return when (val root = file.archiveRoot.get()) {
+            is Either.Right -> null
+            is Either.Left -> file to findArchiveType(root.value)
+        }
 
         return transaction {
-            if (file.archiveEntity != null) {
-                file to findArchiveType(file.archiveEntity!!.typeIdent)
+            val archiveType = if (file.archiveEntity != null) {
+                file.archiveEntity!!.typeIdent
+
             } else {
-                findArchiveRoot(file.parent)
+                findArchiveRoot(file.parent)?.second?.fileTypeIdentifier
+            }
+
+            if (archiveType != null) {
+                file.archiveRoot = Optional.of(Either.Left(archiveType))
+                file to findArchiveType(archiveType)
+            } else {
+                file.archiveRoot = Optional.of(Either.Right(FileEntity.Empty))
+                null
             }
         }
     }
