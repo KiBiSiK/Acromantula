@@ -438,7 +438,13 @@ object WorkspaceService {
         }
     }
 
+    /**
+     * Register an archive type at the database
+     */
     fun registerArchiveType(fileTypeIdentifier: String) {
-        workspaceClient.registerArchiveType(fileTypeIdentifier)
+        // make sure we re-register it when a new workspace is loaded
+        registerAtDatabase {
+            workspaceClient.registerArchiveType(fileTypeIdentifier)
+        }
     }
 }
