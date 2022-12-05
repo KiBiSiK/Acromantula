@@ -42,6 +42,8 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     private val archiveTypes = mutableMapOf<String, ArchiveEntity>()
 
+    private val eventBroker = FileSystemEventBroker()
+
     init {
         if (!resourceDirectory.exists())
             resourceDirectory.mkdirs()
