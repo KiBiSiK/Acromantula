@@ -44,6 +44,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     private val archiveTypeIdentifiers = mutableMapOf<String, Int>()
 
     private val eventBroker = FileSystemEventBroker()
+    private val fileSystemDatabaseSync = FileSystemDatabaseSync()
 
     init {
         if (!resourceDirectory.exists())
@@ -56,6 +57,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
             index = gson.fromJson(FileReader(indexFile), WorkspaceIndex::class.java)
         }
 
+        eventBroker.registerObserver(fileSystemDatabaseSync)
     }
 
     /**
