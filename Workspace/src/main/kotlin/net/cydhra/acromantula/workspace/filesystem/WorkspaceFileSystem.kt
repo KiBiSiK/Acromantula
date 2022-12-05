@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertIgnoreAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -40,7 +41,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Registered archive types
      */
-    private val archiveTypes = mutableMapOf<String, ArchiveEntity>()
+    private val archiveTypeIdentifiers = mutableMapOf<String, Int>()
 
     private val eventBroker = FileSystemEventBroker()
 
@@ -262,13 +263,11 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     fun registerArchiveType(fileTypeIdentifier: String) {
         transaction {
-            archiveTypes.put(
+            archiveTypeIdentifiers.put(
                 fileTypeIdentifier,
-                ArchiveEntity.findById(
-                    ArchiveTable.insertIgnoreAndGetId {
-                        it[typeIdent] = fileTypeIdentifier
-                    }!!
-                )!!
+                ArchiveTable.insertIgnoreAndGetId {
+                    it[typeIdent] = fileTypeIdentifier
+                }!!.value
             )
         }
     }
@@ -278,7 +277,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     fun markAsArchive(directory: FileEntity, type: String) {
         transaction {
-            directory.archiveEntity = archiveTypes[type]!!
+            directory.archiveEntity = EntityID(archiveTypeIdentifiers[type]!!, ArchiveTable)
         }
     }
 

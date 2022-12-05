@@ -26,8 +26,8 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
                 name = treeNode.value.name
                 isDirectory = treeNode.value.isDirectory
 
-                if (treeNode.value.archiveEntity != null) {
-                    archiveFormat = treeNode.value.archiveEntity!!.typeIdent
+                if (treeNode.value.archiveType.isPresent) {
+                    archiveFormat = treeNode.value.archiveType.get()
                 }
 
                 children(*children.toTypedArray())

@@ -246,8 +246,8 @@ object ArchiveFeature {
         }
 
         return transaction {
-            val archiveType = if (file.archiveEntity != null) {
-                file.archiveEntity!!.typeIdent
+            val archiveType = if (file.archiveType.isPresent) {
+                file.archiveType.get()
 
             } else {
                 findArchiveRoot(file.parent)?.second?.fileTypeIdentifier

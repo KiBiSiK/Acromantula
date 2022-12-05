@@ -9,6 +9,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -49,7 +50,23 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
 
     var resource by FileTable.resource
 
-    var archiveEntity by ArchiveEntity optionalReferencedOn FileTable.archive
+    internal var archiveEntity by FileTable.archive
+
+    var archiveType: Optional<String> = Optional.empty()
+        get() {
+            return if (archiveEntity == null) {
+                field = Optional.empty()
+                field
+            } else {
+                if (!field.isPresent) {
+                    field = Optional.of(ArchiveTable
+                        .select { ArchiveTable.id eq archiveEntity!!.value }
+                        .first()[ArchiveTable.typeIdent])
+                }
+                field
+            }
+        }
+        private set
 
     private val views by FileRepresentation referrersOn FileRepresentationTable.file
 
