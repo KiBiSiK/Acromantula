@@ -1,5 +1,10 @@
 package net.cydhra.acromantula.workspace.filesystem
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+
 /**
  * Subject for observable file system events. The events occur in [WorkspaceFileSystem], but for reasons of code
  * structure, all observer-related logic is aggregated in this helper class. Each [WorkspaceFileSystem] object
@@ -33,6 +38,32 @@ internal class FileSystemEventBroker {
      */
     internal fun migrateObservers(newBroker: FileSystemEventBroker) {
         this.registeredObservers.forEach(newBroker::registerObserver)
+    }
+
+    fun dispatch(event: FileSystemEvent) {
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                // todo instead of launching, we could migrate the entire suspend-call-chain through the application so
+                //  the potential suspension is forwarded to the task-thread-pool that ultimately triggers these events
+                launch {
+                    when (event) {
+                        is FileSystemEvent.ArchiveCreatedEvent -> registeredObservers.forEach {
+                            it.onArchiveCreated(
+                                event
+                            )
+                        }
+
+                        is FileSystemEvent.FileCreatedEvent -> registeredObservers.forEach { it.onFileCreated(event) }
+                        is FileSystemEvent.FileMovedEvent -> registeredObservers.forEach { it.onFileMoved(event) }
+                        is FileSystemEvent.FileRenamedEvent -> registeredObservers.forEach { it.onFileRenamed(event) }
+                        is FileSystemEvent.FileUpdatedEvent -> registeredObservers.forEach { it.onFileUpdated(event) }
+                        is FileSystemEvent.FileDeletedEvent -> registeredObservers.forEach { it.onFileDeleted(event) }
+                        is FileSystemEvent.ViewCreatedEvent -> registeredObservers.forEach { it.onViewCreated(event) }
+                    }
+                }
+            }
+        }
+
     }
 
 }

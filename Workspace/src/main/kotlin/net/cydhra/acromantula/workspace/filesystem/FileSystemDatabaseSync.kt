@@ -17,15 +17,41 @@ class FileSystemDatabaseSync : FileSystemObserver {
     private val eventChannel = Channel<FileSystemEvent>()
 
     init {
-        eventChannel.consumeAsFlow()
-            .buffer(10)
-            .onEach {
+        eventChannel.consumeAsFlow().buffer(256).onEach {
                 LogManager.getLogger().trace("file system event: $it")
-            }
-            .onCompletion {
+            }.onCompletion {
                 LogManager.getLogger().trace("file system observer closing...")
-            }
-            .launchIn(CoroutineScope(Dispatchers.IO))
+            }.launchIn(CoroutineScope(Dispatchers.IO))
         LogManager.getLogger().trace("file system syncing is active")
     }
+
+    override suspend fun onFileCreated(event: FileSystemEvent.FileCreatedEvent) {
+        eventChannel.send(event)
+    }
+
+    override suspend fun onFileUpdated(event: FileSystemEvent.FileUpdatedEvent) {
+        eventChannel.send(event)
+    }
+
+    override suspend fun onFileRenamed(event: FileSystemEvent.FileRenamedEvent) {
+        eventChannel.send(event)
+    }
+
+    override suspend fun onFileMoved(event: FileSystemEvent.FileMovedEvent) {
+        eventChannel.send(event)
+    }
+
+    override suspend fun onFileDeleted(event: FileSystemEvent.FileDeletedEvent) {
+        eventChannel.send(event)
+    }
+
+    override suspend fun onViewCreated(event: FileSystemEvent.ViewCreatedEvent) {
+        eventChannel.send(event)
+    }
+
+    override suspend fun onArchiveCreated(event: FileSystemEvent.ArchiveCreatedEvent) {
+        eventChannel.send(event)
+    }
+
+
 }
