@@ -2,7 +2,6 @@ package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.util.TreeNode
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -222,116 +221,8 @@ object WorkspaceService {
      * Recursively list files beginning with a root directory in a tree structure. If the root directory is null, the
      * repository root is used.
      */
-    fun listFilesRecursively(root: FileEntity? = null): List<TreeNode<FileEntity>> {
-        TODO("not implemented")
-        // obtain the entire file tree from database
-//        return this.workspaceClient.databaseClient.transaction transaction@{
-//            val con = TransactionManager.current().connection
-//
-//            val query = if (root == null) {
-//                val substitutor = StrSubstitutor(mapOf("clause" to FILE_TREE_QUERY_ROOT_CLAUSE))
-//                    .setVariablePrefix("%{")
-//                    .setVariableSuffix("}")
-//                substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY)
-//            } else {
-//                val substitutor = StrSubstitutor(
-//                    mapOf(
-//                        "clause" to FILE_TREE_QUERY_RELATIVE_CLAUSE
-//                            .replace("?", root.id.value.toString())
-//                    )
-//                )
-//                    .setVariablePrefix("%{")
-//                    .setVariableSuffix("}")
-//                substitutor.replace(RECURSIVE_LIST_FILE_TREE_QUERY)
-//            }
-//
-//            return@transaction TransactionManager.current()
-//                .exec(object : Statement<List<TreeNode<FileEntity>>>(StatementType.SELECT, emptyList()) {
-//                    override fun PreparedStatementApi.executeInternal(transaction: Transaction): List<TreeNode<FileEntity>> {
-//                        val result = executeQuery()
-//                        return result.let resultHandler@{ rs ->
-//                            rs.use { rs ->
-//                                // linearly construct the result list from the query result
-//                                val rootNodes = mutableListOf<TreeNode<FileEntity>>()
-//                                val parentStack = Stack<TreeNode<FileEntity>>()
-//                                var lastElement: TreeNode<FileEntity>
-//
-//                                if (rs.next()) {
-//                                    val firstElement = TreeNode(
-//                                        FileEntity.wrapRow(
-//                                            ResultRow.create(
-//                                                rs, listOf(
-//                                                    FileTable.id,
-//                                                    FileTable.name,
-//                                                    FileTable.parent,
-//                                                    FileTable.isDirectory,
-//                                                    FileTable.type,
-//                                                    FileTable.archive,
-//                                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
-//                                            )
-//                                        )
-//                                    )
-//                                    lastElement = firstElement
-//                                    parentStack.push(firstElement)
-//                                    rootNodes.add(firstElement)
-//                                } else {
-//                                    return@resultHandler emptyList()
-//                                }
-//
-//                                while (rs.next()) {
-//                                    val currentElement = TreeNode(
-//                                        FileEntity.wrapRow(
-//                                            ResultRow.create(
-//                                                rs, listOf(
-//                                                    FileTable.id,
-//                                                    FileTable.name,
-//                                                    FileTable.parent,
-//                                                    FileTable.isDirectory,
-//                                                    FileTable.type,
-//                                                    FileTable.archive,
-//                                                ).distinct().mapIndexed { index, field -> field to index }.toMap()
-//                                            )
-//                                        )
-//                                    )
-//
-//                                    if (currentElement.value.parent == lastElement.value) {
-//                                        parentStack.push(lastElement)
-//                                        lastElement.appendChild(currentElement)
-//                                    } else if (currentElement.value.parent == parentStack.peek().value) {
-//                                        parentStack.peek().appendChild(currentElement)
-//                                    } else {
-//                                        while (true) {
-//                                            parentStack.pop()
-//
-//                                            if (parentStack.isNotEmpty()) {
-//                                                if (currentElement.value.parent == parentStack.peek().value) {
-//                                                    parentStack.peek().appendChild(currentElement)
-//                                                    break
-//                                                }
-//                                            } else {
-//                                                break
-//                                            }
-//                                        }
-//
-//                                        if (parentStack.isEmpty()) {
-//                                            rootNodes.add(currentElement)
-//                                            parentStack.push(currentElement)
-//                                        }
-//                                    }
-//
-//                                    lastElement = currentElement
-//                                }
-//
-//                                rootNodes
-//                            }
-//                        }
-//                    }
-//
-//                    override fun prepareSQL(transaction: Transaction): String = query
-//
-//                    override fun arguments(): Iterable<Iterable<Pair<IColumnType, Any?>>> = emptyList()
-//                }) ?: error("query did not produce result set")
-//        }
+    fun listFiles(): List<FileEntity> {
+        return workspaceClient.listFiles()
     }
 
     fun getDirectoryContent(directory: FileEntity?): List<FileEntity> {

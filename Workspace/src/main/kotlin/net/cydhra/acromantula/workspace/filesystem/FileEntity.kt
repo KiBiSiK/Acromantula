@@ -31,7 +31,7 @@ class FileEntity internal constructor(
     isDirectory: Boolean,
     type: String?,
     archiveType: String?,
-    internal val resource: Int
+    val resource: Int
 ) {
 
     /**

@@ -19,7 +19,7 @@ import java.time.Instant
  * interact with files of the workspace.
  */
 // TODO somehow handle exclusive write access to resources, so no two clients ever write the same resource at once
-internal class WorkspaceFileSystem(private val workspacePath: File, databaseClient: DatabaseClient) {
+internal class WorkspaceFileSystem(workspacePath: File, private val databaseClient: DatabaseClient) {
 
     /**
      * A file containing meta information for this service to correctly operate
@@ -83,7 +83,9 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
         }
 
         eventBroker.registerObserver(fileSystemDatabaseSync)
+    }
 
+    fun initialize() {
         databaseClient.transaction {
             fun convert(row: ResultRow): FileEntity {
                 return FileEntity(
@@ -250,6 +252,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
         eventBroker.dispatch(FileSystemEvent.FileDeletedEvent(file))
     }
 
+
     /**
      * Move a file to a new location in the file tree.
      *
@@ -273,7 +276,6 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
 
         eventBroker.dispatch(FileSystemEvent.FileMovedEvent(file, oldParent))
     }
-
 
     /**
      * Export a resource from the workspace by copying it into a channel. The channel is not closed afterwards. The
@@ -382,6 +384,13 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
         require(directory.isDirectory) { "can only mark directories as archives" }
         directory.archiveType = type
         eventBroker.dispatch(FileSystemEvent.ArchiveCreatedEvent(directory))
+    }
+
+    /**
+     * Get a list of top-level files in the workspace
+     */
+    fun listFiles(): List<FileEntity> {
+        return this.fileTrees
     }
 
     /**

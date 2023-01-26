@@ -15,6 +15,11 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
      */
     private val workspaceFileSystem = WorkspaceFileSystem(directory, this.databaseClient)
 
+    override fun initialize() {
+        super.initialize()
+        workspaceFileSystem.initialize()
+    }
+
     override fun registerArchiveType(fileTypeIdentifier: String) {
         this.workspaceFileSystem.registerArchiveType(fileTypeIdentifier)
     }
@@ -69,5 +74,9 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
 
     override fun getRepresentationSize(fileView: FileViewEntity): Long {
         return this.workspaceFileSystem.getFileRepresentationSize(fileView)
+    }
+
+    override fun listFiles(): List<FileEntity> {
+        return this.workspaceFileSystem.listFiles()
     }
 }

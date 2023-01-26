@@ -7,10 +7,9 @@ import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.util.TreeNode
 import org.apache.logging.log4j.LogManager
 
-class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser<List<TreeNode<FileEntity>>> {
+class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser<List<FileEntity>> {
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -22,22 +21,22 @@ class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser<List<Tr
         help = "directory identifier",
         transform = { toInt() }).default(null)
 
-    override fun build(): WorkspaceCommandInterpreter<List<TreeNode<FileEntity>>> =
+    override fun build(): WorkspaceCommandInterpreter<List<FileEntity>> =
         if (directoryPath != null)
             ListFilesCommandInterpreter(directoryPath)
         else
             ListFilesCommandInterpreter(directoryId)
 
-    override fun report(result: Result<List<TreeNode<FileEntity>>>) {
+    override fun report(result: Result<List<FileEntity>>) {
         fun dumpView(view: FileViewEntity, prefix: String = ""): String {
             return prefix + "V: " + view.type + "\n"
         }
 
-        fun dumpFileTree(node: TreeNode<FileEntity>, prefix: String = ""): String {
+        fun dumpFileTree(node: FileEntity, prefix: String = ""): String {
             return prefix +
-                    node.value.name + "\n" +
-                    node.childList.joinToString("") { dumpFileTree(it, prefix + "\t") } +
-                    node.value.views.joinToString("") { dumpView(it, prefix + "\t") }
+                    node.name + "\n" +
+                    node.children.joinToString("") { dumpFileTree(it, prefix + "\t") } +
+                    node.views.joinToString("") { dumpView(it, prefix + "\t") }
         }
 
         result.onSuccess { fileList ->

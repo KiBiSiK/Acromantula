@@ -119,4 +119,9 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * Get the size of a file representation without reading its resource
      */
     abstract fun getRepresentationSize(fileView: FileViewEntity): Long
+
+    /**
+     * Get a list of all top-level files and directories in the workspace
+     */
+    abstract fun listFiles(): List<FileEntity>
 }

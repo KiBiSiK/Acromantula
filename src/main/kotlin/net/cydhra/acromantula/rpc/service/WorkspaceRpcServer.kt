@@ -13,21 +13,20 @@ import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.RenameFileCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.util.TreeNode
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
 
-    private fun fileTreeToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity =
+    private fun fileTreeToProto(treeNode: net.cydhra.acromantula.workspace.filesystem.FileEntity): FileEntity =
         transaction {
-            val children = treeNode.childList.map(::fileTreeToProto)
+            val children = treeNode.children.map(::fileTreeToProto)
             fileEntity {
-                id = TODO("missing id") //treeNode.value.id.value
-                name = treeNode.value.name
-                isDirectory = treeNode.value.isDirectory
+                id = treeNode.resource
+                name = treeNode.name
+                isDirectory = treeNode.isDirectory
 
-                if (treeNode.value.archiveType != null) {
-                    archiveFormat = treeNode.value.archiveType!!
+                if (treeNode.archiveType != null) {
+                    archiveFormat = treeNode.archiveType!!
                 }
 
                 children(*children.toTypedArray())
@@ -106,7 +105,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
         // tree node is usually used by WorkspaceService.listFilesRecursively, but we know our new file has no
         // children, so we can use it here without constructing a tree
-        return fileTreeToProto(TreeNode(result.getOrThrow()))
+        return fileTreeToProto(result.getOrThrow())
     }
 
     override suspend fun renameFile(request: RenameFileCommand): Empty {
