@@ -38,7 +38,6 @@ internal class FileSystemDatabaseSync(
         LogManager.getLogger().trace("file system syncing is active")
     }
 
-    @Suppress("REDUNDANT_ELSE_IN_WHEN") // crash if events are not implemented
     private fun handleEvent(event: FileSystemEvent) {
         when (event) {
             is FileSystemEvent.FileCreatedEvent -> syncNewFileIntoDatabase(event)
@@ -49,7 +48,6 @@ internal class FileSystemDatabaseSync(
             is FileSystemEvent.ArchiveCreatedEvent -> syncArchiveCreatedIntoDatabase(event)
             is FileSystemEvent.ViewCreatedEvent -> syncViewCreatedIntoDatabase(event)
             is FileSystemEvent.ViewDeletedEvent -> syncViewDeletedIntoDatabase(event)
-            else -> TODO("missing event dispatch")
         }
     }
 

@@ -63,8 +63,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
     private val fileTrees = mutableListOf<FileEntity>()
 
     init {
-        if (!resourceDirectory.exists())
-            resourceDirectory.mkdirs()
+        if (!resourceDirectory.exists()) resourceDirectory.mkdirs()
 
         if (!indexFile.exists()) {
             index = WorkspaceIndex()
@@ -95,15 +94,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
 
         // create file entity and add it to the file tree. If the file is not created at toplevel, add it to its
         // parent file
-        val fileEntity = if (parent == null) {
-            FileEntity(name, parent, false, "", null, resourceIndex).also {
-                fileTrees.add(it)
-            }
-        } else {
-            FileEntity(name, parent, false, "", null, resourceIndex).also {
-                parent.childEntities.add(it)
-            }
-        }
+        val fileEntity = insertFileEntityIntoTree(name, parent, false, "", null, resourceIndex)
 
         // dispatch file creation event which will sync the file back to the database
         eventBroker.dispatch(FileSystemEvent.FileCreatedEvent(fileEntity))
@@ -152,11 +143,8 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
     fun updateResource(file: FileEntity, newContent: ByteArray) {
         require(!file.isDirectory) { "cannot open file stream of directory" }
 
-        val channel = File(resourceDirectory, file.resource.toString())
-            .apply { delete() }
-            .apply { createNewFile() }
-            .outputStream()
-            .channel
+        val channel = File(resourceDirectory, file.resource.toString()).apply { delete() }.apply { createNewFile() }
+            .outputStream().channel
 
         val contentBuffer = ByteBuffer.wrap(newContent)
 
@@ -263,7 +251,15 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      * @param parent optional parent directory. Null, if directory is to be created at workspace root
      */
     fun createDirectory(name: String, parent: FileEntity?): FileEntity {
-        TODO("not implemented")
+        val resourceIndex = index.getNextFileIndex();
+        val fileEntity = insertFileEntityIntoTree(name, parent, true, "", null, resourceIndex)
+
+        // dispatch file creation event which will sync the file back to the database
+        eventBroker.dispatch(FileSystemEvent.FileCreatedEvent(fileEntity))
+
+        // save the file index
+        saveIndex()
+        return fileEntity
     }
 
     /**
@@ -320,8 +316,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
     fun registerArchiveType(fileTypeIdentifier: String) {
         transaction {
             archiveTypeIdentifiers.put(
-                fileTypeIdentifier,
-                ArchiveTable.insertIgnoreAndGetId {
+                fileTypeIdentifier, ArchiveTable.insertIgnoreAndGetId {
                     it[typeIdent] = fileTypeIdentifier
                 }!!.value
             )
@@ -349,6 +344,23 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      */
     internal fun getArchiveId(type: String): Int? {
         return archiveTypeIdentifiers[type]
+    }
+
+    /**
+     * Create a [FileEntity] and insert it into the file tree
+     */
+    private fun insertFileEntityIntoTree(
+        name: String, parent: FileEntity?, isDirectory: Boolean, type: String, archiveType: String?, resource: Int
+    ): FileEntity {
+        return if (parent == null) {
+            FileEntity(name, parent, false, "", null, resource).also {
+                fileTrees.add(it)
+            }
+        } else {
+            FileEntity(name, parent, false, "", null, resource).also {
+                parent.childEntities.add(it)
+            }
+        }
     }
 
     /**

@@ -10,8 +10,8 @@ import kotlinx.coroutines.withContext
  * structure, all observer-related logic is aggregated in this helper class. Each [WorkspaceFileSystem] object
  * requires exactly one [FileSystemEventBroker] instance and vise versa. Each file-system related event is relayed to the
  * [FileSystemEventBroker] instance and then observers are notified from here. One observer that is automatically
- * attached by the [WorkspaceFileSystem] is the database handler (TODO: reference that class here once it is
- * implemented) which will mirror all events into the database.
+ * attached by the [WorkspaceFileSystem] is the database handler [FileSystemDatabaseSync]
+ * which will mirror all events into the database.
  */
 internal class FileSystemEventBroker {
 
