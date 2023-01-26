@@ -2,7 +2,7 @@ package net.cydhra.acromantula.workspace.filesystem
 
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
-import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import org.jetbrains.exposed.sql.insertIgnoreAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -283,9 +283,9 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      * @param type view generator name
      * @param content view resource content
      */
-    fun createFileRepresentation(file: FileEntity, type: String, content: ByteArray): FileView {
+    fun createFileRepresentation(file: FileEntity, type: String, content: ByteArray): FileViewEntity {
         val resourceIndex = index.getNextFileIndex()
-        val viewEntity = FileView(file, type, resourceIndex, Instant.now())
+        val viewEntity = FileViewEntity(file, type, resourceIndex, Instant.now())
 
         val newFile = File(this.resourceDirectory, resourceIndex.toString()).apply { createNewFile() }
         newFile.writeBytes(content)
@@ -300,14 +300,14 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      *
      * @param view a file view entity to read
      */
-    fun openFileRepresentation(view: FileView): InputStream {
+    fun openFileRepresentation(view: FileViewEntity): InputStream {
         return openResource(view.resource)
     }
 
     /**
      * Get the file size of a representation resource without reading the resource from disk
      */
-    fun getFileRepresentationSize(representation: FileView): Long {
+    fun getFileRepresentationSize(representation: FileViewEntity): Long {
         return File(resourceDirectory, representation.resource.toString()).length()
     }
 

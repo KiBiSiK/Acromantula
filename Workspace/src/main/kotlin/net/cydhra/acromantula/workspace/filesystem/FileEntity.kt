@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.util.Either
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
@@ -52,12 +52,12 @@ class FileEntity internal constructor(
     /**
      * Mutable list of file views associated with this file
      */
-    internal val viewEntities = mutableListOf<FileView>()
+    internal val viewEntities = mutableListOf<FileViewEntity>()
 
     /**
-     * A list of all [FileView] entities associated with this file. If this file is a directory, this list is empty
+     * A list of all [FileViewEntity] entities associated with this file. If this file is a directory, this list is empty
      */
-    val views: List<FileView> = viewEntities
+    val views: List<FileViewEntity> = viewEntities
 
     var name: String = name
         internal set
@@ -75,10 +75,9 @@ class FileEntity internal constructor(
         internal set
 
     /**
-     * Internal cache for database id, which can be used by database sync to quickly reference this file. -1 if no
-     * value is cached.
+     * Internal cache for database id, which can be used by database sync to quickly reference this file.
      */
-    internal var databaseId: EntityID<Int>? = null
+    internal lateinit var databaseId: EntityID<Int>
 
     /**
      * Whether this file supports adding child files. This optional is initialized empty, because the property is

@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.WorkspaceFileSystem
 import java.io.File
@@ -43,11 +43,11 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         return this.workspaceFileSystem.createDirectory(name, parent)
     }
 
-    override fun createFileView(file: FileEntity, type: String, viewData: ByteArray): FileView {
+    override fun createFileView(file: FileEntity, type: String, viewData: ByteArray): FileViewEntity {
         return this.workspaceFileSystem.createFileRepresentation(file, type, viewData)
     }
 
-    override fun downloadFileView(fileView: FileView): InputStream {
+    override fun downloadFileView(fileView: FileViewEntity): InputStream {
         return this.workspaceFileSystem.openFileRepresentation(fileView)
     }
 
@@ -67,7 +67,7 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         return this.workspaceFileSystem.getResourceSize(fileEntity)
     }
 
-    override fun getRepresentationSize(fileView: FileView): Long {
+    override fun getRepresentationSize(fileView: FileViewEntity): Long {
         return this.workspaceFileSystem.getFileRepresentationSize(fileView)
     }
 }

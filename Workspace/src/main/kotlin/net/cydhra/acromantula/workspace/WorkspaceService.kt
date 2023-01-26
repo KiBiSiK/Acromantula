@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.util.TreeNode
 import org.apache.logging.log4j.LogManager
@@ -147,7 +147,7 @@ object WorkspaceService {
      * @param type representation type identifier
      * @param viewData binary data of the representation
      */
-    fun addFileRepresentation(file: FileEntity, type: String, viewData: ByteArray): FileView {
+    fun addFileRepresentation(file: FileEntity, type: String, viewData: ByteArray): FileViewEntity {
         return workspaceClient.createFileView(file, type, viewData)
     }
 
@@ -206,9 +206,9 @@ object WorkspaceService {
      * @param fileEntity reference file for the representation
      * @param viewType type of representation in question
      *
-     * @return a [FileView] instance if the view already exists, `null` otherwise
+     * @return a [FileViewEntity] instance if the view already exists, `null` otherwise
      */
-    fun queryRepresentation(fileEntity: FileEntity, viewType: String): FileView? {
+    fun queryRepresentation(fileEntity: FileEntity, viewType: String): FileViewEntity? {
         TODO("not implemented")
 //        return this.workspaceClient.databaseClient.transaction {
 //            FileView.find {
@@ -366,14 +366,14 @@ object WorkspaceService {
         return this.workspaceClient.downloadFile(fileEntity)
     }
 
-    fun getRepresentationSize(fileView: FileView): Long {
+    fun getRepresentationSize(fileView: FileViewEntity): Long {
         return workspaceClient.getRepresentationSize(fileView)
     }
 
     /**
      * Get an [InputStream] that contains a file representation as binary data.
      */
-    fun getRepresentationContent(representation: FileView): InputStream {
+    fun getRepresentationContent(representation: FileViewEntity): InputStream {
         return this.workspaceClient.downloadFileView(representation)
     }
 

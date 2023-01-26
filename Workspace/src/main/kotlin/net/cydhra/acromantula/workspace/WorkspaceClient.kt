@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.database.DatabaseClient
-import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.InputStream
 import java.io.OutputStream
@@ -84,13 +84,13 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * @param type view type
      * @param viewData the binary data of the file's view
      */
-    abstract fun createFileView(file: FileEntity, type: String, viewData: ByteArray): FileView
+    abstract fun createFileView(file: FileEntity, type: String, viewData: ByteArray): FileViewEntity
 
     /**
      *  Download a file view from the workspace. Returns the binary contents of the representation as an
      *  input stream
      */
-    abstract fun downloadFileView(fileView: FileView): InputStream
+    abstract fun downloadFileView(fileView: FileViewEntity): InputStream
 
     /**
      * Delete File from workspace and database
@@ -118,5 +118,5 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     /**
      * Get the size of a file representation without reading its resource
      */
-    abstract fun getRepresentationSize(fileView: FileView): Long
+    abstract fun getRepresentationSize(fileView: FileViewEntity): Long
 }

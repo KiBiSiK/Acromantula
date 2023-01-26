@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.features.view
 
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import java.io.OutputStream
@@ -21,7 +21,7 @@ object GenerateViewFeature {
      * generated for the file, because the strategy does not handle this file, `null` is returned. This does also
      * happen, if an exception is thrown during generation.
      */
-    fun generateView(fileEntity: FileEntity, viewType: String): FileView? {
+    fun generateView(fileEntity: FileEntity, viewType: String): FileViewEntity? {
         val representation = WorkspaceService.queryRepresentation(fileEntity, viewType)
         if (representation != null) {
             logger.debug("reusing existing representation from ${representation.created}")
@@ -49,7 +49,7 @@ object GenerateViewFeature {
     /**
      * Exports binary content of a file representation into [outputStream]. The output stream is not closed afterwards.
      */
-    fun exportView(representation: FileView, outputStream: OutputStream) {
+    fun exportView(representation: FileViewEntity, outputStream: OutputStream) {
         outputStream.write(WorkspaceService.getRepresentationContent(representation).readBytes())
     }
 

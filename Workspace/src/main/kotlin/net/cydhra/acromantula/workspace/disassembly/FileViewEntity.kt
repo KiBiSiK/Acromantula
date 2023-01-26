@@ -24,4 +24,4 @@ internal object FileViewTable : org.jetbrains.exposed.dao.id.IntIdTable() {
 /**
  * A human-readable view of a file, which is itself stored as a resource in workspace.
  */
-class FileView(val file: FileEntity, val type: String, val resource: Int, val created: Instant)
+class FileViewEntity(val file: FileEntity, val type: String, val resource: Int, val created: Instant)
