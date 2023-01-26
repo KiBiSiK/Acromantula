@@ -14,7 +14,7 @@ object FileTable : IntIdTable("TreeFile") {
     val parent = reference("parent", FileTable).nullable()
     val isDirectory = bool("is_directory").default(false)
     val type = varchar("type", 31).nullable()
-    val resource = integer("resource").nullable()
+    val resource = integer("resource")
     val archive = reference("archive", ArchiveTable).nullable()
 
     init {
@@ -29,7 +29,7 @@ class FileEntity internal constructor(
     name: String,
     parent: FileEntity?,
     isDirectory: Boolean,
-    type: String,
+    type: String?,
     archiveType: String?,
     internal val resource: Int
 ) {
@@ -65,7 +65,7 @@ class FileEntity internal constructor(
         internal set
     var isDirectory: Boolean = isDirectory
         internal set
-    var type: String = type
+    var type: String? = type
         internal set
 
     /**

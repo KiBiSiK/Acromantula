@@ -3,7 +3,7 @@ package net.cydhra.acromantula.workspace.filesystem
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
-import org.jetbrains.exposed.sql.insertIgnoreAndGetId
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.FileInputStream
@@ -47,6 +47,11 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
     private val archiveTypeIdentifiers = mutableMapOf<String, Int>()
 
     /**
+     * Registered archive identifiers to archive name mapping
+     */
+    private val archiveTypeNames = mutableMapOf<Int, String>()
+
+    /**
      * Event broker for file system events
      */
     private val eventBroker = FileSystemEventBroker()
@@ -62,6 +67,11 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      */
     private val fileTrees = mutableListOf<FileEntity>()
 
+    /**
+     * Mapping of file resource ids to file entity
+     */
+    private val fileResourceMapping = mutableMapOf<Int, FileEntity>()
+
     init {
         if (!resourceDirectory.exists()) resourceDirectory.mkdirs()
 
@@ -73,6 +83,43 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
         }
 
         eventBroker.registerObserver(fileSystemDatabaseSync)
+
+        databaseClient.transaction {
+            fun convert(row: ResultRow): FileEntity {
+                return FileEntity(
+                    row[FileTable.name],
+                    if (row[FileTable.parent] != null) {
+                        fileResourceMapping[row[FileTable.resource]]!!
+                    } else {
+                        null
+                    },
+                    row[FileTable.isDirectory],
+                    row[FileTable.type],
+                    row[FileTable.archive]?.value?.let { archiveTypeNames[it] },
+                    row[FileTable.resource]
+                ).apply {
+                    this.databaseId = row[FileTable.id]
+                }
+            }
+
+            fun handleFiles(query: SqlExpressionBuilder.() -> Op<Boolean>) {
+                for (row in FileTable.select(query)) {
+                    val fileEntity = convert(row)
+                    fileResourceMapping[fileEntity.resource] = fileEntity
+                    if (fileEntity.parent == null) {
+                        fileTrees.add(fileEntity)
+                    } else {
+                        fileEntity.parent!!.childEntities.add(fileEntity)
+                    }
+
+                    if (fileEntity.isDirectory) {
+                        handleFiles { FileTable.parent eq fileEntity.parent!!.databaseId }
+                    }
+                }
+            }
+
+            handleFiles { FileTable.parent.isNull() }
+        }
     }
 
     /**
@@ -94,7 +141,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
 
         // create file entity and add it to the file tree. If the file is not created at toplevel, add it to its
         // parent file
-        val fileEntity = insertFileEntityIntoTree(name, parent, false, "", null, resourceIndex)
+        val fileEntity = insertFileEntityIntoTree(name, parent, false, null, null, resourceIndex)
 
         // dispatch file creation event which will sync the file back to the database
         eventBroker.dispatch(FileSystemEvent.FileCreatedEvent(fileEntity))
@@ -252,7 +299,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      */
     fun createDirectory(name: String, parent: FileEntity?): FileEntity {
         val resourceIndex = index.getNextFileIndex();
-        val fileEntity = insertFileEntityIntoTree(name, parent, true, "", null, resourceIndex)
+        val fileEntity = insertFileEntityIntoTree(name, parent, true, null, null, resourceIndex)
 
         // dispatch file creation event which will sync the file back to the database
         eventBroker.dispatch(FileSystemEvent.FileCreatedEvent(fileEntity))
@@ -350,17 +397,22 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      * Create a [FileEntity] and insert it into the file tree
      */
     private fun insertFileEntityIntoTree(
-        name: String, parent: FileEntity?, isDirectory: Boolean, type: String, archiveType: String?, resource: Int
+        name: String, parent: FileEntity?, isDirectory: Boolean, type: String?, archiveType: String?, resource: Int
     ): FileEntity {
-        return if (parent == null) {
-            FileEntity(name, parent, false, "", null, resource).also {
+        val file = if (parent == null) {
+            FileEntity(name, null, isDirectory, type, archiveType, resource).also {
                 fileTrees.add(it)
             }
         } else {
-            FileEntity(name, parent, false, "", null, resource).also {
+            FileEntity(name, parent, isDirectory, type, archiveType, resource).also {
                 parent.childEntities.add(it)
             }
         }
+
+        // add to mapping for querying
+        fileResourceMapping[file.resource] = file
+
+        return file
     }
 
     /**
