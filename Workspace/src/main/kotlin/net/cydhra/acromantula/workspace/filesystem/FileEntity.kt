@@ -91,11 +91,4 @@ class FileEntity internal constructor(
      * only used for caching. Property utilized by archive feature
      */
     var archiveRoot: Optional<Either<String, Empty>> = Optional.empty()
-
-    /**
-     * Get all views associated with this file
-     */
-    fun getViews(): List<FileView> {
-        TODO("not implemented")
-    }
 }

@@ -245,21 +245,18 @@ object ArchiveFeature {
             is Either.Left -> file to findArchiveType(root.value)
         }
 
-        return transaction {
-            val archiveType = if (file.archiveType.isPresent) {
-                file.archiveType.get()
+        val archiveType = if (file.archiveType != null) {
+            file.archiveType
+        } else {
+            findArchiveRoot(file.parent)?.second?.fileTypeIdentifier
+        }
 
-            } else {
-                findArchiveRoot(file.parent)?.second?.fileTypeIdentifier
-            }
-
-            if (archiveType != null) {
-                file.archiveRoot = Optional.of(Either.Left(archiveType))
-                file to findArchiveType(archiveType)
-            } else {
-                file.archiveRoot = Optional.of(Either.Right(FileEntity.Empty))
-                null
-            }
+        return if (archiveType != null) {
+            file.archiveRoot = Optional.of(Either.Left(archiveType))
+            file to findArchiveType(archiveType)
+        } else {
+            file.archiveRoot = Optional.of(Either.Right(FileEntity.Empty))
+            null
         }
     }
 

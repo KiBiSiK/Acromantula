@@ -37,13 +37,13 @@ object ExporterFeature {
             ?: throw IllegalArgumentException("exporter strategy \"$exporterStrategyName\" is unknown")
 
         transaction {
-            if (fileEntity.archiveType.isPresent) {
+            if (fileEntity.archiveType != null) {
                 if (strategy.supportedArchiveTypes.isNotEmpty()
-                    && fileEntity.archiveType.get() !in strategy.supportedArchiveTypes
+                    && fileEntity.archiveType !in strategy.supportedArchiveTypes
                 ) {
                     throw IllegalArgumentException(
                         "$exporterStrategyName cannot export " +
-                                "${fileEntity.archiveType.get()} archives"
+                                "${fileEntity.archiveType} archives"
                     )
                 }
             }

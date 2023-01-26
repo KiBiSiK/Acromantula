@@ -22,12 +22,12 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         transaction {
             val children = treeNode.childList.map(::fileTreeToProto)
             fileEntity {
-                id = treeNode.value.id.value
+                id = TODO("missing id") //treeNode.value.id.value
                 name = treeNode.value.name
                 isDirectory = treeNode.value.isDirectory
 
-                if (treeNode.value.archiveType.isPresent) {
-                    archiveFormat = treeNode.value.archiveType.get()
+                if (treeNode.value.archiveType != null) {
+                    archiveFormat = treeNode.value.archiveType!!
                 }
 
                 children(*children.toTypedArray())
@@ -56,8 +56,10 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
     override fun showFile(request: ShowFileCommand): Flow<FileChunk> {
         val fileEntity = when (request.fileIdCase) {
             ShowFileCommand.FileIdCase.ID -> WorkspaceService.queryPath(request.id)
-            ShowFileCommand.FileIdCase.PATH -> WorkspaceService.queryPath(
+            ShowFileCommand.FileIdCase.PATH -> TODO(
+                """WorkspaceService.queryPath(
                 WorkspaceService.queryPath(request.path).id.value
+            )"""
             )
 
             null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()

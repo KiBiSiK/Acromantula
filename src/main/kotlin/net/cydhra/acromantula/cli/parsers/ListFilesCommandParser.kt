@@ -37,7 +37,7 @@ class ListFilesCommandParser(parser: ArgParser) : WorkspaceCommandParser<List<Tr
             return prefix +
                     node.value.name + "\n" +
                     node.childList.joinToString("") { dumpFileTree(it, prefix + "\t") } +
-                    node.value.getViews().joinToString("") { dumpView(it, prefix + "\t") }
+                    node.value.views.joinToString("") { dumpView(it, prefix + "\t") }
         }
 
         result.onSuccess { fileList ->
