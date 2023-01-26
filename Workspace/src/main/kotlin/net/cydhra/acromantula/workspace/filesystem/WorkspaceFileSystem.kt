@@ -169,7 +169,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
         // delete cached representations as they are now invalid.
         deleteCachedViews(file)
 
-        TODO("fire file update event")
+        eventBroker.dispatch(FileSystemEvent.FileUpdatedEvent(file))
     }
 
     /**
@@ -179,8 +179,9 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      * @param newName new file name without file path
      */
     fun renameResource(fileEntity: FileEntity, newName: String) {
+        val oldName = fileEntity.name
         fileEntity.name = newName
-        TODO("fire file rename event")
+        eventBroker.dispatch(FileSystemEvent.FileRenamedEvent(fileEntity, oldName))
     }
 
     /**
@@ -211,7 +212,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
         // delete cached representations as they are now invalid
         deleteCachedViews(file)
 
-        TODO("fire delete file event")
+        eventBroker.dispatch(FileSystemEvent.FileDeletedEvent(file))
     }
 
     /**
@@ -220,6 +221,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
      * @param targetDirectory target directory or null if target is workspace root
      */
     fun moveResource(file: FileEntity, targetDirectory: FileEntity?) {
+        val oldParent = file.parent
         if (file.parent != null) {
             file.parent!!.childEntities.remove(file)
             file.parent = targetDirectory
@@ -234,7 +236,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
             fileTrees.add(file)
         }
 
-        TODO("fire file move event")
+        eventBroker.dispatch(FileSystemEvent.FileMovedEvent(file, oldParent))
     }
 
 
@@ -290,7 +292,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
         val newFile = File(this.resourceDirectory, resourceIndex.toString()).apply { createNewFile() }
         newFile.writeBytes(content)
 
-        TODO("fire file view creation event")
+        eventBroker.dispatch(FileSystemEvent.ViewCreatedEvent(file, viewEntity))
 
         return viewEntity
     }
@@ -337,7 +339,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
     fun markAsArchive(directory: FileEntity, type: String) {
         require(directory.isDirectory) { "can only mark directories as archives" }
         directory.archiveType = type
-        TODO("fire archive create event")
+        eventBroker.dispatch(FileSystemEvent.ArchiveCreatedEvent(directory))
     }
 
     /**
@@ -357,9 +359,10 @@ internal class WorkspaceFileSystem(private val workspacePath: File, databaseClie
     private fun deleteCachedViews(file: FileEntity) {
         val views = file.viewEntities.iterator()
         while (views.hasNext()) {
-            File(resourceDirectory, views.next().resource.toString()).delete()
+            val view = views.next()
+            File(resourceDirectory, view.resource.toString()).delete()
             views.remove()
-            TODO("fire events to delete file views from database")
+            eventBroker.dispatch(FileSystemEvent.ViewDeletedEvent(file, view))
         }
     }
 

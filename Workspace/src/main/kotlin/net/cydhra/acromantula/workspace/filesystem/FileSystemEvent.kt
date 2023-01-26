@@ -9,7 +9,7 @@ sealed class FileSystemEvent {
      */
     class FileCreatedEvent(val fileEntity: FileEntity) : FileSystemEvent()
 
-    class FileUpdatedEvent : FileSystemEvent()
+    class FileUpdatedEvent(val file: FileEntity) : FileSystemEvent()
 
     class FileRenamedEvent(val fileEntity: FileEntity, val oldName: String) : FileSystemEvent()
 
@@ -18,6 +18,8 @@ sealed class FileSystemEvent {
     class FileDeletedEvent(val fileEntity: FileEntity) : FileSystemEvent()
 
     class ViewCreatedEvent(val fileEntity: FileEntity, val viewEntity: FileViewEntity) : FileSystemEvent()
+
+    class ViewDeletedEvent(val fileEntity: FileEntity, val viewEntity: FileViewEntity) : FileSystemEvent()
 
     class ArchiveCreatedEvent(val fileEntity: FileEntity) : FileSystemEvent()
 }

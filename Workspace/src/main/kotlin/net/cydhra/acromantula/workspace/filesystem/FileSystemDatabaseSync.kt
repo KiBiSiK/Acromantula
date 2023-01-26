@@ -48,6 +48,7 @@ internal class FileSystemDatabaseSync(
             is FileSystemEvent.FileUpdatedEvent -> Unit
             is FileSystemEvent.ArchiveCreatedEvent -> syncArchiveCreatedIntoDatabase(event)
             is FileSystemEvent.ViewCreatedEvent -> syncViewCreatedIntoDatabase(event)
+            is FileSystemEvent.ViewDeletedEvent -> syncViewDeletedIntoDatabase(event)
             else -> TODO("missing event dispatch")
         }
     }
@@ -119,12 +120,20 @@ internal class FileSystemDatabaseSync(
     }
 
     private fun syncViewCreatedIntoDatabase(event: FileSystemEvent.ViewCreatedEvent) {
-        databaseClient.transaction {
+        event.viewEntity.databaseId = databaseClient.transaction {
             FileViewTable.insertAndGetId {
                 it[file] = event.fileEntity.databaseId
                 it[type] = event.viewEntity.type
                 it[resource] = event.viewEntity.resource
                 it[created] = DateTime(event.viewEntity.created)
+            }
+        }
+    }
+
+    private fun syncViewDeletedIntoDatabase(event: FileSystemEvent.ViewDeletedEvent) {
+        databaseClient.transaction {
+            FileViewTable.deleteWhere {
+                FileViewTable.id eq event.viewEntity.databaseId
             }
         }
     }
