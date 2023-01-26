@@ -10,37 +10,6 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * An SQL query to list a directory tree relative to a starting directory selected by `%clause`
- */
-private const val RECURSIVE_LIST_FILE_TREE_QUERY = """
-    WITH RECURSIVE tree (id, name, parent, is_directory, type, resource, archive, path) AS 
-    (
-      SELECT id, name, parent, is_directory, type, resource, archive, CAST (id AS VARCHAR) As path
-      FROM TreeFile
-      WHERE %{clause}
-      UNION ALL
-        SELECT tf.id, tf.name, tf.parent, tf.is_directory, tf.type, tf.resource, tf.archive,
-         (r.path || '.' || CAST  (tf.id AS VARCHAR)) AS path
-        FROM TreeFile AS tf
-          INNER JOIN tree AS r
-          ON tf.parent = r.id
-    )
-    SELECT id, name, parent, is_directory, type, resource, archive FROM tree
-    ORDER BY path
-"""
-
-/**
- * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for the workspace root
- */
-private val FILE_TREE_QUERY_ROOT_CLAUSE = "parent IS NULL"
-
-/**
- * A `%clause` variant for [RECURSIVE_LIST_FILE_TREE_QUERY] for a specified directory id as parent. The id is
- * inserted via prepared statement parameter
- */
-private val FILE_TREE_QUERY_RELATIVE_CLAUSE = "parent = (?)"
-
-/**
  * Facade service for the workspace sub-system. Everything related to data storage and data operation is delegated
  * from here.
  */
