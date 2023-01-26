@@ -22,7 +22,7 @@ object GenerateViewFeature {
      * happen, if an exception is thrown during generation.
      */
     fun generateView(fileEntity: FileEntity, viewType: String): FileViewEntity? {
-        val representation = WorkspaceService.queryRepresentation(fileEntity, viewType)
+        val representation = fileEntity.views.find { it.type == viewType }
         if (representation != null) {
             logger.debug("reusing existing representation from ${representation.created}")
             return representation

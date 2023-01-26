@@ -83,8 +83,7 @@ class ExportViewCommandInterpreter private constructor(
 
         if (recursive) {
             val outputStream = ZipOutputStream(FileOutputStream(targetFileName))
-            val files = WorkspaceService.getDirectoryContent(file)
-            appendRepresentations(files, "", outputStream)
+            appendRepresentations(file.children, "", outputStream)
             outputStream.close()
         } else {
             val representation = GenerateViewFeature.generateView(file, viewType)
@@ -117,7 +116,7 @@ class ExportViewCommandInterpreter private constructor(
                 outputStream.putNextEntry(ZipEntry(zipEntryName))
                 outputStream.closeEntry()
 
-                appendRepresentations(WorkspaceService.getDirectoryContent(subFile), zipEntryName, outputStream)
+                appendRepresentations(subFile.children, zipEntryName, outputStream)
             } else {
                 val representation =
                     GenerateViewFeature.generateView(subFile, viewType)
