@@ -35,11 +35,9 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
     override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
         val interpreter = when (request.fileIdCase) {
-            ListFilesCommand.FileIdCase.ID ->
-                ListFilesCommandInterpreter(request.id)
+            ListFilesCommand.FileIdCase.ID -> ListFilesCommandInterpreter(request.id)
 
-            ListFilesCommand.FileIdCase.FILEPATH ->
-                ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })
+            ListFilesCommand.FileIdCase.FILEPATH -> ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })
 
             null, ListFilesCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
@@ -55,43 +53,29 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
     override fun showFile(request: ShowFileCommand): Flow<FileChunk> {
         val fileEntity = when (request.fileIdCase) {
             ShowFileCommand.FileIdCase.ID -> WorkspaceService.queryPath(request.id)
-            ShowFileCommand.FileIdCase.PATH -> TODO(
-                """WorkspaceService.queryPath(
-                WorkspaceService.queryPath(request.path).id.value
-            )"""
+            ShowFileCommand.FileIdCase.PATH -> WorkspaceService.queryPath(
+                WorkspaceService.queryPath(request.path).resource
             )
 
             null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
 
         val size = WorkspaceService.getFileSize(fileEntity)
-        return WorkspaceService.getFileContent(fileEntity)
-            .buffered()
-            .iterator()
-            .asSequence()
-            .chunked(request.chunkSize)
+        return WorkspaceService.getFileContent(fileEntity).buffered().iterator().asSequence().chunked(request.chunkSize)
             .map {
-                FileChunk.newBuilder()
-                    .setTotalBytes(size)
-                    .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray()))
-                    .build()
-            }
-            .asFlow()
-            .flowOn(Dispatchers.IO)
+                FileChunk.newBuilder().setTotalBytes(size)
+                    .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray())).build()
+            }.asFlow().flowOn(Dispatchers.IO)
     }
 
     override suspend fun createFile(request: CreateFileCommand): FileEntity {
         val cmd = when (request.parentIdCase) {
             CreateFileCommand.ParentIdCase.ID -> CreateFileCommandInterpreter(
-                request.id,
-                request.name,
-                request.isDirectory
+                request.id, request.name, request.isDirectory
             )
 
             CreateFileCommand.ParentIdCase.PATH -> CreateFileCommandInterpreter(
-                request.path,
-                request.name,
-                request.isDirectory
+                request.path, request.name, request.isDirectory
             )
 
             null, CreateFileCommand.ParentIdCase.PARENTID_NOT_SET -> throw MissingTargetFileException()

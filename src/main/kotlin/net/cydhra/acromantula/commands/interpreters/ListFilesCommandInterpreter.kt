@@ -6,7 +6,6 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 
 /**
  * Command to list all files in a directory.
- * // TODO: this should work recursively. Design a SQL query to achieve that, but for now just do it for a directory
  * @param directoryPath directory path. If null, either `directoryId` must be set, or the root directory is referred
  * @param directoryId directory id. If null, either `directory` must be set, or the root directory is referred
  */
