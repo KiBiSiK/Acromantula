@@ -3,6 +3,7 @@ package net.cydhra.acromantula.workspace.filesystem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import net.cydhra.acromantula.workspace.database.DatabaseClient
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.insertAndGetId
@@ -18,8 +19,10 @@ internal object DatabaseSyncEventLoop : FileSystemEventLoop()
  * IO-thread-pool. If the workspace closes, the flow is ended and the handler ends once all remaining data has been
  * synchronized with the database
  */
-internal class FileSystemDatabaseSync(private val fs: WorkspaceFileSystem) :
-    FileSystemObserver by DatabaseSyncEventLoop {
+internal class FileSystemDatabaseSync(
+    private val fs: WorkspaceFileSystem,
+    private val databaseClient: DatabaseClient
+) : FileSystemObserver by DatabaseSyncEventLoop {
 
     init {
         DatabaseSyncEventLoop.eventChannel.consumeAsFlow().buffer(256).onEach {
@@ -46,23 +49,26 @@ internal class FileSystemDatabaseSync(private val fs: WorkspaceFileSystem) :
     }
 
     private fun syncNewFileIntoDatabase(event: FileSystemEvent.FileCreatedEvent) {
-        val id = FileTable.insertAndGetId {
-            it[name] = event.fileEntity.name
+        val id = databaseClient.transaction {
+            FileTable.insertAndGetId {
+                it[name] = event.fileEntity.name
 
-            if (event.fileEntity.parent != null) {
-                val cachedId = event.fileEntity.parent!!.databaseId
-                    ?: throw IllegalStateException("cannot insert child before parent")
-                it[parent] = cachedId
-            }
+                if (event.fileEntity.parent != null) {
+                    val cachedId = event.fileEntity.parent!!.databaseId
+                        ?: throw IllegalStateException("cannot insert child before parent")
+                    it[parent] = cachedId
+                }
 
-            it[isDirectory] = event.fileEntity.isDirectory
-            it[type] = event.fileEntity.type // TODO: do not use strings, this is waste of space
-            it[resource] = event.fileEntity.resource
+                it[isDirectory] = event.fileEntity.isDirectory
+                it[type] = event.fileEntity.type // TODO: do not use strings, this is waste of space
+                it[resource] = event.fileEntity.resource
 
-            if (event.fileEntity.archiveType != null) {
-                it[archive] = EntityID(fs.getArchiveId(event.fileEntity.archiveType!!)!!, ArchiveTable)
+                if (event.fileEntity.archiveType != null) {
+                    it[archive] = EntityID(fs.getArchiveId(event.fileEntity.archiveType!!)!!, ArchiveTable)
+                }
             }
         }
+
         event.fileEntity.databaseId = id
     }
 }

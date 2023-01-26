@@ -19,7 +19,7 @@ import java.time.Instant
  * interact with files of the workspace.
  */
 // TODO somehow handle exclusive write access to resources, so no two clients ever write the same resource at once
-internal class WorkspaceFileSystem(private val workspacePath: File, private val databaseClient: DatabaseClient) {
+internal class WorkspaceFileSystem(private val workspacePath: File, databaseClient: DatabaseClient) {
 
     /**
      * A file containing meta information for this service to correctly operate
@@ -54,7 +54,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Listener for [eventBroker] that will sync all file system events into the backing database
      */
-    private val fileSystemDatabaseSync = FileSystemDatabaseSync(this)
+    private val fileSystemDatabaseSync = FileSystemDatabaseSync(this, databaseClient)
 
     /**
      * All file trees in the workspace. This list guarantees that only one file entity exists per file, and no two
