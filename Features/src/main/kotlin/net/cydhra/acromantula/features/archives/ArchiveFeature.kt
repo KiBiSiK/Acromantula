@@ -94,14 +94,14 @@ object ArchiveFeature {
 
         // move file and update affected archives
         if (parent == targetDirectory) {
-            WorkspaceService.moveFile(file, targetDirectory)
+            WorkspaceService.moveFileEntry(file, targetDirectory)
 
             if (parent != null) {
                 findArchiveRoot(parent)?.also { (archive, type) -> type.onFileMoved(archive, parent, file) }
             }
         } else {
             findArchiveRoot(parent)?.also { (archive, type) -> type.onFileDelete(archive, file) }
-            WorkspaceService.moveFile(file, targetDirectory)
+            WorkspaceService.moveFileEntry(file, targetDirectory)
             findArchiveRoot(targetDirectory)?.also { (archive, type) -> type.onFileAdded(archive, file) }
         }
     }
@@ -144,7 +144,7 @@ object ArchiveFeature {
         }
 
         findArchiveRoot(file)?.also { (archive, type) -> type.onFileDelete(archive, file) }
-        WorkspaceService.deleteFile(file)
+        WorkspaceService.deleteFileEntry(file)
     }
 
     /**

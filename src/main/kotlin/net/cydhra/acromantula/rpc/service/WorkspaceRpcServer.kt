@@ -132,7 +132,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
         // todo this should be done through a command interpreter (analogous to reconstructFile) and routed through
         //  the mapping feature for re-mapping
-        WorkspaceService.updateFileEntry(fileEntity, request.newContent.toByteArray())
+        WorkspaceService.updateFileContent(fileEntity, request.newContent.toByteArray())
         return Empty.getDefaultInstance()
     }
 

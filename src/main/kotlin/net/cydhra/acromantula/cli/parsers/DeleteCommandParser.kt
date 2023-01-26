@@ -4,8 +4,6 @@ import com.xenomachina.argparser.ArgParser
 import net.cydhra.acromantula.cli.WorkspaceCommandParser
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.DeleteCommandInterpreter
-import net.cydhra.acromantula.commands.interpreters.ViewCommandInterpreter
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
 import org.apache.logging.log4j.LogManager
 
 class DeleteCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit> {

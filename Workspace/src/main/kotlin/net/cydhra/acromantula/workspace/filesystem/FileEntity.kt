@@ -1,16 +1,11 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
+import net.cydhra.acromantula.workspace.disassembly.FileView
 import net.cydhra.acromantula.workspace.util.Either
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 // This table is NOT private, so external models can reference files.
@@ -30,45 +25,46 @@ object FileTable : IntIdTable("TreeFile") {
 /**
  * A singular file entity
  */
-class FileEntity(id: EntityID<Int>) : IntEntity(id) {
+class FileEntity internal constructor(
+    name: String,
+    parent: Optional<Int>,
+    isDirectory: Boolean,
+    type: String,
+    archiveEntity: Optional<Int>,
+    private val resource: Int
+) {
 
     /**
      * Marker type for intentionally empty optionals
      */
     object Empty
 
-    companion object : IntEntityClass<FileEntity>(FileTable)
-
-    var name by FileTable.name
+    var name: String = name
         internal set
-    var parent by FileEntity optionalReferencedOn FileTable.parent
+    var parent: Optional<Int> = parent
         internal set
-    var isDirectory by FileTable.isDirectory
+    var isDirectory: Boolean = isDirectory
         internal set
-    var type by FileTable.type
+    var type: String = type
         internal set
 
-    var resource by FileTable.resource
-
-    internal var archiveEntity by FileTable.archive
+    internal var archiveEntity: Optional<Int> = archiveEntity
 
     var archiveType: Optional<String> = Optional.empty()
         get() {
-            return if (archiveEntity == null) {
+            return if (!archiveEntity.isPresent) {
                 field = Optional.empty()
                 field
             } else {
                 if (!field.isPresent) {
                     field = Optional.of(ArchiveTable
-                        .select { ArchiveTable.id eq archiveEntity!!.value }
+                        .select { ArchiveTable.id eq archiveEntity.get() }
                         .first()[ArchiveTable.typeIdent])
                 }
                 field
             }
         }
         private set
-
-    private val views by FileRepresentation referrersOn FileRepresentationTable.file
 
     /**
      * Whether this file supports adding child files. This optional is initialized empty, because the property is
@@ -85,9 +81,7 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
     /**
      * Get all views associated with this file
      */
-    fun getViews(): List<FileRepresentation> {
-        return transaction {
-            this@FileEntity.views.toList()
-        }
+    fun getViews(): List<FileView> {
+        TODO("not implemented")
     }
 }

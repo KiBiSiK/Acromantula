@@ -2,7 +2,10 @@ package net.cydhra.acromantula.workspace.filesystem
 
 sealed class FileSystemEvent {
 
-    class FileCreatedEvent : FileSystemEvent()
+    /**
+     * Fired by [WorkspaceFileSystem.createFile]
+     */
+    class FileCreatedEvent(val fileEntity: FileEntity) : FileSystemEvent()
 
     class FileUpdatedEvent : FileSystemEvent()
 

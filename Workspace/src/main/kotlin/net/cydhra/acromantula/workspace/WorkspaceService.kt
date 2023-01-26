@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
+import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewTable
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import net.cydhra.acromantula.workspace.util.TreeNode
@@ -124,13 +124,7 @@ object WorkspaceService {
      */
     fun addDirectoryEntry(name: String, parent: FileEntity?): FileEntity {
         logger.trace("creating directory entry in file tree: \"$name\"")
-        return workspaceClient.databaseClient.transaction {
-            FileEntity.new {
-                this.name = name
-                this.parent = parent
-                this.isDirectory = true
-            }
-        }
+        return workspaceClient.createDirectory(name, parent)
     }
 
     /**
@@ -143,7 +137,7 @@ object WorkspaceService {
      */
     fun addFileEntry(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
         logger.trace("creating file entry in file tree: \"$name\"")
-        return workspaceClient.uploadFile(name, parent, content)
+        return workspaceClient.createFile(name, parent, content)
     }
 
     /**
@@ -164,27 +158,15 @@ object WorkspaceService {
      * @param type representation type identifier
      * @param viewData binary data of the representation
      */
-    fun addFileRepresentation(file: FileEntity, type: String, viewData: ByteArray): FileRepresentation {
-        return workspaceClient.databaseClient.transaction {
-            file.refresh()
-            logger.trace("creating file view for file: \"${file.name}\"")
-
-            workspaceClient.uploadFileRepresentation(file, type, viewData)
-            FileRepresentation
-                .find { FileRepresentationTable.file eq file.id and (FileRepresentationTable.type eq type) }
-                .single()
-        }
+    fun addFileRepresentation(file: FileEntity, type: String, viewData: ByteArray): FileView {
+        return workspaceClient.createFileView(file, type, viewData)
     }
 
     /**
      * Update content of a file with new content
      */
-    fun updateFileEntry(fileEntity: FileEntity, byteArray: ByteArray) {
-        workspaceClient.databaseClient.transaction {
-            fileEntity.refresh()
-            logger.trace("updating file content for: \"${fileEntity.name}\"")
-            workspaceClient.updateFile(fileEntity, byteArray)
-        }
+    fun updateFileContent(fileEntity: FileEntity, byteArray: ByteArray) {
+        workspaceClient.updateFile(fileEntity, byteArray)
     }
 
     /**
@@ -233,13 +215,13 @@ object WorkspaceService {
      * @param fileEntity reference file for the representation
      * @param viewType type of representation in question
      *
-     * @return a [FileRepresentation] instance if the view already exists, `null` otherwise
+     * @return a [FileView] instance if the view already exists, `null` otherwise
      */
-    fun queryRepresentation(fileEntity: FileEntity, viewType: String): FileRepresentation? {
+    fun queryRepresentation(fileEntity: FileEntity, viewType: String): FileView? {
         return this.workspaceClient.databaseClient.transaction {
-            FileRepresentation.find {
-                FileRepresentationTable.file eq fileEntity.id and
-                        (FileRepresentationTable.type eq viewType)
+            FileView.find {
+                FileViewTable.file eq fileEntity.id and
+                        (FileViewTable.type eq viewType)
             }.firstOrNull()
         }
     }
@@ -390,15 +372,15 @@ object WorkspaceService {
         return this.workspaceClient.downloadFile(fileEntity)
     }
 
-    fun getRepresentationSize(fileRepresentation: FileRepresentation): Long {
-        return workspaceClient.getRepresentationSize(fileRepresentation)
+    fun getRepresentationSize(fileView: FileView): Long {
+        return workspaceClient.getRepresentationSize(fileView)
     }
 
     /**
      * Get an [InputStream] that contains a file representation as binary data.
      */
-    fun getRepresentationContent(representation: FileRepresentation): InputStream {
-        return this.workspaceClient.downloadRepresentation(representation)
+    fun getRepresentationContent(representation: FileView): InputStream {
+        return this.workspaceClient.downloadFileView(representation)
     }
 
     /**
@@ -408,7 +390,7 @@ object WorkspaceService {
         this.workspaceClient.exportFile(fileEntity, outputStream)
     }
 
-    fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
+    fun moveFileEntry(file: FileEntity, targetDirectory: FileEntity?) {
         require(targetDirectory?.isDirectory ?: true) { "target must be a directory or null" }
 
         this.workspaceClient.moveFile(file, targetDirectory)
@@ -418,16 +400,8 @@ object WorkspaceService {
      * Delete a file or directory, and its associated resource from the workspace. All directory contents will be
      * deleted as well.
      */
-    fun deleteFile(fileEntity: FileEntity) {
-        transaction {
-            if (fileEntity.isDirectory) {
-                FileEntity.find { FileTable.parent eq fileEntity.id }.forEach(::deleteFile)
-            } else {
-                workspaceClient.deleteFile(fileEntity)
-            }
-
-            fileEntity.delete()
-        }
+    fun deleteFileEntry(fileEntity: FileEntity) {
+        workspaceClient.deleteFile(fileEntity)
     }
 
     /**

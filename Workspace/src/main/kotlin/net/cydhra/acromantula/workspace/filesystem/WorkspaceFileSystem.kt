@@ -2,8 +2,8 @@ package net.cydhra.acromantula.workspace.filesystem
 
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
+import net.cydhra.acromantula.workspace.disassembly.FileView
+import net.cydhra.acromantula.workspace.disassembly.FileViewTable
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertIgnoreAndGetId
@@ -13,10 +13,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileReader
 import java.io.InputStream
-import java.net.URL
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.WritableByteChannel
+import java.util.*
 
 /**
  * A facade to all file system interaction of a workspace. No other part within the workspace should directly
@@ -61,26 +61,23 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     }
 
     /**
-     * Add a resource to the workspace and associate it with the given file entity.
+     * Add a resource to the workspace and associate it with a new file entity.
      *
      * @param name name of the new file
      * @param parent database entity of the parent file. optional
      * @param content the resource's content in raw binary form
+     *
+     * @return a [FileEntity] handle to reference this file later
      */
-    fun addResource(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
-        val newFile = File(this.resourceDirectory, (++this.index.currentFileIndex).toString())
+    fun createFile(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
+        val resourceIndex = synchronized(this.index) { ++this.index.currentFileIndex }
+        val newFile = File(this.resourceDirectory, resourceIndex.toString())
         newFile.writeBytes(content)
-
-        val file = this.databaseClient.transaction {
-            FileEntity.new {
-                this.name = name
-                this.parent = parent
-                this.resource = this@WorkspaceFileSystem.index.currentFileIndex
-            }
-        }
+        val fileEntity = FileEntity(name, TODO("parent"), false, "", Optional.empty(), resourceIndex)
+        eventBroker.dispatch(FileSystemEvent.FileCreatedEvent(fileEntity))
 
         saveIndex()
-        return file
+        return fileEntity
     }
 
     /**
@@ -143,11 +140,11 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
 
         // delete cached representations as they are now invalid
         transaction {
-            FileRepresentation.find { FileRepresentationTable.file eq file.id.value }.forEach { fileRepresentation ->
+            FileView.find { FileViewTable.file eq file.id.value }.forEach { fileRepresentation ->
                 File(resourceDirectory, fileRepresentation.resource.toString()).delete()
             }
 
-            FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq file.id.value }
+            FileViewTable.deleteWhere { FileViewTable.file eq file.id.value }
         }
     }
 
@@ -175,12 +172,12 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
                 file.resource = null
 
                 // delete cached representations as they are now invalid
-                FileRepresentation.find { FileRepresentationTable.file eq file.id.value }.forEach { repr ->
+                FileView.find { FileViewTable.file eq file.id.value }.forEach { repr ->
                     File(resourceDirectory, repr.resource.toString()).delete()
                 }
 
                 // delete representations from database
-                FileRepresentationTable.deleteWhere { FileRepresentationTable.file eq file.id.value }
+                FileViewTable.deleteWhere { FileViewTable.file eq file.id.value }
             }
 
         }
@@ -210,6 +207,10 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         }
     }
 
+    fun createDirectory(name: String, parent: FileEntity?): FileEntity {
+        TODO("not implemented")
+    }
+
     /**
      * Get the file size of a resource without reading the resource from disk
      */
@@ -226,12 +227,12 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Creates a file representation resource in workspace.
      */
-    fun createFileRepresentation(file: FileEntity, type: String, content: ByteArray): FileRepresentation {
+    fun createFileRepresentation(file: FileEntity, type: String, content: ByteArray): FileView {
         val newFile = File(this.resourceDirectory, (++this.index.currentFileIndex).toString())
         newFile.writeBytes(content)
 
         return this.databaseClient.transaction {
-            FileRepresentation.new {
+            FileView.new {
                 this.file = file
                 this.type = type
                 this.resource = index.currentFileIndex
@@ -243,7 +244,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Open a file representation in an [InputStream]
      */
-    fun openFileRepresentation(representation: FileRepresentation): InputStream {
+    fun openFileRepresentation(representation: FileView): InputStream {
         val id = this.databaseClient.transaction {
             representation.refresh()
             representation.resource
@@ -255,7 +256,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Get the file size of a representation resource without reading the resource from disk
      */
-    fun getFileRepresentationSize(representation: FileRepresentation): Long {
+    fun getFileRepresentationSize(representation: FileView): Long {
         return File(resourceDirectory, representation.resource.toString()).length()
     }
 
@@ -288,13 +289,6 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     private fun saveIndex() {
         this.indexFile.writeText(gson.toJson(this.index))
-    }
-
-    /**
-     * Return the URL of a file within this file system.
-     */
-    fun getFileUrl(fileEntity: Int): URL {
-        return File(this.resourceDirectory, fileEntity.toString()).toURI().toURL()
     }
 
     private class WorkspaceIndex {
