@@ -27,11 +27,11 @@ object FileTable : IntIdTable("TreeFile") {
  */
 class FileEntity internal constructor(
     name: String,
-    parent: Optional<Int>,
+    parent: Optional<FileEntity>,
     isDirectory: Boolean,
     type: String,
     archiveEntity: Optional<Int>,
-    private val resource: Int
+    internal val resource: Int
 ) {
 
     /**
@@ -39,9 +39,29 @@ class FileEntity internal constructor(
      */
     object Empty
 
+    /**
+     * Mutable list of child files
+     */
+    internal val childEntities = mutableListOf<FileEntity>()
+
+    /**
+     * A list of all files within this directory. If this file is not a directory, this list is empty
+     */
+    val children: List<FileEntity> = childEntities
+
+    /**
+     * Mutable list of file views associated with this file
+     */
+    internal val viewEntities = mutableListOf<FileView>()
+
+    /**
+     * A list of all [FileView] entities associated with this file. If this file is a directory, this list is empty
+     */
+    val views: List<FileView> = viewEntities
+
     var name: String = name
         internal set
-    var parent: Optional<Int> = parent
+    var parent: Optional<FileEntity> = parent
         internal set
     var isDirectory: Boolean = isDirectory
         internal set

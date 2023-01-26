@@ -32,11 +32,11 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     }
 
     override fun downloadFile(fileEntity: FileEntity): InputStream {
-        return this.workspaceFileSystem.openResource(fileEntity)
+        return this.workspaceFileSystem.openFile(fileEntity)
     }
 
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
-        this.workspaceFileSystem.exportResource(fileEntity, Channels.newChannel(outputStream))
+        this.workspaceFileSystem.exportFile(fileEntity, Channels.newChannel(outputStream))
     }
 
     override fun createDirectory(name: String, parent: FileEntity?): FileEntity {
@@ -52,7 +52,7 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     }
 
     override fun deleteFile(fileEntity: FileEntity) {
-        this.workspaceFileSystem.deleteResource(fileEntity)
+        this.workspaceFileSystem.deleteFile(fileEntity)
     }
 
     override fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {

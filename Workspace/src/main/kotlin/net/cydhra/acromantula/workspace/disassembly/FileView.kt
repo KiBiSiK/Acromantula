@@ -1,5 +1,6 @@
 package net.cydhra.acromantula.workspace.disassembly
 
+import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileTable
 import org.jetbrains.exposed.sql.jodatime.datetime
 import java.time.Instant
@@ -23,4 +24,4 @@ internal object FileViewTable : org.jetbrains.exposed.dao.id.IntIdTable() {
 /**
  * A human-readable view of a file, which is itself stored as a resource in workspace.
  */
-class FileView(val file: Int, val type: String, val resource: Int, val created: Instant)
+class FileView(val file: FileEntity, val type: String, val resource: Int, val created: Instant)
