@@ -6,7 +6,6 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
-import org.jetbrains.exposed.sql.select
 import java.util.*
 
 // This table is NOT private, so external models can reference files.
@@ -28,10 +27,10 @@ object FileTable : IntIdTable("TreeFile") {
  */
 class FileEntity internal constructor(
     name: String,
-    parent: Optional<FileEntity>,
+    parent: FileEntity?,
     isDirectory: Boolean,
     type: String,
-    archiveEntity: Optional<Int>,
+    archiveType: String?,
     internal val resource: Int
 ) {
 
@@ -62,30 +61,18 @@ class FileEntity internal constructor(
 
     var name: String = name
         internal set
-    var parent: Optional<FileEntity> = parent
+    var parent: FileEntity? = parent
         internal set
     var isDirectory: Boolean = isDirectory
         internal set
     var type: String = type
         internal set
 
-    internal var archiveEntity: Optional<Int> = archiveEntity
-
-    var archiveType: Optional<String> = Optional.empty()
-        get() {
-            return if (!archiveEntity.isPresent) {
-                field = Optional.empty()
-                field
-            } else {
-                if (!field.isPresent) {
-                    field = Optional.of(ArchiveTable
-                        .select { ArchiveTable.id eq archiveEntity.get() }
-                        .first()[ArchiveTable.typeIdent])
-                }
-                field
-            }
-        }
-        private set
+    /**
+     * Archive type identifier
+     */
+    var archiveType: String? = archiveType
+        internal set
 
     /**
      * Internal cache for database id, which can be used by database sync to quickly reference this file. -1 if no

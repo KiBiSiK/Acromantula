@@ -4,12 +4,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.insertAndGetId
 
 /**
  * Event loop instance for database syncing
  */
-object DatabaseSyncEventLoop : FileSystemEventLoop()
+internal object DatabaseSyncEventLoop : FileSystemEventLoop()
 
 /**
  * An observer of all file system events that will synchronize them with the database in the background. To do this,
@@ -17,7 +18,8 @@ object DatabaseSyncEventLoop : FileSystemEventLoop()
  * IO-thread-pool. If the workspace closes, the flow is ended and the handler ends once all remaining data has been
  * synchronized with the database
  */
-class FileSystemDatabaseSync : FileSystemObserver by DatabaseSyncEventLoop {
+internal class FileSystemDatabaseSync(private val fs: WorkspaceFileSystem) :
+    FileSystemObserver by DatabaseSyncEventLoop {
 
     init {
         DatabaseSyncEventLoop.eventChannel.consumeAsFlow().buffer(256).onEach {
@@ -47,8 +49,8 @@ class FileSystemDatabaseSync : FileSystemObserver by DatabaseSyncEventLoop {
         val id = FileTable.insertAndGetId {
             it[name] = event.fileEntity.name
 
-            if (event.fileEntity.parent.isPresent) {
-                val cachedId = event.fileEntity.parent.get().databaseId
+            if (event.fileEntity.parent != null) {
+                val cachedId = event.fileEntity.parent!!.databaseId
                     ?: throw IllegalStateException("cannot insert child before parent")
                 it[parent] = cachedId
             }
@@ -56,7 +58,10 @@ class FileSystemDatabaseSync : FileSystemObserver by DatabaseSyncEventLoop {
             it[isDirectory] = event.fileEntity.isDirectory
             it[type] = event.fileEntity.type // TODO: do not use strings, this is waste of space
             it[resource] = event.fileEntity.resource
-            TODO("set archive type")
+
+            if (event.fileEntity.archiveType != null) {
+                it[archive] = EntityID(fs.getArchiveId(event.fileEntity.archiveType!!)!!, ArchiveTable)
+            }
         }
         event.fileEntity.databaseId = id
     }

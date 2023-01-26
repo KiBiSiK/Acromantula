@@ -3,7 +3,6 @@ package net.cydhra.acromantula.workspace.filesystem
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileView
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.insertIgnoreAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -14,7 +13,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.WritableByteChannel
 import java.time.Instant
-import java.util.*
 
 /**
  * A facade to all file system interaction of a workspace. No other part within the workspace should directly
@@ -56,7 +54,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Listener for [eventBroker] that will sync all file system events into the backing database
      */
-    private val fileSystemDatabaseSync = FileSystemDatabaseSync()
+    private val fileSystemDatabaseSync = FileSystemDatabaseSync(this)
 
     /**
      * All file trees in the workspace. This list guarantees that only one file entity exists per file, and no two
@@ -98,11 +96,11 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         // create file entity and add it to the file tree. If the file is not created at toplevel, add it to its
         // parent file
         val fileEntity = if (parent == null) {
-            FileEntity(name, Optional.empty(), false, "", Optional.empty(), resourceIndex).also {
+            FileEntity(name, parent, false, "", null, resourceIndex).also {
                 fileTrees.add(it)
             }
         } else {
-            FileEntity(name, Optional.of(parent), false, "", Optional.empty(), resourceIndex).also {
+            FileEntity(name, parent, false, "", null, resourceIndex).also {
                 parent.childEntities.add(it)
             }
         }
@@ -200,9 +198,9 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
         check(backingResource.exists()) { "file does not have a backing resource. Has it already been deleted?" }
 
         // remove from parent's children and unset parent, remove from file trees
-        if (file.parent.isPresent) {
-            file.parent.get().childEntities.remove(file)
-            file.parent = Optional.empty()
+        if (file.parent != null) {
+            file.parent!!.childEntities.remove(file)
+            file.parent = null
         } else {
             fileTrees.remove(file)
         }
@@ -222,13 +220,13 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      * @param targetDirectory target directory or null if target is workspace root
      */
     fun moveResource(file: FileEntity, targetDirectory: FileEntity?) {
-        if (file.parent.isPresent) {
-            file.parent.get().childEntities.remove(file)
-            file.parent = Optional.ofNullable(targetDirectory)
+        if (file.parent != null) {
+            file.parent!!.childEntities.remove(file)
+            file.parent = targetDirectory
             targetDirectory?.childEntities?.add(file)
         } else {
             fileTrees.remove(file)
-            file.parent = Optional.ofNullable(targetDirectory)
+            file.parent = targetDirectory
             targetDirectory?.childEntities?.add(file)
         }
 
@@ -338,10 +336,17 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     fun markAsArchive(directory: FileEntity, type: String) {
         require(directory.isDirectory) { "can only mark directories as archives" }
+        directory.archiveType = type
+        TODO("fire archive create event")
+    }
 
-        transaction {
-            directory.archiveEntity = EntityID(archiveTypeIdentifiers[type]!!, ArchiveTable)
-        }
+    /**
+     * Get the internal id representing an archive type from the archive type identifier
+     *
+     * @param type archive type identifier defined by the archive implementation
+     */
+    internal fun getArchiveId(type: String): Int? {
+        return archiveTypeIdentifiers[type]
     }
 
     /**
@@ -361,7 +366,7 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
     /**
      * Open a resource (file or file view) and return an input stream
      */
-    private fun openResource(resource: Int): InputStream {
+    private fun openResource(resource: Int): FileInputStream {
         return File(resourceDirectory, resource.toString()).inputStream()
     }
 
