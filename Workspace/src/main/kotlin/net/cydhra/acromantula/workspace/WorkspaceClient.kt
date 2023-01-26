@@ -124,4 +124,14 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      * Get a list of all top-level files and directories in the workspace
      */
     abstract fun listFiles(): List<FileEntity>
+
+    /**
+     * Get a file by its path
+     */
+    abstract fun queryPath(path: String): FileEntity
+
+    /**
+     * Get a file by its resource id
+     */
+    abstract fun queryFile(id: Int): FileEntity
 }

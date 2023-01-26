@@ -394,6 +394,44 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
     }
 
     /**
+     * Query a file or directory by its path. Returns the specified file.
+     *
+     * @throws IllegalStateException if one of the file entities within the path (but the last) is not a directory
+     * @throws IllegalStateException if one of the files in the path does not exist
+     */
+    fun queryPath(path: String): FileEntity {
+        val folderPath = path.removeSuffix("/").removePrefix("/").split('/')
+
+        this.fileTrees.find { it.name == folderPath[0] }
+        var currentDirectory: List<FileEntity> = fileTrees
+        var currentPathIndex = 0
+
+        do {
+            val child = currentDirectory.find { it.name == folderPath[currentPathIndex++] }
+            if (child != null) {
+                if (currentPathIndex == folderPath.size) {
+                    return child
+                } else {
+                    if (child.isDirectory) {
+                        currentDirectory = child.children
+                    } else {
+                        error("${child.name} is not a directory")
+                    }
+                }
+            } else {
+                error("${folderPath[currentPathIndex - 1]} not found in $currentDirectory")
+            }
+        } while (true)
+    }
+
+    /**
+     * Get a file by its resource id
+     */
+    fun queryFile(id: Int): FileEntity {
+        return fileResourceMapping[id] ?: error("resource id $id does not exist")
+    }
+
+    /**
      * Get the internal id representing an archive type from the archive type identifier
      *
      * @param type archive type identifier defined by the archive implementation

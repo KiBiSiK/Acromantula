@@ -79,4 +79,12 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     override fun listFiles(): List<FileEntity> {
         return this.workspaceFileSystem.listFiles()
     }
+
+    override fun queryPath(path: String): FileEntity {
+        return this.workspaceFileSystem.queryPath(path)
+    }
+
+    override fun queryFile(id: Int): FileEntity {
+        return this.workspaceFileSystem.queryFile(id)
+    }
 }

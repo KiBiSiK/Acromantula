@@ -133,39 +133,14 @@ object WorkspaceService {
      * separator is `/`
      */
     fun queryPath(path: String): FileEntity {
-        TODO("not implemented")
-//        val folderPath = path.removeSuffix("/").removePrefix("/").split('/')
-//
-//        return this.workspaceClient.databaseClient.transaction {
-//            var results = FileEntity.find { FileTable.name eq folderPath.last() }.toList()
-//            var currentFolderIndex = folderPath.lastIndex - 1
-//
-//            do {
-//                when {
-//                    results.isEmpty() -> error("file with path $path does not exist")
-//                    results.count() == 1 -> return@transaction results.first()
-//                    currentFolderIndex > -1 -> {
-//                        results = results.filter { it.parent?.name?.equals(folderPath[currentFolderIndex]) == true }
-//                        currentFolderIndex--
-//                    }
-//
-//                    else -> error("the specified path was not unique")
-//                }
-//            } while (currentFolderIndex > -1)
-//
-//            error("the specified path was not unique")
-//        }
+        return workspaceClient.queryPath(path)
     }
 
     /**
      * Get a [FileEntity] instance by a file id.
      */
     fun queryPath(id: Int): FileEntity {
-        TODO("not implemented")
-//        return this.workspaceClient.databaseClient.transaction {
-//            FileEntity.find { FileTable.id eq id }.firstOrNull()
-//                ?: error("file with id $id does not exist")
-//        }
+        return workspaceClient.queryFile(id)
     }
 
     /**
