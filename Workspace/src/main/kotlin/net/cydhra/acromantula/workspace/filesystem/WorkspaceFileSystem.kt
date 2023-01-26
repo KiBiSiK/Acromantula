@@ -33,7 +33,14 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     private val resourceDirectory = File(workspacePath, "resources")
 
+    /**
+     * Index with meta information required for file system operation of the workspace
+     */
     private val index: WorkspaceIndex
+
+    /**
+     * Serializer for workspace index
+     */
     private val gson = GsonBuilder().create()
 
     /**
@@ -41,7 +48,14 @@ internal class WorkspaceFileSystem(private val workspacePath: File, private val 
      */
     private val archiveTypeIdentifiers = mutableMapOf<String, Int>()
 
+    /**
+     * Event broker for file system events
+     */
     private val eventBroker = FileSystemEventBroker()
+
+    /**
+     * Listener for [eventBroker] that will sync all file system events into the backing database
+     */
     private val fileSystemDatabaseSync = FileSystemDatabaseSync()
 
     /**

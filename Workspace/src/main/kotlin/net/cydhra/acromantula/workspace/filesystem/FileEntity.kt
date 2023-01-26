@@ -2,6 +2,7 @@ package net.cydhra.acromantula.workspace.filesystem
 
 import net.cydhra.acromantula.workspace.disassembly.FileView
 import net.cydhra.acromantula.workspace.util.Either
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
@@ -85,6 +86,12 @@ class FileEntity internal constructor(
             }
         }
         private set
+
+    /**
+     * Internal cache for database id, which can be used by database sync to quickly reference this file. -1 if no
+     * value is cached.
+     */
+    internal var databaseId: EntityID<Int>? = null
 
     /**
      * Whether this file supports adding child files. This optional is initialized empty, because the property is
