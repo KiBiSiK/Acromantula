@@ -44,6 +44,7 @@ internal class FileSystemEventBroker {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
+                    @Suppress("REDUNDANT_ELSE_IN_WHEN") // see else branch
                     when (event) {
                         is FileSystemEvent.ArchiveCreatedEvent -> registeredObservers.forEach {
                             it.onArchiveCreated(
@@ -57,6 +58,14 @@ internal class FileSystemEventBroker {
                         is FileSystemEvent.FileUpdatedEvent -> registeredObservers.forEach { it.onFileUpdated(event) }
                         is FileSystemEvent.FileDeletedEvent -> registeredObservers.forEach { it.onFileDeleted(event) }
                         is FileSystemEvent.ViewCreatedEvent -> registeredObservers.forEach { it.onViewCreated(event) }
+                        is FileSystemEvent.ViewDeletedEvent -> registeredObservers.forEach { it.onViewDeleted(event) }
+                        else -> {
+                            // this should be impossible to reach, however because this when-expression does not
+                            // return a value, it is not considered an error if this when is not exhaustive because
+                            // an event was added to the sealed class FileSystemEvent. This assertion error exists
+                            // to make sure we notice this mistake should it happen in the future
+                            throw AssertionError("unknown event dispatched")
+                        }
                     }
                 }
             }

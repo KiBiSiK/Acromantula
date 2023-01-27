@@ -40,4 +40,9 @@ interface FileSystemObserver {
      * converted into an archive.
      */
     suspend fun onArchiveCreated(event: FileSystemEvent.ArchiveCreatedEvent)
+
+    /**
+     * Called whenever a view is deleted from the workspace cache.
+     */
+    suspend fun onViewDeleted(event: FileSystemEvent.ViewDeletedEvent)
 }

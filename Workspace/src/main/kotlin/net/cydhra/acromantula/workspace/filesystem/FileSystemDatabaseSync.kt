@@ -39,6 +39,7 @@ internal class FileSystemDatabaseSync(
     }
 
     private fun handleEvent(event: FileSystemEvent) {
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // see else branch
         when (event) {
             is FileSystemEvent.FileCreatedEvent -> syncNewFileIntoDatabase(event)
             is FileSystemEvent.FileDeletedEvent -> syncDeleteFileIntoDatabase(event)
@@ -48,6 +49,13 @@ internal class FileSystemDatabaseSync(
             is FileSystemEvent.ArchiveCreatedEvent -> syncArchiveCreatedIntoDatabase(event)
             is FileSystemEvent.ViewCreatedEvent -> syncViewCreatedIntoDatabase(event)
             is FileSystemEvent.ViewDeletedEvent -> syncViewDeletedIntoDatabase(event)
+            else -> {
+                // this should be impossible to reach, however because this when-expression does not return a value,
+                // it is not considered an error if this when-expression is not exhaustive, because an event was
+                // added to the sealed class FileSystemEvent. This assertion error exists to make sure we
+                // notice this mistake should it happen in the future
+                throw AssertionError("unknown event dispatched")
+            }
         }
     }
 

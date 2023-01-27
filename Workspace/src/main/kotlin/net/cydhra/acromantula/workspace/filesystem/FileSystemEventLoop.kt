@@ -40,4 +40,8 @@ open class FileSystemEventLoop : FileSystemObserver {
     override suspend fun onArchiveCreated(event: FileSystemEvent.ArchiveCreatedEvent) {
         eventChannel.send(event)
     }
+
+    override suspend fun onViewDeleted(event: FileSystemEvent.ViewDeletedEvent) {
+        eventChannel.send(event)
+    }
 }
