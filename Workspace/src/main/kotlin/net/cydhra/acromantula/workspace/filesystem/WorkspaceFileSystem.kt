@@ -418,9 +418,9 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
         var currentPathIndex = 0
 
         do {
-            val child = currentDirectory.find { it.name == folderPath[currentPathIndex++] }
+            val child = currentDirectory.find { it.name == folderPath[currentPathIndex] }
             if (child != null) {
-                if (currentPathIndex == folderPath.size) {
+                if (currentPathIndex + 1 == folderPath.size) {
                     return child
                 } else {
                     if (child.isDirectory) {
@@ -430,8 +430,9 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
                     }
                 }
             } else {
-                error("${folderPath[currentPathIndex - 1]} not found in $currentDirectory")
+                error("${folderPath[currentPathIndex]} not found in $currentDirectory")
             }
+            currentPathIndex++
         } while (true)
     }
 
