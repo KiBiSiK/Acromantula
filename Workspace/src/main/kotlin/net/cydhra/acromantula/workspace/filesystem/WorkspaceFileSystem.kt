@@ -128,6 +128,14 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
     }
 
     /**
+     * Shutdown the workspace file system and all its resources gracefully.
+     */
+    fun onShutdown() {
+        this.fileSystemDatabaseSync.onShutdown()
+        this.saveIndex()
+    }
+
+    /**
      * Add a resource to the workspace and associate it with a new file entity.
      *
      * @param name name of the new file
@@ -152,7 +160,7 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
         eventBroker.dispatch(FileSystemEvent.FileCreatedEvent(fileEntity))
 
         // save the file index
-        saveIndex()
+//        saveIndex() // TODO: dispatch this in an extra thread to not clog the file system with unreasonable writes
         return fileEntity
     }
 

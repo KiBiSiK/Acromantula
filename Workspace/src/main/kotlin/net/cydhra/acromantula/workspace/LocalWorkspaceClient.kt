@@ -20,6 +20,11 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         workspaceFileSystem.initialize()
     }
 
+    override fun shutdown() {
+        super.shutdown()
+        workspaceFileSystem.onShutdown()
+    }
+
     override fun registerArchiveType(fileTypeIdentifier: String) {
         this.workspaceFileSystem.registerArchiveType(fileTypeIdentifier)
     }
