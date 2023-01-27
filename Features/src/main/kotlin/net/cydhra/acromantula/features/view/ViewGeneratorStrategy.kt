@@ -1,6 +1,6 @@
 package net.cydhra.acromantula.features.view
 
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.FileType
 
@@ -38,7 +38,7 @@ interface ViewGeneratorStrategy {
     /**
      * Generate a view from the given file entity and return a handle to the generated view file.
      */
-    fun generateView(fileEntity: FileEntity): FileRepresentation
+    fun generateView(fileEntity: FileEntity): FileViewEntity
 
     /**
      * Use the data from a view representation to reconstruct the file from it. The data must be of the [fileType]

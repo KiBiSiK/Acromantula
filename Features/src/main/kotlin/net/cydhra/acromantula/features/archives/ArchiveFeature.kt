@@ -3,7 +3,6 @@ package net.cydhra.acromantula.features.archives
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.util.Either
-import net.cydhra.acromantula.workspace.util.TreeNode
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -94,14 +93,14 @@ object ArchiveFeature {
 
         // move file and update affected archives
         if (parent == targetDirectory) {
-            WorkspaceService.moveFile(file, targetDirectory)
+            WorkspaceService.moveFileEntry(file, targetDirectory)
 
             if (parent != null) {
                 findArchiveRoot(parent)?.also { (archive, type) -> type.onFileMoved(archive, parent, file) }
             }
         } else {
             findArchiveRoot(parent)?.also { (archive, type) -> type.onFileDelete(archive, file) }
-            WorkspaceService.moveFile(file, targetDirectory)
+            WorkspaceService.moveFileEntry(file, targetDirectory)
             findArchiveRoot(targetDirectory)?.also { (archive, type) -> type.onFileAdded(archive, file) }
         }
     }
@@ -144,7 +143,7 @@ object ArchiveFeature {
         }
 
         findArchiveRoot(file)?.also { (archive, type) -> type.onFileDelete(archive, file) }
-        WorkspaceService.deleteFile(file)
+        WorkspaceService.deleteFileEntry(file)
     }
 
     /**
@@ -185,13 +184,9 @@ object ArchiveFeature {
             throw IllegalArgumentException("cannot create archive directory out of files")
 
         val archiveType = findArchiveType(type)
-        val fileTree = WorkspaceService.listFilesRecursively(directory)
-        assert(fileTree.size == 1)
-        val subFileTree = fileTree[0]
 
-        assert(subFileTree.value == directory)
-        if (subFileTree.childList.isNotEmpty()) {
-            checkCapabilitiesRecursively(subFileTree.childList, archiveType) // throws on error
+        if (directory.children.isNotEmpty()) {
+            checkCapabilitiesRecursively(directory.children, archiveType) // throws on error
         }
 
         archiveType.createArchiveFromScratch(directory)
@@ -219,13 +214,13 @@ object ArchiveFeature {
      * @param subFiles all files that will be at root-level in the new archive
      * @param type archive type to be created from the directory
      */
-    private fun checkCapabilitiesRecursively(subFiles: List<TreeNode<FileEntity>>, type: ArchiveType) {
+    private fun checkCapabilitiesRecursively(subFiles: List<FileEntity>, type: ArchiveType) {
         for (file in subFiles) {
-            if (file.value.isDirectory) {
+            if (file.isDirectory) {
                 if (!type.canAddDirectory())
                     throw IllegalStateException("cannot create ${type.fileTypeIdentifier} archive with sub-directories")
 
-                checkCapabilitiesRecursively(file.childList, type)
+                checkCapabilitiesRecursively(file.children, type)
             } else {
                 if (!type.canAddFile()) {
                     throw IllegalStateException("cannot create ${type.fileTypeIdentifier} archive containing existing files")
@@ -245,21 +240,18 @@ object ArchiveFeature {
             is Either.Left -> file to findArchiveType(root.value)
         }
 
-        return transaction {
-            val archiveType = if (file.archiveEntity != null) {
-                file.archiveEntity!!.typeIdent
+        val archiveType = if (file.archiveType != null) {
+            file.archiveType
+        } else {
+            findArchiveRoot(file.parent)?.second?.fileTypeIdentifier
+        }
 
-            } else {
-                findArchiveRoot(file.parent)?.second?.fileTypeIdentifier
-            }
-
-            if (archiveType != null) {
-                file.archiveRoot = Optional.of(Either.Left(archiveType))
-                file to findArchiveType(archiveType)
-            } else {
-                file.archiveRoot = Optional.of(Either.Right(FileEntity.Empty))
-                null
-            }
+        return if (archiveType != null) {
+            file.archiveRoot = Optional.of(Either.Left(archiveType))
+            file to findArchiveType(archiveType)
+        } else {
+            file.archiveRoot = Optional.of(Either.Right(FileEntity.Empty))
+            null
         }
     }
 

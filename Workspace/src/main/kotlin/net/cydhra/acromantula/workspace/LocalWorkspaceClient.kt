@@ -1,11 +1,11 @@
 package net.cydhra.acromantula.workspace
 
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import net.cydhra.acromantula.workspace.filesystem.WorkspaceFileSystem
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.URL
 import java.nio.channels.Channels
 
 internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(directory, "db").toURI().toURL()) {
@@ -15,12 +15,22 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
      */
     private val workspaceFileSystem = WorkspaceFileSystem(directory, this.databaseClient)
 
+    override fun initialize() {
+        super.initialize()
+        workspaceFileSystem.initialize()
+    }
+
+    override fun shutdown() {
+        super.shutdown()
+        workspaceFileSystem.onShutdown()
+    }
+
     override fun registerArchiveType(fileTypeIdentifier: String) {
         this.workspaceFileSystem.registerArchiveType(fileTypeIdentifier)
     }
 
-    override fun uploadFile(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
-        return this.workspaceFileSystem.addResource(name, parent, content)
+    override fun createFile(name: String, parent: FileEntity?, content: ByteArray): FileEntity {
+        return this.workspaceFileSystem.createFile(name, parent, content)
     }
 
     override fun updateFile(fileEntity: FileEntity, content: ByteArray) {
@@ -32,27 +42,27 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
     }
 
     override fun downloadFile(fileEntity: FileEntity): InputStream {
-        return this.workspaceFileSystem.openResource(fileEntity)
+        return this.workspaceFileSystem.openFile(fileEntity)
     }
 
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
-        this.workspaceFileSystem.exportResource(fileEntity, Channels.newChannel(outputStream))
+        this.workspaceFileSystem.exportFile(fileEntity, Channels.newChannel(outputStream))
     }
 
-    override fun uploadFileRepresentation(file: FileEntity, type: String, viewData: ByteArray) {
-        this.workspaceFileSystem.createFileRepresentation(file, type, viewData)
+    override fun createDirectory(name: String, parent: FileEntity?): FileEntity {
+        return this.workspaceFileSystem.createDirectory(name, parent)
     }
 
-    override fun downloadRepresentation(representation: FileRepresentation): InputStream {
-        return this.workspaceFileSystem.openFileRepresentation(representation)
+    override fun createFileView(file: FileEntity, type: String, viewData: ByteArray): FileViewEntity {
+        return this.workspaceFileSystem.createFileRepresentation(file, type, viewData)
     }
 
-    override fun getFileUrl(fileEntity: Int): URL {
-        return this.workspaceFileSystem.getFileUrl(fileEntity)
+    override fun downloadFileView(fileView: FileViewEntity): InputStream {
+        return this.workspaceFileSystem.openFileRepresentation(fileView)
     }
 
     override fun deleteFile(fileEntity: FileEntity) {
-        this.workspaceFileSystem.deleteResource(fileEntity)
+        this.workspaceFileSystem.deleteFile(fileEntity)
     }
 
     override fun moveFile(file: FileEntity, targetDirectory: FileEntity?) {
@@ -67,7 +77,19 @@ internal class LocalWorkspaceClient(directory: File) : WorkspaceClient(File(dire
         return this.workspaceFileSystem.getResourceSize(fileEntity)
     }
 
-    override fun getRepresentationSize(fileRepresentation: FileRepresentation): Long {
-        return this.workspaceFileSystem.getFileRepresentationSize(fileRepresentation)
+    override fun getRepresentationSize(fileView: FileViewEntity): Long {
+        return this.workspaceFileSystem.getFileRepresentationSize(fileView)
+    }
+
+    override fun listFiles(): List<FileEntity> {
+        return this.workspaceFileSystem.listFiles()
+    }
+
+    override fun queryPath(path: String): FileEntity {
+        return this.workspaceFileSystem.queryPath(path)
+    }
+
+    override fun queryFile(id: Int): FileEntity {
+        return this.workspaceFileSystem.queryFile(id)
     }
 }

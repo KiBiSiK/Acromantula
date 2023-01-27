@@ -1,15 +1,11 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentationTable
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.util.Either
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 // This table is NOT private, so external models can reference files.
@@ -18,7 +14,7 @@ object FileTable : IntIdTable("TreeFile") {
     val parent = reference("parent", FileTable).nullable()
     val isDirectory = bool("is_directory").default(false)
     val type = varchar("type", 31).nullable()
-    val resource = integer("resource").nullable()
+    val resource = integer("resource")
     val archive = reference("archive", ArchiveTable).nullable()
 
     init {
@@ -29,29 +25,60 @@ object FileTable : IntIdTable("TreeFile") {
 /**
  * A singular file entity
  */
-class FileEntity(id: EntityID<Int>) : IntEntity(id) {
+class FileEntity internal constructor(
+    name: String,
+    parent: FileEntity?,
+    isDirectory: Boolean,
+    type: String?,
+    archiveType: String?,
+    val resource: Int
+) {
 
     /**
      * Marker type for intentionally empty optionals
      */
     object Empty
 
-    companion object : IntEntityClass<FileEntity>(FileTable)
+    /**
+     * Mutable list of child files
+     */
+    internal val childEntities = mutableListOf<FileEntity>()
 
-    var name by FileTable.name
+    /**
+     * A list of all files within this directory. If this file is not a directory, this list is empty
+     */
+    val children: List<FileEntity> = childEntities
+
+    /**
+     * Mutable list of file views associated with this file
+     */
+    internal val viewEntities = mutableListOf<FileViewEntity>()
+
+    /**
+     * A list of all [FileViewEntity] entities associated with this file. If this file is a directory, this list is empty
+     */
+    val views: List<FileViewEntity> = viewEntities
+
+    var name: String = name
         internal set
-    var parent by FileEntity optionalReferencedOn FileTable.parent
+    var parent: FileEntity? = parent
         internal set
-    var isDirectory by FileTable.isDirectory
+    var isDirectory: Boolean = isDirectory
         internal set
-    var type by FileTable.type
+    var type: String? = type
         internal set
 
-    var resource by FileTable.resource
+    /**
+     * Archive type identifier
+     */
+    var archiveType: String? = archiveType
+        internal set
 
-    var archiveEntity by ArchiveEntity optionalReferencedOn FileTable.archive
-
-    private val views by FileRepresentation referrersOn FileRepresentationTable.file
+    /**
+     * Internal cache for database id, which can be used by database sync to quickly reference this file.
+     */
+    @Volatile // this is important so that FileSystemDatabaseSync can use databaseIds from parents when syncing children
+    internal lateinit var databaseId: EntityID<Int>
 
     /**
      * Whether this file supports adding child files. This optional is initialized empty, because the property is
@@ -64,13 +91,4 @@ class FileEntity(id: EntityID<Int>) : IntEntity(id) {
      * only used for caching. Property utilized by archive feature
      */
     var archiveRoot: Optional<Either<String, Empty>> = Optional.empty()
-
-    /**
-     * Get all views associated with this file
-     */
-    fun getViews(): List<FileRepresentation> {
-        return transaction {
-            this@FileEntity.views.toList()
-        }
-    }
 }

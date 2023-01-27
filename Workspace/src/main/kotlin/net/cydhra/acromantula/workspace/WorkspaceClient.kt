@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.database.DatabaseClient
-import net.cydhra.acromantula.workspace.disassembly.FileRepresentation
+import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.InputStream
 import java.io.OutputStream
@@ -47,7 +47,7 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
      *
      * @return generated database entry
      */
-    abstract fun uploadFile(name: String, parent: FileEntity?, content: ByteArray): FileEntity
+    abstract fun createFile(name: String, parent: FileEntity?, content: ByteArray): FileEntity
 
     /**
      * Update binary content of a file
@@ -70,28 +70,27 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     abstract fun exportFile(fileEntity: FileEntity, outputStream: OutputStream)
 
     /**
-     * Upload file representation data into the workspace
+     * Create a new directory in the workspace
+     *
+     * @param name directory name
+     * @param parent directory parent. null if directory shall be created at top-level
+     */
+    abstract fun createDirectory(name: String, parent: FileEntity?): FileEntity
+
+    /**
+     * Upload file view data into the workspace
      *
      * @param file reference file for the representation data
-     * @param type representation type
-     * @param viewData the binary data of the file's representation
+     * @param type view type
+     * @param viewData the binary data of the file's view
      */
-    abstract fun uploadFileRepresentation(file: FileEntity, type: String, viewData: ByteArray)
+    abstract fun createFileView(file: FileEntity, type: String, viewData: ByteArray): FileViewEntity
 
     /**
-     *  Download a file representation from the workspace. Returns the binary contents of the representation as an
+     *  Download a file view from the workspace. Returns the binary contents of the representation as an
      *  input stream
      */
-    abstract fun downloadRepresentation(representation: FileRepresentation): InputStream
-
-    /**
-     * Get a URL that grants direct file access onto a file in workspace
-     *
-     * @param fileEntity the resource id
-     *
-     * @return a [URL] pointing to the file
-     */
-    abstract fun getFileUrl(fileEntity: Int): URL
+    abstract fun downloadFileView(fileView: FileViewEntity): InputStream
 
     /**
      * Delete File from workspace and database
@@ -119,5 +118,20 @@ internal abstract class WorkspaceClient(databaseUrl: URL) {
     /**
      * Get the size of a file representation without reading its resource
      */
-    abstract fun getRepresentationSize(fileRepresentation: FileRepresentation): Long
+    abstract fun getRepresentationSize(fileView: FileViewEntity): Long
+
+    /**
+     * Get a list of all top-level files and directories in the workspace
+     */
+    abstract fun listFiles(): List<FileEntity>
+
+    /**
+     * Get a file by its path
+     */
+    abstract fun queryPath(path: String): FileEntity
+
+    /**
+     * Get a file by its resource id
+     */
+    abstract fun queryFile(id: Int): FileEntity
 }

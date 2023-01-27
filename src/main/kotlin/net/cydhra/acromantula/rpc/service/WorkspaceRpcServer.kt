@@ -13,21 +13,20 @@ import net.cydhra.acromantula.commands.interpreters.ListFilesCommandInterpreter
 import net.cydhra.acromantula.commands.interpreters.RenameFileCommandInterpreter
 import net.cydhra.acromantula.proto.*
 import net.cydhra.acromantula.workspace.WorkspaceService
-import net.cydhra.acromantula.workspace.util.TreeNode
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplBase() {
 
-    private fun fileTreeToProto(treeNode: TreeNode<net.cydhra.acromantula.workspace.filesystem.FileEntity>): FileEntity =
+    private fun fileTreeToProto(treeNode: net.cydhra.acromantula.workspace.filesystem.FileEntity): FileEntity =
         transaction {
-            val children = treeNode.childList.map(::fileTreeToProto)
+            val children = treeNode.children.map(::fileTreeToProto)
             fileEntity {
-                id = treeNode.value.id.value
-                name = treeNode.value.name
-                isDirectory = treeNode.value.isDirectory
+                id = treeNode.resource
+                name = treeNode.name
+                isDirectory = treeNode.isDirectory
 
-                if (treeNode.value.archiveEntity != null) {
-                    archiveFormat = treeNode.value.archiveEntity!!.typeIdent
+                if (treeNode.archiveType != null) {
+                    archiveFormat = treeNode.archiveType!!
                 }
 
                 children(*children.toTypedArray())
@@ -36,11 +35,9 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
     override suspend fun listFiles(request: ListFilesCommand): ListFilesResponse {
         val interpreter = when (request.fileIdCase) {
-            ListFilesCommand.FileIdCase.ID ->
-                ListFilesCommandInterpreter(request.id)
+            ListFilesCommand.FileIdCase.ID -> ListFilesCommandInterpreter(request.id)
 
-            ListFilesCommand.FileIdCase.FILEPATH ->
-                ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })
+            ListFilesCommand.FileIdCase.FILEPATH -> ListFilesCommandInterpreter(request.filePath?.takeIf { it.isNotBlank() })
 
             null, ListFilesCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
@@ -57,40 +54,28 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
         val fileEntity = when (request.fileIdCase) {
             ShowFileCommand.FileIdCase.ID -> WorkspaceService.queryPath(request.id)
             ShowFileCommand.FileIdCase.PATH -> WorkspaceService.queryPath(
-                WorkspaceService.queryPath(request.path).id.value
+                WorkspaceService.queryPath(request.path).resource
             )
 
             null, ShowFileCommand.FileIdCase.FILEID_NOT_SET -> throw MissingTargetFileException()
         }
 
         val size = WorkspaceService.getFileSize(fileEntity)
-        return WorkspaceService.getFileContent(fileEntity)
-            .buffered()
-            .iterator()
-            .asSequence()
-            .chunked(request.chunkSize)
+        return WorkspaceService.getFileContent(fileEntity).buffered().iterator().asSequence().chunked(request.chunkSize)
             .map {
-                FileChunk.newBuilder()
-                    .setTotalBytes(size)
-                    .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray()))
-                    .build()
-            }
-            .asFlow()
-            .flowOn(Dispatchers.IO)
+                FileChunk.newBuilder().setTotalBytes(size)
+                    .setContent(ByteString.copyFrom(it.toTypedArray().toByteArray())).build()
+            }.asFlow().flowOn(Dispatchers.IO)
     }
 
     override suspend fun createFile(request: CreateFileCommand): FileEntity {
         val cmd = when (request.parentIdCase) {
             CreateFileCommand.ParentIdCase.ID -> CreateFileCommandInterpreter(
-                request.id,
-                request.name,
-                request.isDirectory
+                request.id, request.name, request.isDirectory
             )
 
             CreateFileCommand.ParentIdCase.PATH -> CreateFileCommandInterpreter(
-                request.path,
-                request.name,
-                request.isDirectory
+                request.path, request.name, request.isDirectory
             )
 
             null, CreateFileCommand.ParentIdCase.PARENTID_NOT_SET -> throw MissingTargetFileException()
@@ -104,7 +89,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
         // tree node is usually used by WorkspaceService.listFilesRecursively, but we know our new file has no
         // children, so we can use it here without constructing a tree
-        return fileTreeToProto(TreeNode(result.getOrThrow()))
+        return fileTreeToProto(result.getOrThrow())
     }
 
     override suspend fun renameFile(request: RenameFileCommand): Empty {
@@ -132,7 +117,7 @@ class WorkspaceRpcServer : WorkspaceServiceGrpcKt.WorkspaceServiceCoroutineImplB
 
         // todo this should be done through a command interpreter (analogous to reconstructFile) and routed through
         //  the mapping feature for re-mapping
-        WorkspaceService.updateFileEntry(fileEntity, request.newContent.toByteArray())
+        WorkspaceService.updateFileContent(fileEntity, request.newContent.toByteArray())
         return Empty.getDefaultInstance()
     }
 

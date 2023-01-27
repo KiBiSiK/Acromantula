@@ -11,7 +11,7 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="net.cydhra.acromantula" level="trace" additivity="false">
+        <Logger name="net.cydhra.acromantula" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="IPC" level="trace" additivity="false">

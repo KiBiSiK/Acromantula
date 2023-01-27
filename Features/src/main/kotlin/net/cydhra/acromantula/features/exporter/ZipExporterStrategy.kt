@@ -17,8 +17,7 @@ class ZipExporterStrategy : ExporterStrategy {
     override fun exportFile(fileEntity: FileEntity, outputStream: OutputStream) {
         val zipOutputStream = ZipOutputStream(outputStream)
         if (fileEntity.isDirectory) {
-            val subFiles = WorkspaceService.getDirectoryContent(fileEntity)
-            addToZipFile(zipOutputStream, "", subFiles)
+            addToZipFile(zipOutputStream, "", fileEntity.children)
         } else {
             addToZipFile(zipOutputStream, "", Collections.singletonList(fileEntity))
         }
@@ -32,8 +31,7 @@ class ZipExporterStrategy : ExporterStrategy {
 
             if (file.isDirectory) { // directories already end in path-separator
                 zipOutputStream.closeEntry()
-                val subFiles = WorkspaceService.getDirectoryContent(file)
-                addToZipFile(zipOutputStream, fileName, subFiles)
+                addToZipFile(zipOutputStream, fileName, file.children)
             } else {
                 val content = WorkspaceService.getFileContent(file)
                 zipOutputStream.write(content.readBytes())

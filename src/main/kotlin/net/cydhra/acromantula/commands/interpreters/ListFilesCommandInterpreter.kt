@@ -3,18 +3,16 @@ package net.cydhra.acromantula.commands.interpreters
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.util.TreeNode
 
 /**
  * Command to list all files in a directory.
- * // TODO: this should work recursively. Design a SQL query to achieve that, but for now just do it for a directory
  * @param directoryPath directory path. If null, either `directoryId` must be set, or the root directory is referred
  * @param directoryId directory id. If null, either `directory` must be set, or the root directory is referred
  */
 class ListFilesCommandInterpreter(
     val directoryPath: String? = null,
     val directoryId: Int? = null
-) : WorkspaceCommandInterpreter<List<TreeNode<FileEntity>>> {
+) : WorkspaceCommandInterpreter<List<FileEntity>> {
     override val synchronous: Boolean = true
 
     /**
@@ -27,13 +25,12 @@ class ListFilesCommandInterpreter(
      */
     constructor(directoryId: Int? = null) : this(null, directoryId)
 
-    override suspend fun evaluate(): List<TreeNode<FileEntity>> {
-        val directory = when {
-            directoryId != null -> WorkspaceService.queryPath(directoryId)
-            directoryPath != null -> WorkspaceService.queryPath(directoryPath)
-            else -> null
+    override suspend fun evaluate(): List<FileEntity> {
+        return when {
+            directoryId != null -> listOf(WorkspaceService.queryPath(directoryId))
+            directoryPath != null -> listOf(WorkspaceService.queryPath(directoryPath))
+            else -> WorkspaceService.listFiles()
         }
-        return WorkspaceService.listFilesRecursively(root = directory)
     }
 }
 
