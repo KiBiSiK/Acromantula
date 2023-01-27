@@ -87,11 +87,13 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
 
     fun initialize() {
         databaseClient.transaction {
+            val fileIdMapping = mutableMapOf<Int, FileEntity>()
+
             fun convert(row: ResultRow): FileEntity {
                 return FileEntity(
                     row[FileTable.name],
                     if (row[FileTable.parent] != null) {
-                        fileResourceMapping[row[FileTable.resource]]!!
+                        fileIdMapping[row[FileTable.parent]!!.value]!!
                     } else {
                         null
                     },
@@ -108,6 +110,7 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
                 for (row in FileTable.select(query)) {
                     val fileEntity = convert(row)
                     fileResourceMapping[fileEntity.resource] = fileEntity
+                    fileIdMapping[fileEntity.databaseId.value] = fileEntity
                     if (fileEntity.parent == null) {
                         fileTrees.add(fileEntity)
                     } else {
@@ -115,7 +118,7 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
                     }
 
                     if (fileEntity.isDirectory) {
-                        handleFiles { FileTable.parent eq fileEntity.parent!!.databaseId }
+                        handleFiles { FileTable.parent eq fileEntity.databaseId }
                     }
                 }
             }
