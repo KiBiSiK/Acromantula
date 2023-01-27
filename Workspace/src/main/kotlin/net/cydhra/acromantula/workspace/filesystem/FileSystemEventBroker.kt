@@ -20,12 +20,14 @@ internal class FileSystemEventBroker {
     /**
      * Force dispatch of events in sequential order, so parent file events are dispatched first
      */
-    private val sequentialDispatcher = Executors.newSingleThreadExecutor()
+    private val singleThreadExecutor = Executors.newSingleThreadExecutor()
+
+    private val sequentialDispatcher = singleThreadExecutor.asCoroutineDispatcher()
 
     fun onShutdown() {
         LogManager.getLogger().info("waiting for file system event dispatch...")
-        sequentialDispatcher.shutdown()
-        sequentialDispatcher.awaitTermination(5L, TimeUnit.MINUTES)
+        singleThreadExecutor.shutdown()
+        singleThreadExecutor.awaitTermination(5L, TimeUnit.MINUTES)
         LogManager.getLogger().info("file system events dispatch complete.")
     }
 
@@ -52,8 +54,9 @@ internal class FileSystemEventBroker {
         this.registeredObservers.forEach(newBroker::registerObserver)
     }
 
+    @OptIn(DelicateCoroutinesApi::class) // we need to fire and forget here, otherwise events will delay imports
     fun dispatch(event: FileSystemEvent) {
-        GlobalScope.launch(sequentialDispatcher.asCoroutineDispatcher()) {
+        GlobalScope.launch(sequentialDispatcher) {
             @Suppress("REDUNDANT_ELSE_IN_WHEN") // see else branch
             when (event) {
                 is FileSystemEvent.ArchiveCreatedEvent -> registeredObservers.forEach {
