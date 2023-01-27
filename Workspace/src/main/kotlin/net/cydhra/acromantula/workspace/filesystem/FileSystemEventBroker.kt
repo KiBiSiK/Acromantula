@@ -1,6 +1,9 @@
 package net.cydhra.acromantula.workspace.filesystem
 
 import kotlinx.coroutines.*
+import org.apache.logging.log4j.LogManager
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Subject for observable file system events. The events occur in [WorkspaceFileSystem], but for reasons of code
@@ -13,6 +16,18 @@ import kotlinx.coroutines.*
 internal class FileSystemEventBroker {
 
     private val registeredObservers = mutableListOf<FileSystemObserver>()
+
+    /**
+     * Force dispatch of events in sequential order, so parent file events are dispatched first
+     */
+    private val sequentialDispatcher = Executors.newSingleThreadExecutor()
+
+    fun onShutdown() {
+        LogManager.getLogger().info("waiting for file system event dispatch...")
+        sequentialDispatcher.shutdown()
+        sequentialDispatcher.awaitTermination(5L, TimeUnit.MINUTES)
+        LogManager.getLogger().info("file system events dispatch complete.")
+    }
 
     /**
      * Register a new observer at the event broker.
@@ -38,7 +53,7 @@ internal class FileSystemEventBroker {
     }
 
     fun dispatch(event: FileSystemEvent) {
-        GlobalScope.launch(Dispatchers.IO) {
+        GlobalScope.launch(sequentialDispatcher.asCoroutineDispatcher()) {
             @Suppress("REDUNDANT_ELSE_IN_WHEN") // see else branch
             when (event) {
                 is FileSystemEvent.ArchiveCreatedEvent -> registeredObservers.forEach {

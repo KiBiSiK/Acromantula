@@ -1,7 +1,7 @@
 package net.cydhra.acromantula.workspace.filesystem
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileViewTable
@@ -11,8 +11,6 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 /**
  * Event loop instance for database syncing
@@ -30,26 +28,14 @@ internal class FileSystemDatabaseSync(
     private val databaseClient: DatabaseClient
 ) : FileSystemObserver by DatabaseSyncEventLoop {
 
-    /**
-     * Sequential executor for database accesses, so parents exist before children are inserted into database
-     */
-    private val sequentialDispatcher = Executors.newSingleThreadExecutor()
-
     init {
         DatabaseSyncEventLoop.eventChannel.consumeAsFlow().buffer(256).onEach {
             LogManager.getLogger().trace("file system event: $it")
             handleEvent(it)
         }.onCompletion {
             LogManager.getLogger().trace("file system observer closing...")
-        }.launchIn(CoroutineScope(sequentialDispatcher.asCoroutineDispatcher()))
+        }.launchIn(CoroutineScope(Dispatchers.Unconfined))
         LogManager.getLogger().trace("file system syncing is active")
-    }
-
-    fun onShutdown() {
-        LogManager.getLogger().info("waiting for database sync...")
-        sequentialDispatcher.shutdown()
-        sequentialDispatcher.awaitTermination(5L, TimeUnit.MINUTES)
-        LogManager.getLogger().info("database sync complete.")
     }
 
     private fun handleEvent(event: FileSystemEvent) {
@@ -79,8 +65,15 @@ internal class FileSystemDatabaseSync(
                 it[name] = event.fileEntity.name
 
                 if (event.fileEntity.parent != null) {
-                    val cachedId = event.fileEntity.parent!!.databaseId
-                    it[parent] = cachedId
+                    while (true) {
+                        try {
+                            val cachedId = event.fileEntity.parent!!.databaseId
+                            it[parent] = cachedId
+                            break
+                        } catch (e: UninitializedPropertyAccessException) {
+                            println("trying to access ${event.fileEntity.parent!!.name} from ${event.fileEntity.name}")
+                        }
+                    }
                 }
 
                 it[isDirectory] = event.fileEntity.isDirectory
