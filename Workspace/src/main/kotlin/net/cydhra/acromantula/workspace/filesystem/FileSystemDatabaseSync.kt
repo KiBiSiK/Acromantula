@@ -1,21 +1,12 @@
 package net.cydhra.acromantula.workspace.filesystem
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileViewTable
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
-
-/**
- * Event loop instance for database syncing
- */
-internal object DatabaseSyncEventLoop : FileSystemEventLoop()
 
 /**
  * An observer of all file system events that will synchronize them with the database in the background. To do this,
@@ -26,40 +17,10 @@ internal object DatabaseSyncEventLoop : FileSystemEventLoop()
 internal class FileSystemDatabaseSync(
     private val fs: WorkspaceFileSystem,
     private val databaseClient: DatabaseClient
-) : FileSystemObserver by DatabaseSyncEventLoop {
+) : FileSystemObserver {
 
-    init {
-        DatabaseSyncEventLoop.eventChannel.consumeAsFlow().buffer(256).onEach {
-            LogManager.getLogger().trace("file system event: $it")
-            handleEvent(it)
-        }.onCompletion {
-            LogManager.getLogger().trace("file system observer closing...")
-        }.launchIn(CoroutineScope(Dispatchers.Unconfined))
-        LogManager.getLogger().trace("file system syncing is active")
-    }
 
-    private fun handleEvent(event: FileSystemEvent) {
-        @Suppress("REDUNDANT_ELSE_IN_WHEN") // see else branch
-        when (event) {
-            is FileSystemEvent.FileCreatedEvent -> syncNewFileIntoDatabase(event)
-            is FileSystemEvent.FileDeletedEvent -> syncDeleteFileIntoDatabase(event)
-            is FileSystemEvent.FileMovedEvent -> syncMoveFileIntoDatabase(event)
-            is FileSystemEvent.FileRenamedEvent -> syncRenameFileIntoDatabase(event)
-            is FileSystemEvent.FileUpdatedEvent -> Unit
-            is FileSystemEvent.ArchiveCreatedEvent -> syncArchiveCreatedIntoDatabase(event)
-            is FileSystemEvent.ViewCreatedEvent -> syncViewCreatedIntoDatabase(event)
-            is FileSystemEvent.ViewDeletedEvent -> syncViewDeletedIntoDatabase(event)
-            else -> {
-                // this should be impossible to reach, however because this when-expression does not return a value,
-                // it is not considered an error if this when-expression is not exhaustive, because an event was
-                // added to the sealed class FileSystemEvent. This assertion error exists to make sure we
-                // notice this mistake should it happen in the future
-                throw AssertionError("unknown event dispatched")
-            }
-        }
-    }
-
-    private fun syncNewFileIntoDatabase(event: FileSystemEvent.FileCreatedEvent) {
+    override suspend fun onFileCreated(event: FileSystemEvent.FileCreatedEvent) {
         event.fileEntity.databaseId = databaseClient.transaction {
             FileTable.insertAndGetId {
                 it[name] = event.fileEntity.name
@@ -87,26 +48,9 @@ internal class FileSystemDatabaseSync(
         }
     }
 
-    private fun syncDeleteFileIntoDatabase(event: FileSystemEvent.FileDeletedEvent) {
-        databaseClient.transaction {
-            FileTable.deleteWhere { FileTable.id eq event.fileEntity.databaseId.value }
-        }
-    }
+    override suspend fun onFileUpdated(event: FileSystemEvent.FileUpdatedEvent) {}
 
-    private fun syncMoveFileIntoDatabase(event: FileSystemEvent.FileMovedEvent) {
-        databaseClient.transaction {
-            FileTable.update(
-                where = {
-                    FileTable.id eq event.fileEntity.databaseId.value
-                },
-                body = {
-                    it[parent] = event.fileEntity.parent?.databaseId
-                }
-            )
-        }
-    }
-
-    private fun syncRenameFileIntoDatabase(event: FileSystemEvent.FileRenamedEvent) {
+    override suspend fun onFileRenamed(event: FileSystemEvent.FileRenamedEvent) {
         databaseClient.transaction {
             FileTable.update(
                 where = {
@@ -119,7 +63,37 @@ internal class FileSystemDatabaseSync(
         }
     }
 
-    private fun syncArchiveCreatedIntoDatabase(event: FileSystemEvent.ArchiveCreatedEvent) {
+    override suspend fun onFileMoved(event: FileSystemEvent.FileMovedEvent) {
+        databaseClient.transaction {
+            FileTable.update(
+                where = {
+                    FileTable.id eq event.fileEntity.databaseId.value
+                },
+                body = {
+                    it[parent] = event.fileEntity.parent?.databaseId
+                }
+            )
+        }
+    }
+
+    override suspend fun onFileDeleted(event: FileSystemEvent.FileDeletedEvent) {
+        databaseClient.transaction {
+            FileTable.deleteWhere { FileTable.id eq event.fileEntity.databaseId.value }
+        }
+    }
+
+    override suspend fun onViewCreated(event: FileSystemEvent.ViewCreatedEvent) {
+        event.viewEntity.databaseId = databaseClient.transaction {
+            FileViewTable.insertAndGetId {
+                it[file] = event.fileEntity.databaseId
+                it[type] = event.viewEntity.type
+                it[resource] = event.viewEntity.resource
+                it[created] = DateTime(event.viewEntity.created)
+            }
+        }
+    }
+
+    override suspend fun onArchiveCreated(event: FileSystemEvent.ArchiveCreatedEvent) {
         databaseClient.transaction {
             FileTable.update(
                 where = {
@@ -132,18 +106,7 @@ internal class FileSystemDatabaseSync(
         }
     }
 
-    private fun syncViewCreatedIntoDatabase(event: FileSystemEvent.ViewCreatedEvent) {
-        event.viewEntity.databaseId = databaseClient.transaction {
-            FileViewTable.insertAndGetId {
-                it[file] = event.fileEntity.databaseId
-                it[type] = event.viewEntity.type
-                it[resource] = event.viewEntity.resource
-                it[created] = DateTime(event.viewEntity.created)
-            }
-        }
-    }
-
-    private fun syncViewDeletedIntoDatabase(event: FileSystemEvent.ViewDeletedEvent) {
+    override suspend fun onViewDeleted(event: FileSystemEvent.ViewDeletedEvent) {
         databaseClient.transaction {
             FileViewTable.deleteWhere {
                 FileViewTable.id eq event.viewEntity.databaseId
