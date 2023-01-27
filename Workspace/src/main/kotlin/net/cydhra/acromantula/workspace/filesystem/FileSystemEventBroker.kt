@@ -43,8 +43,6 @@ internal class FileSystemEventBroker {
     fun dispatch(event: FileSystemEvent) {
         runBlocking {
             withContext(Dispatchers.IO) {
-                // todo instead of launching, we could migrate the entire suspend-call-chain through the application so
-                //  the potential suspension is forwarded to the task-thread-pool that ultimately triggers these events
                 launch {
                     when (event) {
                         is FileSystemEvent.ArchiveCreatedEvent -> registeredObservers.forEach {
