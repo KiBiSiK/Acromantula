@@ -240,11 +240,9 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
      * @throws IllegalArgumentException if the file is a directory
      */
     fun deleteFile(file: FileEntity) {
-        require(!file.isDirectory) { "cannot open file stream of directory" }
+        require(file.children.isEmpty()) { "cannot delete non-empty directory" }
 
         val backingResource = File(resourceDirectory, file.resource.toString())
-
-        check(backingResource.exists()) { "file does not have a backing resource. Has it already been deleted?" }
 
         // remove from parent's children and unset parent, remove from file trees
         if (file.parent != null) {
@@ -254,8 +252,8 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
             fileTrees.remove(file)
         }
 
-        // delete backing resource
-        backingResource.delete()
+        // delete backing resource, if one exists (none exist for directories)
+        if (backingResource.exists()) backingResource.delete()
 
         // delete cached representations as they are now invalid
         deleteCachedViews(file)

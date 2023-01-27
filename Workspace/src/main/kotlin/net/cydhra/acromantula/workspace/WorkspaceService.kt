@@ -199,6 +199,12 @@ object WorkspaceService {
      * deleted as well.
      */
     fun deleteFileEntry(fileEntity: FileEntity) {
+        if (fileEntity.isDirectory) {
+            // use secondary list because deleting files will modify backing collection
+            val children = fileEntity.children.toList()
+            children.forEach(::deleteFileEntry)
+        }
+
         workspaceClient.deleteFile(fileEntity)
     }
 
