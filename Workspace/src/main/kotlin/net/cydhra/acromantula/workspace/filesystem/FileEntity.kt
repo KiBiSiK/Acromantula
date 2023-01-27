@@ -77,7 +77,6 @@ class FileEntity internal constructor(
     /**
      * Internal cache for database id, which can be used by database sync to quickly reference this file.
      */
-    @Volatile // this is important so that FileSystemDatabaseSync can use databaseIds from parents when syncing children
     internal lateinit var databaseId: EntityID<Int>
 
     /**
