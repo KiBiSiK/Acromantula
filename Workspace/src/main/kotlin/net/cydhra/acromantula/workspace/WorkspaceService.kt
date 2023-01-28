@@ -4,7 +4,6 @@ import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -27,7 +26,7 @@ object WorkspaceService {
      * Called upon application startup. Load default workspace and subscribe to events if necessary.
      */
     fun initialize() {
-        workspaceClient = LocalWorkspaceClient(File(".tmp"))
+        workspaceClient = WorkspaceClient(File(".tmp"))
         workspaceClient.initialize()
     }
 
@@ -40,14 +39,19 @@ object WorkspaceService {
         workspaceClient.shutdown()
 
         logger.info("loading new workspace...")
-        workspaceClient = LocalWorkspaceClient(workspaceFile)
+        val newWorkspaceClient = WorkspaceClient(workspaceFile)
 
         logger.info("initializing new workspace...")
-        workspaceClient.initialize()
+        newWorkspaceClient.initialize()
 
-        logger.info("adding plugin specific database relations...")
+        logger.info("migrating plugin resources to new workspace...")
+        this.workspaceClient.migrateResources(newWorkspaceClient)
+
+        this.workspaceClient = newWorkspaceClient
+
+        logger.info("adding plugin specific database relations to new workspace...")
         this.databaseInitializers.forEach { stmt ->
-            transaction(statement = stmt)
+            this.workspaceClient.databaseClient.transaction(statement = stmt)
         }
     }
 
@@ -60,7 +64,7 @@ object WorkspaceService {
         databaseInitializers += block
 
         // plugins are initialized after the workspace, so the initial database has to be updated as well
-        transaction(statement = block)
+        this.workspaceClient.databaseClient.transaction(statement = block)
     }
 
     /**
@@ -212,9 +216,6 @@ object WorkspaceService {
      * Register an archive type at the database
      */
     fun registerArchiveType(fileTypeIdentifier: String) {
-        // make sure we re-register it when a new workspace is loaded
-        registerAtDatabase {
-            workspaceClient.registerArchiveType(fileTypeIdentifier)
-        }
+        workspaceClient.registerArchiveType(fileTypeIdentifier)
     }
 }

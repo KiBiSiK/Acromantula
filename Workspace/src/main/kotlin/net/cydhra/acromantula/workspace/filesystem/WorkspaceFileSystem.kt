@@ -136,6 +136,22 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
     }
 
     /**
+     * Migrate the current workspace to another workspace. This will not call [onShutdown] nor
+     * [initialize] on the workspaces. Those methods should be called before this method.
+     * It will migrate all registered resources to the new workspace.
+     */
+    fun migrate(other: WorkspaceFileSystem) {
+        // unregister the sync observer that is specific to this instance
+        this.eventBroker.unregisterObserver(fileSystemDatabaseSync)
+
+        // register remaining observers at new event broker
+        this.eventBroker.migrateObservers(other.eventBroker)
+
+        // register archive types in new workspace
+        this.archiveTypeIdentifiers.keys.forEach(other::registerArchiveType)
+    }
+
+    /**
      * Add a resource to the workspace and associate it with a new file entity.
      *
      * @param name name of the new file
