@@ -1,7 +1,8 @@
 package net.cydhra.acromantula.features.importer
 
-import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.features.mapper.MapperFeature.mapFile
@@ -43,11 +44,10 @@ object ImporterFeature {
     /**
      * Import a file into the workspace.
      *
-     * @param supervisor a [CompletableJob] that supervises this import and all subsequent tasks
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param file URL pointing to the file
      */
-    suspend fun importFile(supervisor: CompletableJob, parent: FileEntity?, file: URL) {
+    suspend fun importFile(parent: FileEntity?, file: URL) {
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -60,37 +60,34 @@ object ImporterFeature {
         }
 
         fileStream.use {
-            importFile(supervisor, parent, fileName, fileStream)
+            importFile(parent, fileName, fileStream)
         }
     }
 
     /**
      * Import a file into the workspace that is part of another file (like archives)
      *
-     * @param supervisor a [CompletableJob] that supervises this import and all subsequent tasks
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param fileName name for the file in the workspace
      * @param fileStream an [InputStream] for the file content
      */
-    suspend fun importFile(supervisor: CompletableJob, parent: FileEntity?, fileName: String, fileStream: InputStream) {
+    suspend fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
         logger.trace("importing \"$fileName\"")
 
         if (!ArchiveFeature.canAddFile(parent)) {
             throw IllegalArgumentException(
-                ArchiveFeature.getArchiveType(parent)
-                        + " archives do not support adding external files"
+                ArchiveFeature.getArchiveType(parent) + " archives do not support adding external files"
             )
         }
 
-        val pushbackStream = if (fileStream is PushbackInputStream) fileStream else
-            PushbackInputStream(fileStream, 512)
+        val pushbackStream = if (fileStream is PushbackInputStream) fileStream else PushbackInputStream(fileStream, 512)
 
         val importer =
             registeredImporters.firstOrNull { it.handles(fileName, pushbackStream) } ?: genericFileImporterStrategy
-        val (file, content) = importer.import(supervisor, parent, fileName, pushbackStream)
+        val (file, content) = importer.import(parent, fileName, pushbackStream)
         logger.trace("finished importing \"$fileName\"")
 
-        withContext(coroutineContext) {
+        CoroutineScope(coroutineContext).launch {
             mapFile(file, content)
         }
     }
@@ -104,9 +101,7 @@ object ImporterFeature {
      * strategy, that is already in the list.
      */
     fun registerImporterStrategy(strategy: ImporterStrategy, priority: Boolean = false) {
-        if (priority)
-            registeredImporters.addFirst(strategy)
-        else
-            registeredImporters.add(strategy)
+        if (priority) registeredImporters.addFirst(strategy)
+        else registeredImporters.add(strategy)
     }
 }

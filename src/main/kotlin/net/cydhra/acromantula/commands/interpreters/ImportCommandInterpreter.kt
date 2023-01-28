@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.commands.interpreters
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.importer.ImporterFeature
@@ -17,9 +16,7 @@ import java.net.URL
  * @param fileUrl URL pointing to the file
  */
 class ImportCommandInterpreter(
-    val directory: Int? = null,
-    val directoryPath: String? = null,
-    val fileUrl: String
+    val directory: Int? = null, val directoryPath: String? = null, val fileUrl: String
 ) : WorkspaceCommandInterpreter<Unit> {
 
     /**
@@ -53,11 +50,7 @@ class ImportCommandInterpreter(
             else -> null
         }
 
-        val supervisor = SupervisorJob()
-        withContext(supervisor) {
-            ImporterFeature.importFile(supervisor, parentDirectoryEntity, sourceFile)
-        }
-        supervisor.complete()
+        ImporterFeature.importFile(parentDirectoryEntity, sourceFile)
     }
 }
 

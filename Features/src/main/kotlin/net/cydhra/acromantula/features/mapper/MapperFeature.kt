@@ -3,8 +3,11 @@ package net.cydhra.acromantula.features.mapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import org.apache.logging.log4j.LogManager
 
 object MapperFeature {
+
+    private val logger = LogManager.getLogger()
 
     private val registeredMappers = mutableListOf<FileMapper>()
 
@@ -18,7 +21,14 @@ object MapperFeature {
      * @param content file binary content or null if the file is a directory
      */
     fun CoroutineScope.mapFile(file: FileEntity, content: ByteArray?) {
-        registeredMappers.forEach { launch { it.mapFile(file, content) } }
+        logger.trace("mapping file ${file.name}")
+        registeredMappers.forEach {
+            launch {
+                it.mapFile(file, content)
+                logger.trace("finished mapping file ${file.name}")
+            }
+        }
+
     }
 
     /**
@@ -49,8 +59,7 @@ object MapperFeature {
      * @param predicate optional predicate to filter the references
      */
     suspend fun getReferencesInFile(
-        file: FileEntity,
-        predicate: ((AcromantulaReference) -> Boolean)?
+        file: FileEntity, predicate: ((AcromantulaReference) -> Boolean)?
     ): Collection<AcromantulaReference> {
         // todo see fork-join todo above
         return registeredMappers.flatMap { it.getReferencesInFile(file, predicate) }

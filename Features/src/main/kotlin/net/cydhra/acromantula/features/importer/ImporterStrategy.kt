@@ -1,6 +1,5 @@
 package net.cydhra.acromantula.features.importer
 
-import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import java.io.PushbackInputStream
 
@@ -16,7 +15,6 @@ interface ImporterStrategy {
     /**
      * Import a file into the workspace.
      *
-     * @param supervisor the supervisor job that supervises the import and is used for subsequent imports (for archives)
      * @param parent optional. A parent [FileEntity] for the imported file for workspace organization
      * @param fileName the name of the file in the workspace
      * @param fileContent a [PushbackInputStream] containing the file data
@@ -25,9 +23,6 @@ interface ImporterStrategy {
      * the file content fully in an array, `null` is returned
      */
     suspend fun import(
-        supervisor: CompletableJob,
-        parent: FileEntity?,
-        fileName: String,
-        fileContent: PushbackInputStream
+        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream
     ): Pair<FileEntity, ByteArray?>
 }

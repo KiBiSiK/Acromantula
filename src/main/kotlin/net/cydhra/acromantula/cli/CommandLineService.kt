@@ -139,8 +139,9 @@ object CommandLineService {
                 logger.error("error during command evaluation", it)
             }
 
-            @Suppress("UNCHECKED_CAST")
-            (workspaceParser as WorkspaceCommandParser<Any?>).report(result)
+            @Suppress("UNCHECKED_CAST") result.onSuccess {
+                (workspaceParser as WorkspaceCommandParser<Any?>).report(result)
+            }
         } catch (showHelpException: ShowHelpException) {
             val wr = StringWriter()
             showHelpException.printUserMessage(wr, arguments[0], 120)

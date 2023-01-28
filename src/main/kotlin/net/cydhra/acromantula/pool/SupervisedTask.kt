@@ -15,11 +15,6 @@ class SupervisedTask<out T>(
 ) {
 
     /**
-     * Internal supervisor
-     */
-    private val supervisor: CompletableJob = SupervisorJob()
-
-    /**
      * Whether the job has already started
      */
     private var started = false
@@ -49,27 +44,25 @@ class SupervisedTask<out T>(
 
         started = true
 
-        supervisor.invokeOnCompletion { t ->
-            if (t != null) {
-                logger().debug("job \"$name\" failed", t)
-            } else {
-                logger().debug("job \"$name\" completed")
-            }
-
-            this@SupervisedTask.completionHandlers.forEach { it.invoke(t) }
-        }
-
         return CoroutineScope(threadPool.asCoroutineDispatcher()).async {
             try {
-                val r = withContext(supervisor) {
+                val r = supervisorScope {
                     job.invoke()
                 }
-                supervisor.complete()
                 Result.success(r)
             } catch (t: Throwable) {
                 logger().debug("supervised job \"$name\" crashed: ", t)
-                supervisor.completeExceptionally(t)
                 Result.failure(t)
+            }
+        }.apply {
+            invokeOnCompletion { t ->
+                if (t != null) {
+                    logger().debug("job \"$name\" failed", t)
+                } else {
+                    logger().debug("job \"$name\" completed")
+                }
+
+                this@SupervisedTask.completionHandlers.forEach { it.invoke(t) }
             }
         }
     }

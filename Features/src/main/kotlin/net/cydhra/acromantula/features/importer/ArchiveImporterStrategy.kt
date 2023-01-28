@@ -1,8 +1,8 @@
 package net.cydhra.acromantula.features.importer
 
-import kotlinx.coroutines.CompletableJob
 import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.features.archives.ZipArchiveType
+import net.cydhra.acromantula.features.importer.ImporterFeature.importFile
 import net.cydhra.acromantula.features.util.FileTreeBuilder
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
@@ -23,10 +23,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
     }
 
     override suspend fun import(
-        supervisor: CompletableJob,
-        parent: FileEntity?,
-        fileName: String,
-        fileContent: PushbackInputStream
+        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream
     ):
             Pair<FileEntity, ByteArray?> {
         val archive = ArchiveFeature.addDirectory(fileName, parent)
@@ -46,8 +43,7 @@ internal class ArchiveImporterStrategy : ImporterStrategy {
             if (blob.isNotEmpty()) {
                 val parentDirectory = treeBuilder.getParentDirectory(currentEntry.name)
                 val parentDirectoryName = treeBuilder.getParentPath(currentEntry.name)
-                ImporterFeature.importFile(
-                    supervisor = supervisor,
+                importFile(
                     parent = parentDirectory,
                     fileName = currentEntry.name.removePrefix(parentDirectoryName),
                     fileStream = PushbackInputStream(ByteArrayInputStream(blob))
