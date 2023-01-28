@@ -24,7 +24,7 @@ class ReconstructCommandParser(parser: ArgParser) : WorkspaceCommandParser<Unit>
     )
 
     override fun build(): WorkspaceCommandInterpreter<Unit> {
-        val fileId = WorkspaceService.queryPath(filePath).id.value
+        val fileId = WorkspaceService.queryPath(filePath).resource
         val buffer = URL(representationSource).openStream().readBytes()
         return ReconstructCommandInterpreter(fileId, viewType, buffer)
     }

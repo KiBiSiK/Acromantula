@@ -131,7 +131,7 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
      * Shutdown the workspace file system and all its resources gracefully.
      */
     fun onShutdown() {
-        this.eventBroker.onShutdown()
+        this.eventBroker.shutdown()
         this.saveIndex()
     }
 
