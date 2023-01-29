@@ -37,6 +37,6 @@ interface ImporterStrategy<S : ImporterState> {
      * the file content fully in an array, `null` is returned
      */
     suspend fun import(
-        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream, job: ImporterJob, state: ImporterState?
+        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream, job: ImporterJob, state: S?
     ): Pair<FileEntity, ByteArray?>
 }

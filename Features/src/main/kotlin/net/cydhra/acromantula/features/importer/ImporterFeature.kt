@@ -61,7 +61,7 @@ object ImporterFeature {
         importerJob.initialize(fileName, pushbackStream)
 
         pushbackStream.use {
-            importerJob.importFile(parent, fileName, pushbackStream)
+            importerJob.startImportJob(parent, fileName, pushbackStream)
         }
     }
 

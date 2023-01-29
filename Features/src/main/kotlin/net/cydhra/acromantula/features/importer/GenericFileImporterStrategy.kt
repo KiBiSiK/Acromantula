@@ -14,7 +14,11 @@ internal class GenericFileImporterStrategy : ImporterStrategy<EmptyImporterState
     }
 
     override suspend fun import(
-        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream, job: ImporterJob, state: ImporterState?
+        parent: FileEntity?,
+        fileName: String,
+        fileContent: PushbackInputStream,
+        job: ImporterJob,
+        state: EmptyImporterState?
     ): Pair<FileEntity, ByteArray?> {
         val content = fileContent.readBytes()
         val file = ArchiveFeature.addFile(fileName, parent, content)

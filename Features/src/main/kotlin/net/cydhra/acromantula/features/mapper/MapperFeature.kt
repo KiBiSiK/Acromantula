@@ -1,7 +1,5 @@
 package net.cydhra.acromantula.features.mapper
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 
@@ -9,26 +7,17 @@ object MapperFeature {
 
     private val logger = LogManager.getLogger()
 
-    private val registeredMappers = mutableListOf<FileMapper>()
+    private val registeredMappers = mutableListOf<FileMapper<*>>()
 
-    fun registerMapper(mapper: FileMapper) {
+    fun registerMapper(mapper: FileMapper<*>) {
         registeredMappers += mapper
     }
 
     /**
-     * Generate mappings for a new file.
-     * @param file database file entity
-     * @param content file binary content or null if the file is a directory
+     * Start a new mapper job. The mapper job is not being initialized.
      */
-    fun CoroutineScope.mapFile(file: FileEntity, content: ByteArray?) {
-        logger.trace("mapping file ${file.name}")
-        registeredMappers.forEach {
-            launch {
-                it.mapFile(file, content)
-                logger.trace("finished mapping file ${file.name}")
-            }
-        }
-
+    fun startMapperJob(): MapperJob {
+        return MapperJob(registeredMappers)
     }
 
     /**

@@ -5,15 +5,26 @@ import net.cydhra.acromantula.workspace.filesystem.FileEntity
 /**
  * Implemented by plugins to generate mappings for any form of files.
  */
-interface FileMapper {
+interface FileMapper<S : MapperState> {
+
+    /**
+     * Initialize the mapper for a [MapperJob]. The generated state instance will be the same for all files
+     * associated with this job
+     *
+     * @param file name of the file that triggered the mapper
+     */
+    fun initializeMapper(file: String): S? {
+        return null
+    }
 
     /**
      * Called by the import feature after importing a file into workspace
      *
      * @param file database file entity
      * @param content file binary content or null if the file is a directory
+     * @param state mapper state for the current mapper job
      */
-    suspend fun mapFile(file: FileEntity, content: ByteArray?)
+    suspend fun mapFile(file: FileEntity, content: ByteArray?, state: S?)
 
     /**
      * Retrieve all symbols in a file that are managed by this mapper implementation
@@ -22,16 +33,14 @@ interface FileMapper {
      * @param predicate optional filter rule to select specific symbols
      */
     suspend fun getSymbolsInFile(
-        file: FileEntity,
-        predicate: ((AcromantulaSymbol) -> Boolean)? = null
+        file: FileEntity, predicate: ((AcromantulaSymbol) -> Boolean)? = null
     ): Collection<AcromantulaSymbol>
 
     /**
      * Retrieve all references in a file that are managed by this mapper implementation
      */
     suspend fun getReferencesInFile(
-        file: FileEntity,
-        predicate: ((AcromantulaReference) -> Boolean)?
+        file: FileEntity, predicate: ((AcromantulaReference) -> Boolean)?
     ): Collection<AcromantulaReference>
 
     /**

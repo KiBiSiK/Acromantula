@@ -22,7 +22,11 @@ internal class ArchiveImporterStrategy : ImporterStrategy<EmptyImporterState> {
     }
 
     override suspend fun import(
-        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream, job: ImporterJob, state: ImporterState?
+        parent: FileEntity?,
+        fileName: String,
+        fileContent: PushbackInputStream,
+        job: ImporterJob,
+        state: EmptyImporterState?
     ): Pair<FileEntity, ByteArray?> {
         val archive = ArchiveFeature.addDirectory(fileName, parent)
         val treeBuilder = FileTreeBuilder(archive)
