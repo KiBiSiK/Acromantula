@@ -51,6 +51,13 @@ class ImporterJob internal constructor(
         }.toMap()
     }
 
+    /**
+     * Start the import job from [ImporterFeature]. Any subsequent import must call [importFile].
+     *
+     * @param parent user-defined parent directory.
+     * @param fileName name of the import job file
+     * @param fileStream input stream of the import job file
+     */
     internal suspend fun startImportJob(parent: FileEntity?, fileName: String, fileStream: InputStream) {
         if (!ArchiveFeature.canAddFile(parent)) {
             throw IllegalArgumentException(
@@ -71,7 +78,7 @@ class ImporterJob internal constructor(
     /**
      * Import a file into the workspace within the context of the current import job
      *
-     * @param parent a parent entity in the file tree, that gets this file as a
+     * @param parent a parent entity in the file tree
      * @param fileName name for the file in the workspace
      * @param fileStream an [InputStream] for the file content
      */
