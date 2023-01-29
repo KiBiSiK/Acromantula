@@ -218,4 +218,11 @@ object WorkspaceService {
     fun registerArchiveType(fileTypeIdentifier: String) {
         workspaceClient.registerArchiveType(fileTypeIdentifier)
     }
+
+    /**
+     * Perform a database transaction in the current workspace database
+     */
+    fun <T> databaseTransaction(transaction: Transaction.() -> T): T {
+        return this.workspaceClient.databaseClient.transaction(transaction)
+    }
 }
