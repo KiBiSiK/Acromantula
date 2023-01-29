@@ -7,15 +7,15 @@ import java.io.PushbackInputStream
 /**
  * A general fallback strategy used to import files that are not handled by any other strategy
  */
-internal class GenericFileImporterStrategy : ImporterStrategy {
+internal class GenericFileImporterStrategy : ImporterStrategy<EmptyImporterState> {
 
     override suspend fun handles(fileName: String, fileContent: PushbackInputStream): Boolean {
         return true
     }
 
     override suspend fun import(
-        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream
-    ): Pair<FileEntity, ByteArray> {
+        parent: FileEntity?, fileName: String, fileContent: PushbackInputStream, job: ImporterJob, state: ImporterState?
+    ): Pair<FileEntity, ByteArray?> {
         val content = fileContent.readBytes()
         val file = ArchiveFeature.addFile(fileName, parent, content)
         return Pair(file, content)

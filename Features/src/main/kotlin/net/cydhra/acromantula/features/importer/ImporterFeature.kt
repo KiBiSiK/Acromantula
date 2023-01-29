@@ -1,19 +1,13 @@
 package net.cydhra.acromantula.features.importer
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.cydhra.acromantula.features.archives.ArchiveFeature
-import net.cydhra.acromantula.features.mapper.MapperFeature.mapFile
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import java.io.File
-import java.io.InputStream
 import java.io.PushbackInputStream
 import java.net.URL
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
 /**
  * Imports files into the workspace. [ImporterStrategies][ImporterStrategy] can be registered to handle files
@@ -30,7 +24,7 @@ object ImporterFeature {
      * Different strategies for importing files into workspace. Order is important, as the first strategy that claims
      * to handle a file has precedence over later strategies
      */
-    private val registeredImporters = LinkedList<ImporterStrategy>()
+    private val registeredImporters = LinkedList<ImporterStrategy<*>>()
 
     /**
      * Fallback importer strategy that simply copies the file into workspace
@@ -42,12 +36,14 @@ object ImporterFeature {
     }
 
     /**
-     * Import a file into the workspace.
+     * Import a file into the workspace and call subsequent handlers on it (like mapper). This method is intended to
+     * trigger an import job invoked by the user. This method must not be called by other importers. Use [importFile]
+     * from other importers during an import job.
      *
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param file URL pointing to the file
      */
-    suspend fun importFile(parent: FileEntity?, file: URL) {
+    suspend fun startImportJob(parent: FileEntity?, file: URL) {
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -59,36 +55,13 @@ object ImporterFeature {
             return
         }
 
-        fileStream.use {
-            importFile(parent, fileName, fileStream)
-        }
-    }
+        val importerJob = ImporterJob(registeredImporters, genericFileImporterStrategy)
+        val pushbackStream = PushbackInputStream(fileStream, 512)
 
-    /**
-     * Import a file into the workspace that is part of another file (like archives)
-     *
-     * @param parent a parent entity in the file tree, that gets this file as a
-     * @param fileName name for the file in the workspace
-     * @param fileStream an [InputStream] for the file content
-     */
-    suspend fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
-        logger.trace("importing \"$fileName\"")
+        importerJob.initialize(fileName, pushbackStream)
 
-        if (!ArchiveFeature.canAddFile(parent)) {
-            throw IllegalArgumentException(
-                ArchiveFeature.getArchiveType(parent) + " archives do not support adding external files"
-            )
-        }
-
-        val pushbackStream = if (fileStream is PushbackInputStream) fileStream else PushbackInputStream(fileStream, 512)
-
-        val importer =
-            registeredImporters.firstOrNull { it.handles(fileName, pushbackStream) } ?: genericFileImporterStrategy
-        val (file, content) = importer.import(parent, fileName, pushbackStream)
-        logger.trace("finished importing \"$fileName\"")
-
-        CoroutineScope(coroutineContext).launch {
-            mapFile(file, content)
+        pushbackStream.use {
+            importerJob.importFile(parent, fileName, pushbackStream)
         }
     }
 
@@ -100,7 +73,7 @@ object ImporterFeature {
      * to the front of the list take precedence over strategies further back. So this can be used to override a
      * strategy, that is already in the list.
      */
-    fun registerImporterStrategy(strategy: ImporterStrategy, priority: Boolean = false) {
+    fun registerImporterStrategy(strategy: ImporterStrategy<*>, priority: Boolean = false) {
         if (priority) registeredImporters.addFirst(strategy)
         else registeredImporters.add(strategy)
     }

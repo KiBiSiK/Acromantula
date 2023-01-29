@@ -50,7 +50,7 @@ class ImportCommandInterpreter(
             else -> null
         }
 
-        ImporterFeature.importFile(parentDirectoryEntity, sourceFile)
+        ImporterFeature.startImportJob(parentDirectoryEntity, sourceFile)
     }
 }
 
