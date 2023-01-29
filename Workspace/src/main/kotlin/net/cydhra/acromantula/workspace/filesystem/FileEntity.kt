@@ -14,7 +14,7 @@ object FileTable : IntIdTable("TreeFile") {
     val parent = reference("parent", FileTable).nullable()
     val isDirectory = bool("is_directory").default(false)
     val type = varchar("type", 31).nullable()
-    val resource = integer("resource")
+    val resource = integer("resource").uniqueIndex()
     val archive = reference("archive", ArchiveTable).nullable()
 
     init {
@@ -76,6 +76,7 @@ class FileEntity internal constructor(
 
     /**
      * Internal cache for database id, which can be used by database sync to quickly reference this file.
+     * This is NOT used for foreign references. Use [resource] instead.
      */
     internal lateinit var databaseId: EntityID<Int>
 
