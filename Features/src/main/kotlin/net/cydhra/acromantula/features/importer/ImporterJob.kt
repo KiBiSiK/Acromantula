@@ -78,19 +78,23 @@ class ImporterJob internal constructor(
         // been made, so the entire import is already done. Important: This means that imports may not be launched in
         // separate coroutines, otherwise the mapping supervisor is completed too early (see below)
         val (file, content) = invokeImporterStrategy(parent, fileName, fileStream)
-
+        logger.info("importing scheduled")
         // launch the mapping task in a separate thread
         CoroutineScope(coroutineContext + mappingSupervisor).launch {
             mapperJob.mapFile(file, content)
         }
 
-        mappingSupervisor.invokeOnCompletion {
-            mapperJob.finish()
-        }
-
         // complete the supervisor. Once all children are finished, the completion handler is called, which will call
         // mapperJob.finish to start writing everything back to the database
         mappingSupervisor.complete()
+        mappingSupervisor.join()
+        logger.info("mapping scheduled")
+
+        // await database transactions.
+        // TODO: return partial results in a flow, so the user can already use partial
+        //  results before database transactions are complete
+        mapperJob.finish()
+        logger.info("mapping database sync complete")
     }
 
     /**

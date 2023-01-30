@@ -1,5 +1,9 @@
 package net.cydhra.acromantula.features.mapper
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 
@@ -52,7 +56,11 @@ class MapperJob(private val registeredMappers: List<FileMapper<*>>) {
         return this.mapperStates[fileMapper] as? S?
     }
 
-    fun finish() {
-
+    suspend fun finish() {
+        this.mapperStates.values.map {
+            CoroutineScope(currentCoroutineContext()).async {
+                it.onFinishMapping()
+            }
+        }.awaitAll()
     }
 }

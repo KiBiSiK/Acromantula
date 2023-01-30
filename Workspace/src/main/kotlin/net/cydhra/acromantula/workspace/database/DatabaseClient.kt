@@ -13,6 +13,7 @@ import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.statements.api.PreparedStatementApi
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
+import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.net.URL
 import javax.sql.DataSource
@@ -37,6 +38,7 @@ internal class DatabaseClient(private val databasePath: String) {
         dataSource = SQLiteDataSource()
             .also {
                 it.url = "jdbc:sqlite:$databasePath"
+                it.config = SQLiteConfig()
             }
 
         database = Database.connect(dataSource)
