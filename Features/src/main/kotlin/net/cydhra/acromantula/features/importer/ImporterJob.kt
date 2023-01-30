@@ -1,7 +1,6 @@
 package net.cydhra.acromantula.features.importer
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.features.mapper.MapperFeature
 import net.cydhra.acromantula.features.mapper.MapperJob
@@ -36,6 +35,12 @@ class ImporterJob internal constructor(
     private lateinit var mapperJob: MapperJob
 
     /**
+     * A secondary supervisor that oversees the mapping job. It is used to collect all call jobs relating to mapping
+     * and then call finish once all those are done.
+     */
+    private lateinit var mappingSupervisor: CompletableJob
+
+    /**
      * Initialize the importer job with the parameters of the current import unit
      *
      * @param fileName name of the import job file
@@ -67,12 +72,25 @@ class ImporterJob internal constructor(
 
         mapperJob = MapperFeature.startMapperJob()
         mapperJob.initialize(fileName)
+        mappingSupervisor = SupervisorJob(coroutineContext.job)
 
+        // invoke the importer strategy. This call will return as soon as all subsequent calls to importFile have
+        // been made, so the entire import is already done. Important: This means that imports may not be launched in
+        // separate coroutines, otherwise the mapping supervisor is completed too early (see below)
         val (file, content) = invokeImporterStrategy(parent, fileName, fileStream)
 
-        CoroutineScope(coroutineContext).launch {
+        // launch the mapping task in a separate thread
+        CoroutineScope(coroutineContext + mappingSupervisor).launch {
             mapperJob.mapFile(file, content)
         }
+
+        mappingSupervisor.invokeOnCompletion {
+            mapperJob.finish()
+        }
+
+        // complete the supervisor. Once all children are finished, the completion handler is called, which will call
+        // mapperJob.finish to start writing everything back to the database
+        mappingSupervisor.complete()
     }
 
     /**
@@ -85,7 +103,7 @@ class ImporterJob internal constructor(
     suspend fun importFile(parent: FileEntity?, fileName: String, fileStream: InputStream) {
         val (file, content) = invokeImporterStrategy(parent, fileName, fileStream)
 
-        CoroutineScope(coroutineContext).launch {
+        CoroutineScope(coroutineContext + mappingSupervisor).launch {
             mapperJob.mapFile(file, content)
         }
     }

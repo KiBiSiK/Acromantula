@@ -51,4 +51,8 @@ class MapperJob(private val registeredMappers: List<FileMapper<*>>) {
     private fun <S : MapperState> getMapperState(fileMapper: FileMapper<S>): S? {
         return this.mapperStates[fileMapper] as? S?
     }
+
+    fun finish() {
+
+    }
 }
