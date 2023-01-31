@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.withContext
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
@@ -37,13 +38,16 @@ object ImporterFeature {
 
     /**
      * Import a file into the workspace and call subsequent handlers on it (like mapper). This method is intended to
-     * trigger an import job invoked by the user. This method must not be called by other importers. Use [importFile]
-     * from other importers during an import job.
+     * trigger an import job invoked by the user. This method must not be called by other importers.
+     * Use [ImporterJob.importFile] from other importers during an import job.
      *
      * @param parent a parent entity in the file tree, that gets this file as a
      * @param file URL pointing to the file
+     * @param partialResultChannel a channel through which the importer can report partial results to the user
      */
-    suspend fun startImportJob(parent: FileEntity?, file: URL) {
+    suspend fun startImportJob(
+        parent: FileEntity?, file: URL, partialResultChannel: Channel<ImporterJob.ImportProgressEvent>?
+    ) {
         val fileName = File(file.toURI()).name
 
         val fileStream = try {
@@ -55,7 +59,7 @@ object ImporterFeature {
             return
         }
 
-        val importerJob = ImporterJob(registeredImporters, genericFileImporterStrategy)
+        val importerJob = ImporterJob(registeredImporters, genericFileImporterStrategy, partialResultChannel)
         val pushbackStream = PushbackInputStream(fileStream, 512)
 
         importerJob.initialize(fileName, pushbackStream)

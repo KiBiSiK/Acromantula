@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.features.importer
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import net.cydhra.acromantula.features.archives.ArchiveFeature
 import net.cydhra.acromantula.features.mapper.MapperFeature
 import net.cydhra.acromantula.features.mapper.MapperJob
@@ -14,10 +15,15 @@ import kotlin.coroutines.coroutineContext
  * A user-triggered unit of work. This may just involve one file being imported, or several if the unit of work
  * involved an archive. All files of this job are imported before handed to other stages in the pipeline (like
  * mapping). Importers may hold state during import inside this class using the ImporterState interface.
+ *
+ * @param registeredImporters a list of all importers registered in the [ImporterFeature]
+ * @param genericFileImporterStrategy the fallback strategy for import of unknown files
+ * @param partialResultChannel a channel that reports job progress to the user
  */
 class ImporterJob internal constructor(
     private val registeredImporters: List<ImporterStrategy<*>>,
-    private val genericFileImporterStrategy: GenericFileImporterStrategy
+    private val genericFileImporterStrategy: GenericFileImporterStrategy,
+    private val partialResultChannel: Channel<ImportProgressEvent>?
 ) {
 
     companion object {
@@ -78,7 +84,8 @@ class ImporterJob internal constructor(
         // been made, so the entire import is already done. Important: This means that imports may not be launched in
         // separate coroutines, otherwise the mapping supervisor is completed too early (see below)
         val (file, content) = invokeImporterStrategy(parent, fileName, fileStream)
-        logger.info("importing scheduled")
+        partialResultChannel?.send(ImportProgressEvent.ImportComplete(file))
+
         // launch the mapping task in a separate thread
         CoroutineScope(coroutineContext + mappingSupervisor).launch {
             mapperJob.mapFile(file, content)
@@ -88,13 +95,10 @@ class ImporterJob internal constructor(
         // mapperJob.finish to start writing everything back to the database
         mappingSupervisor.complete()
         mappingSupervisor.join()
-        logger.info("mapping scheduled")
 
         // await database transactions.
-        // TODO: return partial results in a flow, so the user can already use partial
-        //  results before database transactions are complete
         mapperJob.finish()
-        logger.info("mapping database sync complete")
+        partialResultChannel?.send(ImportProgressEvent.MappingComplete)
     }
 
     /**
@@ -134,5 +138,23 @@ class ImporterJob internal constructor(
     @Suppress("UNCHECKED_CAST") // enforced by class contract
     private fun <S : ImporterState> getImporterState(importerStrategy: ImporterStrategy<S>): S? {
         return this.importerStates[importerStrategy] as? S?
+    }
+
+    /**
+     * Progress events that are reported in a flow handed to the job to report partial progress to the user
+     */
+    sealed class ImportProgressEvent {
+
+        /**
+         * Reported once all files are properly imported into the workspace. Database sync might still be in
+         * progress, but this is hidden from the importer, and is never communicated to the user.
+         */
+        class ImportComplete(val root: FileEntity) : ImportProgressEvent()
+
+        /**
+         * Mapping is complete. This has to be reported to the user, because mapping-related tasks cannot be executed
+         * while mapping is in progress.
+         */
+        object MappingComplete : ImportProgressEvent()
     }
 }
