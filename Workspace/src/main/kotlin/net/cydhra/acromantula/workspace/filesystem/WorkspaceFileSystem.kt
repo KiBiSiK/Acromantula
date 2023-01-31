@@ -427,12 +427,11 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
     fun queryPath(path: String): FileEntity {
         val folderPath = path.removeSuffix("/").removePrefix("/").split('/')
 
-        this.fileTrees.find { it.name == folderPath[0] }
         var currentDirectory: List<FileEntity> = fileTrees
         var currentPathIndex = 0
 
         do {
-            val child = currentDirectory.find { it.name == folderPath[currentPathIndex] }
+            val child = currentDirectory.find { it.name.removeSuffix("/") == folderPath[currentPathIndex] }
             if (child != null) {
                 if (currentPathIndex + 1 == folderPath.size) {
                     return child
@@ -444,7 +443,13 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
                     }
                 }
             } else {
-                error("${folderPath[currentPathIndex]} not found in $currentDirectory")
+                error(
+                    "${folderPath[currentPathIndex]} not found in ${
+                        currentDirectory.joinToString(
+                            ", ", transform = FileEntity::name, prefix = "[", postfix = "]"
+                        )
+                    }"
+                )
             }
             currentPathIndex++
         } while (true)
