@@ -10,9 +10,9 @@ interface AcromantulaReference {
     val referenceType: String
 
     /**
-     * The symbol this reference points to.
+     * The symbol this reference points to, or null if the referenced symbol is not in the workspace.
      */
-    val referencedSymbol: AcromantulaSymbol
+    val referencedSymbol: AcromantulaSymbol?
 
     /**
      * Source file of this reference
