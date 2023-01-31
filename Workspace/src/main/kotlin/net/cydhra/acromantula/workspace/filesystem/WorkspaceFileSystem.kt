@@ -390,9 +390,9 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
     fun registerArchiveType(fileTypeIdentifier: String) {
         transaction {
             archiveTypeIdentifiers.put(
-                fileTypeIdentifier, ArchiveTable.insertIgnoreAndGetId {
+                fileTypeIdentifier, ArchiveTable.insertAndGetId {
                     it[typeIdent] = fileTypeIdentifier
-                }!!.value
+                }.value
             )
         }
     }
