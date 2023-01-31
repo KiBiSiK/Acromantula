@@ -27,8 +27,8 @@ object MapperFeature {
      * @param predicate optional predicate to filter the symbols
      */
     suspend fun getSymbolsInFile(
-        file: FileEntity, predicate: ((AcromantulaSymbol) -> Boolean)? = null
-    ): Collection<AcromantulaSymbol> {
+        file: FileEntity
+    ): List<AcromantulaSymbol> {
         // todo we could fork-join here, but retrieving should be so fast that the overhead isn't worth it? maybe
         //  check against a large workspace
         // fork-join would utilize
@@ -38,7 +38,7 @@ object MapperFeature {
         //        }
         //      }.awaitAll().flatten()
         //    }
-        return registeredMappers.flatMap { it.getSymbolsInFile(file, predicate) }
+        return registeredMappers.flatMap { it.getSymbolsInFile(file) }
     }
 
     /**
@@ -48,10 +48,10 @@ object MapperFeature {
      * @param predicate optional predicate to filter the references
      */
     suspend fun getReferencesInFile(
-        file: FileEntity, predicate: ((AcromantulaReference) -> Boolean)?
+        file: FileEntity
     ): Collection<AcromantulaReference> {
         // todo see fork-join todo above
-        return registeredMappers.flatMap { it.getReferencesInFile(file, predicate) }
+        return registeredMappers.flatMap { it.getReferencesInFile(file) }
     }
 
     /**

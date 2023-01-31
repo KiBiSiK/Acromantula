@@ -33,14 +33,14 @@ interface FileMapper<S : MapperState> {
      * @param predicate optional filter rule to select specific symbols
      */
     suspend fun getSymbolsInFile(
-        file: FileEntity, predicate: ((AcromantulaSymbol) -> Boolean)? = null
+        file: FileEntity
     ): Collection<AcromantulaSymbol>
 
     /**
      * Retrieve all references in a file that are managed by this mapper implementation
      */
     suspend fun getReferencesInFile(
-        file: FileEntity, predicate: ((AcromantulaReference) -> Boolean)?
+        file: FileEntity
     ): Collection<AcromantulaReference>
 
     /**

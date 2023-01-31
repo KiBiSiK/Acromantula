@@ -48,6 +48,7 @@ object CommandLineService {
         registerCommandParser(::ImportCommandParser, "import")
         registerCommandParser(::ExportCommandParser, "export")
         registerCommandParser(::ListFilesCommandParser, "ls")
+        registerCommandParser(::ListSymbolsCommandParser, "symbols", "listsymbols")
         registerCommandParser(::ListRefsCommandParser, "xref", "references")
         registerCommandParser(::DirectQueryCommandParser, "query")
         registerCommandParser(::ViewCommandCommandParser, "view")
