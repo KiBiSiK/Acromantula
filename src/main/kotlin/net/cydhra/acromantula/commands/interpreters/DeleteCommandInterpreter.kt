@@ -11,9 +11,11 @@ import net.cydhra.acromantula.workspace.WorkspaceService
  * @param filePath optional. the path of the file or directory to be deleted
  */
 class DeleteCommandInterpreter private constructor(
-    val fileEntityId: Int? = null,
-    val filePath: String? = null,
+    val fileEntityId: Int?,
+    val filePath: String?,
 ) : WorkspaceCommandInterpreter<Unit> {
+
+    override val synchronous: Boolean = true
 
     /**
      * Command to delete file(s) from workspace.
@@ -21,8 +23,6 @@ class DeleteCommandInterpreter private constructor(
      * @param fileEntityId optional. the entity id of the file or directory to be deleted
      */
     constructor(fileEntityId: Int? = null) : this(fileEntityId, null)
-
-    override val synchronous: Boolean = true
 
     /**
      * Command to delete file(s) from workspace.
