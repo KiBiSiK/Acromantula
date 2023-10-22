@@ -387,6 +387,7 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
 
         eventBroker.dispatch(FileSystemEvent.ViewCreatedEvent(file, viewEntity))
 
+        file.viewEntities.add(viewEntity)
         return viewEntity
     }
 
