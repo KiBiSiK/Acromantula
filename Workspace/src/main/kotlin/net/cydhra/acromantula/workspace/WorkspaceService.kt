@@ -155,6 +155,12 @@ object WorkspaceService {
         return workspaceClient.listFiles()
     }
 
+    fun listDirectory(fileEntity: FileEntity): List<FileEntity> {
+        require(fileEntity.isDirectory) { "can only list files in directories" }
+
+        return workspaceClient.listDirectory(fileEntity)
+    }
+
     /**
      * A debug function to directly execute a raw, unprepared SQL query on the workspace database. This function
      * should not be called in production builds, but is only meant for debugging the database from the CLI

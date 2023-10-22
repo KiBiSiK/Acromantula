@@ -178,4 +178,8 @@ internal class WorkspaceClient(directory: File) {
     fun queryFile(id: Int): FileEntity {
         return this.workspaceFileSystem.queryFile(id)
     }
+
+    fun listDirectory(fileEntity: FileEntity): List<FileEntity> {
+        return this.workspaceFileSystem.listDirectory(fileEntity)
+    }
 }

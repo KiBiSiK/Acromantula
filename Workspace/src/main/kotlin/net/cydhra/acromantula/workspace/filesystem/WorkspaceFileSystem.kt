@@ -522,6 +522,12 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
         this.indexFile.writeText(gson.toJson(this.index))
     }
 
+    fun listDirectory(fileEntity: FileEntity): List<FileEntity> {
+        require(fileEntity.isDirectory) { "can only list files in directories" }
+
+        return transaction { fileEntity.childEntities }
+    }
+
     private class WorkspaceIndex {
         /**
          * Current resource counter
