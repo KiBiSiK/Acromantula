@@ -8,4 +8,7 @@ dependencies {
 
     // utility
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+
+    // html generation
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-html-jvm', version: kotlinx_html_version
 }
