@@ -87,8 +87,9 @@ internal class FileSystemDatabaseSync(
             FileViewTable.insertAndGetId {
                 it[file] = event.fileEntity.databaseId
                 it[viewGenerator] = event.viewEntity.type
+                it[mediaType] = event.viewEntity.mediaType
                 it[resource] = event.viewEntity.resource
-                it[created] = DateTime(event.viewEntity.created)
+                it[created] = DateTime(event.viewEntity.created.epochSecond)
             }
         }
     }
