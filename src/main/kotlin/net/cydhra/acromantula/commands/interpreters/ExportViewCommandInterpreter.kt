@@ -18,7 +18,7 @@ import java.util.zip.ZipOutputStream
  *
  * @param fileEntityId optional. the entity id of parent directory
  * @param filePath optional. the path of the directory in workspace
- * @param viewType which view type to export
+ * @param generatorType which view type to export
  * @param recursive whether to recursively export a whole directory
  * @param includeIncompatible whether to include files in the directory that are incompatible with the exporter
  * @param targetFileName path of target file
@@ -26,7 +26,7 @@ import java.util.zip.ZipOutputStream
 class ExportViewCommandInterpreter private constructor(
     val fileEntityId: Int? = null,
     val filePath: String? = null,
-    val viewType: String,
+    val generatorType: String,
     val recursive: Boolean,
     val includeIncompatible: Boolean,
     val targetFileName: String
@@ -86,7 +86,7 @@ class ExportViewCommandInterpreter private constructor(
             appendRepresentations(file.children, "", outputStream)
             outputStream.close()
         } else {
-            val representation = GenerateViewFeature.generateView(file, viewType)
+            val representation = GenerateViewFeature.generateView(file, generatorType)
             if (representation == null) {
                 logger.error("cannot create view of \"${file.name}\"")
             } else {
@@ -119,7 +119,7 @@ class ExportViewCommandInterpreter private constructor(
                 appendRepresentations(subFile.children, zipEntryName, outputStream)
             } else {
                 val representation =
-                    GenerateViewFeature.generateView(subFile, viewType)
+                    GenerateViewFeature.generateView(subFile, generatorType)
 
                 if (representation == null) {
                     logger.error("cannot create view of \"${subFile.name}\"")
@@ -132,7 +132,7 @@ class ExportViewCommandInterpreter private constructor(
                     }
                 } else {
                     var fileName = zipEntryName
-                    val extension = GenerateViewFeature.getFileExtension(viewType)
+                    val extension = GenerateViewFeature.getFileExtension(generatorType)
                     if (extension != null) {
                         fileName += ".$extension"
                     }

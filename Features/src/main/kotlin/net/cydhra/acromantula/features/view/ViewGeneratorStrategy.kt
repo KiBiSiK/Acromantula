@@ -1,8 +1,8 @@
 package net.cydhra.acromantula.features.view
 
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
+import net.cydhra.acromantula.workspace.disassembly.MediaType
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
-import net.cydhra.acromantula.workspace.filesystem.FileType
 
 /**
  * A strategy to interpret a certain type of files using a specific parsing method and generate a human readable
@@ -20,7 +20,7 @@ interface ViewGeneratorStrategy {
     /**
      * The file type that this view generates.
      */
-    val fileType: FileType
+    val fileType: MediaType
 
     /**
      * Whether this view generator supports regeneration of the original file from representation data. This can be

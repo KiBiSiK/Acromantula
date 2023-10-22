@@ -1,6 +1,7 @@
 package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
+import net.cydhra.acromantula.workspace.disassembly.MediaType
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.exposed.sql.Transaction
@@ -116,11 +117,12 @@ object WorkspaceService {
      * automatically deleted when the reference file changes
      *
      * @param file reference file for the representation data
-     * @param type representation type identifier
+     * @param generatorType representation type identifier
      * @param viewData binary data of the representation
      */
-    fun addFileRepresentation(file: FileEntity, type: String, viewData: ByteArray): FileViewEntity {
-        return workspaceClient.createFileView(file, type, viewData)
+    fun addFileRepresentation(file: FileEntity, generatorType: String, mediaType: MediaType, viewData: ByteArray):
+            FileViewEntity {
+        return workspaceClient.createFileView(file, generatorType, mediaType, viewData)
     }
 
     /**

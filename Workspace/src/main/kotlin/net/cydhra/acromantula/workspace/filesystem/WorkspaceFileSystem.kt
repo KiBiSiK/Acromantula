@@ -3,6 +3,7 @@ package net.cydhra.acromantula.workspace.filesystem
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
+import net.cydhra.acromantula.workspace.disassembly.MediaType
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -352,12 +353,12 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
      * Creates a file representation resource in workspace.
      *
      * @param file create view for this file
-     * @param type view generator name
+     * @param generatorType view generator name
      * @param content view resource content
      */
-    fun createFileRepresentation(file: FileEntity, type: String, content: ByteArray): FileViewEntity {
+    fun createFileRepresentation(file: FileEntity, generatorType: String, mediaType: MediaType, content: ByteArray): FileViewEntity {
         val resourceIndex = index.getNextFileIndex()
-        val viewEntity = FileViewEntity(file, type, resourceIndex, Instant.now())
+        val viewEntity = FileViewEntity(file, generatorType, mediaType, resourceIndex, Instant.now())
 
         val newFile = File(this.resourceDirectory, resourceIndex.toString()).apply { createNewFile() }
         newFile.writeBytes(content)

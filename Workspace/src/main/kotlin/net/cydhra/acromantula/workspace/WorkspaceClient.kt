@@ -2,6 +2,7 @@ package net.cydhra.acromantula.workspace
 
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
+import net.cydhra.acromantula.workspace.disassembly.MediaType
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import net.cydhra.acromantula.workspace.filesystem.WorkspaceFileSystem
 import java.io.File
@@ -105,11 +106,12 @@ internal class WorkspaceClient(directory: File) {
      * Upload file view data into the workspace
      *
      * @param file reference file for the representation data
-     * @param type view type
+     * @param generatorType view type
      * @param viewData the binary data of the file's view
      */
-    fun createFileView(file: FileEntity, type: String, viewData: ByteArray): FileViewEntity {
-        return this.workspaceFileSystem.createFileRepresentation(file, type, viewData)
+    fun createFileView(file: FileEntity, generatorType: String, mediaType: MediaType, viewData: ByteArray):
+            FileViewEntity {
+        return this.workspaceFileSystem.createFileRepresentation(file, generatorType, mediaType, viewData)
     }
 
     /**

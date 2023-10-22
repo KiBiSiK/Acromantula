@@ -86,7 +86,7 @@ internal class FileSystemDatabaseSync(
         event.viewEntity.databaseId = databaseClient.transaction {
             FileViewTable.insertAndGetId {
                 it[file] = event.fileEntity.databaseId
-                it[type] = event.viewEntity.type
+                it[viewGenerator] = event.viewEntity.type
                 it[resource] = event.viewEntity.resource
                 it[created] = DateTime(event.viewEntity.created)
             }

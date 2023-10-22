@@ -13,18 +13,24 @@ import java.time.Instant
  */
 internal object FileViewTable : org.jetbrains.exposed.dao.id.IntIdTable() {
     val file = reference("file", FileTable)
-    val type = varchar("type", 255)
+    val viewGenerator = varchar("type", 255)
+    val mediaType = enumeration("media", MediaType::class)
     val resource = integer("view")
     val created = datetime("created")
 
     init {
-        uniqueIndex(file, type)
+        uniqueIndex(file, viewGenerator)
     }
+}
+
+enum class MediaType(val fileExtension: String) {
+    TXT("txt"), PNG("png"), WAV("wav"), HTML("html")
 }
 
 /**
  * A human-readable view of a file, which is itself stored as a resource in workspace.
  */
-class FileViewEntity(val file: FileEntity, val type: String, val resource: Int, val created: Instant) {
+class FileViewEntity(val file: FileEntity, val type: String, val mediaType: MediaType, val resource: Int, val
+created: Instant) {
     lateinit var databaseId: EntityID<Int>
 }
