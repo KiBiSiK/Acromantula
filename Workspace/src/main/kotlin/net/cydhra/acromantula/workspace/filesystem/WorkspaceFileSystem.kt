@@ -3,7 +3,9 @@ package net.cydhra.acromantula.workspace.filesystem
 import com.google.gson.GsonBuilder
 import net.cydhra.acromantula.workspace.database.DatabaseClient
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
+import net.cydhra.acromantula.workspace.disassembly.FileViewTable
 import net.cydhra.acromantula.workspace.disassembly.MediaType
+import net.cydhra.acromantula.workspace.filesystem.ArchiveTable.entityId
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -125,6 +127,21 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
             }
 
             handleFiles { FileTable.parent.isNull() }
+
+            fun convertView(row: ResultRow): FileViewEntity {
+                return FileViewEntity(
+                    file = fileIdMapping[row[FileViewTable.file].value]!!,
+                    type = row[FileViewTable.viewGenerator],
+                    mediaType = row[FileViewTable.mediaType],
+                    resource = row[FileViewTable.resource],
+                    created = Instant.ofEpochMilli(row[FileViewTable.created].millis)
+                )
+            }
+
+            FileViewTable.selectAll().forEach { resultRow ->
+                val view = convertView(resultRow)
+                view.file.viewEntities.add(view)
+            }
         }
     }
 
@@ -356,7 +373,12 @@ internal class WorkspaceFileSystem(workspacePath: File, private val databaseClie
      * @param generatorType view generator name
      * @param content view resource content
      */
-    fun createFileRepresentation(file: FileEntity, generatorType: String, mediaType: MediaType, content: ByteArray): FileViewEntity {
+    fun createFileRepresentation(
+        file: FileEntity,
+        generatorType: String,
+        mediaType: MediaType,
+        content: ByteArray
+    ): FileViewEntity {
         val resourceIndex = index.getNextFileIndex()
         val viewEntity = FileViewEntity(file, generatorType, mediaType, resourceIndex, Instant.now())
 
