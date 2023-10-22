@@ -17,6 +17,27 @@ const val ANCILLARY = "ancillary"
 const val STANDARDIZED = "standardized"
 const val SAFE_TO_COPY = "safe to copy"
 const val CRC = "crc"
+const val CONTENT = "content"
+
+val CHUNK_TYPE_PHYSICAL_PIXEL_DIM = convertChunkTypeToInt("pHYs")
+val CHUNK_TYPE_TEXT = convertChunkTypeToInt("tEXt")
+val CHUNK_TYPE_COMPRESSED_TEXT = convertChunkTypeToInt("zTXt")
+val CHUNK_TYPE_INTERNATIONAL_TEXT = convertChunkTypeToInt("iTXt")
+
+const val UNIT_UNSPECIFIED = 0
+const val UNIT_METER = 1
+
+fun convertChunkTypeToInt(type: String): Int {
+    check(type.length == 4) { "chunk type must be exactly 4 bytes long" }
+
+    var result = 0
+    for (c in type.chars()) {
+        result = result shl 8
+        result = result or c
+    }
+
+    return result
+}
 
 object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
     override val viewType: String = "ixpng"
@@ -48,29 +69,121 @@ object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
         // skip magic bytes
         fileContent.getLong()
 
-        document.table(LENGTH, TYPE, ANCILLARY, STANDARDIZED, SAFE_TO_COPY, CRC) {
-            while (fileContent.hasRemaining()) {
-                val length = fileContent.getInt()
+        document.append {
+            table(LENGTH, TYPE, ANCILLARY, STANDARDIZED, SAFE_TO_COPY, CRC, CONTENT) {
+                while (fileContent.hasRemaining()) {
+                    val length = fileContent.getInt()
 
-                val typeByte1 = fileContent.get()
-                val typeByte2 = fileContent.get()
-                val typeByte3 = fileContent.get()
-                val typeByte4 = fileContent.get()
+                    val typeByte1 = fileContent.get()
+                    val typeByte2 = fileContent.get()
+                    val typeByte3 = fileContent.get()
+                    val typeByte4 = fileContent.get()
+                    val type = (typeByte1.toInt() shl 24) or (typeByte2.toInt() shl 16) or (typeByte3.toInt() shl 8) or
+                            typeByte4.toInt()
 
-                fileContent.position(fileContent.position() + length)
+                    val oldPosition = fileContent.position()
 
-                // read length bytes
-                val crc = fileContent.getInt()
+                    fileContent.position(oldPosition + length)
 
-                row(mapOf(
-                    LENGTH to length.toString(),
-                    TYPE to typeByte1.toChar().toString() + typeByte2.toChar().toString() + typeByte3.toChar()
-                        .toString() + typeByte4.toChar().toString(),
-                    ANCILLARY to if (typeByte1 and 32 == 0.toByte()) { "critical" } else { "ancillary" },
-                    STANDARDIZED to if (typeByte2 and 32 == 0.toByte()) { "yes" } else { "no" },
-                    SAFE_TO_COPY to if (typeByte4 and 32 == 0.toByte()) { "no" } else { "yes" },
-                    CRC to crc.toString()
-                ))
+                    // read length bytes
+                    val crc = fileContent.getInt()
+
+                    row {
+                        cell {
+                            text(length.toString())
+                        }
+                        cell {
+                            text(
+                                typeByte1.toChar().toString() + typeByte2.toChar().toString() + typeByte3.toChar()
+                                    .toString() + typeByte4.toChar().toString()
+                            )
+                        }
+                        cell {
+                            text(
+                                if (typeByte1 and 32 == 0.toByte()) {
+                                    "critical"
+                                } else {
+                                    "ancillary"
+                                }
+                            )
+                        }
+                        cell {
+                            text(
+                                if (typeByte2 and 32 == 0.toByte()) {
+                                    "yes"
+                                } else {
+                                    "no"
+                                }
+                            )
+                        }
+                        cell {
+                            text(
+                                if (typeByte4 and 32 == 0.toByte()) {
+                                    "no"
+                                } else {
+                                    "yes"
+                                }
+                            )
+                        }
+                        cell {
+                            text(crc.toUInt().toString())
+                        }
+                        cell {
+                            when (type) {
+                                CHUNK_TYPE_PHYSICAL_PIXEL_DIM -> collapsible("physical pixel dimensions") {
+                                    fileContent.position(oldPosition)
+                                    val xAxis = fileContent.getInt()
+                                    val yAxis = fileContent.getInt()
+                                    val unit = fileContent.get().toInt()
+
+                                    fileContent.getInt() // skip crc
+
+                                    text(
+                                        "X Axis: $xAxis texels per ${
+                                            if (unit == UNIT_METER) {
+                                                "meter"
+                                            } else {
+                                                "pixel"
+                                            }
+                                        }"
+                                    )
+                                    br()
+                                    text(
+                                        "Y Axis: $yAxis texels per ${
+                                            if (unit == UNIT_METER) {
+                                                "meter"
+                                            } else {
+                                                "pixel"
+                                            }
+                                        }"
+                                    )
+                                }
+
+                                CHUNK_TYPE_TEXT -> collapsible("text chunk") {
+                                    val textArray = ByteArray(length)
+                                    fileContent.position(oldPosition)
+                                    fileContent.get(textArray, 0, length)
+                                    fileContent.getInt() // skip crc
+                                    text(String(textArray, Charsets.ISO_8859_1))
+                                }
+
+                                CHUNK_TYPE_COMPRESSED_TEXT -> collapsible("compressed text chunk") {
+                                    text("not yet decompressed")
+                                }
+
+                                CHUNK_TYPE_INTERNATIONAL_TEXT -> collapsible("international text chunk") {
+                                    val textArray = ByteArray(length)
+                                    fileContent.position(oldPosition)
+                                    fileContent.get(textArray, 0, length)
+                                    fileContent.getInt() // skip crc
+                                    text(String(textArray, Charsets.UTF_8))
+                                }
+
+                                else -> {}
+                            }
+                        }
+                    }
+                }
             }
         }
 

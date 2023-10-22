@@ -13,25 +13,11 @@ const val TABLE_FOOTER_CLASS = "table_footer"
 /**
  * Generate HTML documents with the HTML layout abstracted.
  */
-class DocumentGenerator {
+class DocumentGenerator(private val buffer: StringBuffer = StringBuffer(2048)) {
 
-    private val buffer = StringBuffer(2048)
-
-    /**
-     * Generate a standard table
-     */
-    fun table(vararg columns: String, body: TableGenerator.() -> Unit) {
-        buffer.appendHTML().table(classes = TABLE_CLASS) {
-            thead(classes = TABLE_HEADER_CLASS) {
-                tr(classes = TABLE_ROW_CLASS) {
-                    for (c in columns) {
-                        th(classes = TABLE_CELL_CLASS) {
-                            +c
-                        }
-                    }
-                }
-            }
-            TableGenerator(columns, this).apply(body)
+    fun append(body: TopLevelGenerator.() -> Unit) {
+        this.buffer.appendHTML().div {
+            TopLevelGenerator(this).apply(body)
         }
     }
 
@@ -47,18 +33,66 @@ class DocumentGenerator {
         }
     }
 
+    inner class TopLevelGenerator(private val flowContent: FlowContent) {
+        fun text(text: String) {
+            flowContent.text(text)
+        }
+
+        fun collapsible(title: String, body: TopLevelGenerator.() -> Unit) {
+            flowContent.details {
+                summary {
+                    +title
+                }
+                TopLevelGenerator(this).apply(body)
+            }
+        }
+
+        /**
+         * Generate a standard table
+         */
+        fun table(vararg columns: String, body: TableGenerator.() -> Unit) {
+            flowContent.table(classes = TABLE_CLASS) {
+                thead(classes = TABLE_HEADER_CLASS) {
+                    tr(classes = TABLE_ROW_CLASS) {
+                        for (c in columns) {
+                            th(classes = TABLE_CELL_CLASS) {
+                                +c
+                            }
+                        }
+                    }
+                }
+                TableGenerator(columns, this).apply(body)
+            }
+        }
+
+        fun br() {
+            flowContent.br
+        }
+    }
+
     /**
      * Receiver class for table generation that offers generation of table entries
      */
     inner class TableGenerator(private val columns: Array<out String>, private val table: TABLE) {
 
         /**
-         * Append a row into the current table
+         * Append a row with just text into the current table
          */
         fun row(cells: Map<String, String>) {
             with(table) {
                 tr(classes = TABLE_ROW_CLASS) {
                     generateRow(this, cells)
+                }
+            }
+        }
+
+        /**
+         * Append a row with complex components into the current table
+         */
+        fun row(body: RowGenerator.() -> Unit) {
+            with(table) {
+                tr(classes = TABLE_ROW_CLASS) {
+                    RowGenerator(this).apply(body)
                 }
             }
         }
@@ -80,6 +114,20 @@ class DocumentGenerator {
             for (c in columns) {
                 tr.td(classes = TABLE_CELL_CLASS) {
                     +(cells[c] ?: "&nbsp;")
+                }
+            }
+        }
+
+        inner class RowGenerator(private val row: TR) {
+
+            /**
+             * Append a cell containing complex document constructs
+             */
+            fun cell(body: TopLevelGenerator.() -> Unit) {
+                with(row) {
+                    td {
+                        TopLevelGenerator(this).apply(body)
+                    }
                 }
             }
         }
