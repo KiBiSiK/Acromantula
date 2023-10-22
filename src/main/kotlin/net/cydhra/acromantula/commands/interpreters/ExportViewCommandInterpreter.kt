@@ -4,6 +4,7 @@ import net.cydhra.acromantula.commands.WorkspaceCommandInterpreter
 import net.cydhra.acromantula.features.exporter.ExporterFeature
 import net.cydhra.acromantula.features.exporter.GENERIC_EXPORTER_STRATEGY
 import net.cydhra.acromantula.features.view.GenerateViewFeature
+import net.cydhra.acromantula.features.view.UnhandledViewException
 import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
 import org.apache.logging.log4j.LogManager
@@ -118,8 +119,12 @@ class ExportViewCommandInterpreter private constructor(
 
                 appendRepresentations(subFile.children, zipEntryName, outputStream)
             } else {
-                val representation =
+                val representation = try {
                     GenerateViewFeature.generateView(subFile, generatorType)
+                } catch (e: UnhandledViewException) {
+                    logger.debug("skipping unhandled file \"${subFile.name}\"")
+                    continue
+                }
 
                 if (representation == null) {
                     logger.error("cannot create view of \"${subFile.name}\"")
@@ -139,7 +144,7 @@ class ExportViewCommandInterpreter private constructor(
 
                     outputStream.putNextEntry(ZipEntry(fileName))
                     GenerateViewFeature.exportView(representation, outputStream)
-                    logger.info("exported view \"$targetFileName\" of \"${subFile.name}\"")
+                    logger.info("exported view \"$generatorType\" of \"${subFile.name}\"")
                 }
             }
         }

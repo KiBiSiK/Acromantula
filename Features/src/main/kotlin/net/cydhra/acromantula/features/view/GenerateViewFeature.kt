@@ -31,7 +31,7 @@ object GenerateViewFeature {
         if (!(registeredGenerators[viewType]?.handles(fileEntity)
                 ?: throw IllegalArgumentException("View generator \"$viewType\" does not exist"))
         )
-            return null
+            throw UnhandledViewException(viewType, fileEntity.name)
 
         logger.info("creating representation for \"${fileEntity.name}\"")
         // TODO this is insanely bad design. I recon I did this to prevent mass-view generation to cancel when view
