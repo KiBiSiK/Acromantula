@@ -24,6 +24,7 @@ const val CRC = "crc"
 const val CONTENT = "content"
 
 val CHUNK_TYPE_START = convertChunkTypeToInt("IHDR")
+val CHUNK_TYPE_PALETTE = convertChunkTypeToInt("PLTE")
 val CHUNK_TYPE_PHYSICAL_PIXEL_DIM = convertChunkTypeToInt("pHYs")
 val CHUNK_TYPE_TEXT = convertChunkTypeToInt("tEXt")
 val CHUNK_TYPE_COMPRESSED_TEXT = convertChunkTypeToInt("zTXt")
@@ -85,6 +86,7 @@ object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
 
                     val chunk = when (type) {
                         CHUNK_TYPE_START -> Chunk.StartChunk(fileContent)
+                        CHUNK_TYPE_PALETTE -> Chunk.PaletteChunk(fileContent, length)
                         CHUNK_TYPE_TEXT -> Chunk.TextChunk(fileContent, length)
                         CHUNK_TYPE_COMPRESSED_TEXT -> Chunk.CompressedTextChunk(fileContent, length)
                         CHUNK_TYPE_INTERNATIONAL_TEXT -> Chunk.InternationalTextChunk(fileContent, length)
@@ -183,17 +185,37 @@ private sealed class Chunk(val chunkDescription: String) {
             text("Bit Depth: $bitDepth")
             br()
             text("Color Type: ")
-            if (colorType and 1 > 0) { text("palette used, ") } else { text("no palette, ") }
-            if (colorType and 2 > 0) { text("color used, ") } else { text("no color, ") }
-            if (colorType and 4 > 0) { text("alpha used") } else { text("no alpha") }
+            if (colorType and 1 > 0) {
+                text("palette used, ")
+            } else {
+                text("no palette, ")
+            }
+            if (colorType and 2 > 0) {
+                text("color used, ")
+            } else {
+                text("no color, ")
+            }
+            if (colorType and 4 > 0) {
+                text("alpha used")
+            } else {
+                text("no alpha")
+            }
             br()
 
             text("Compression Method: ")
-            if (compressionMethod == 0) { text("deflate") } else { text("illegal value: $compressionMethod") }
+            if (compressionMethod == 0) {
+                text("deflate")
+            } else {
+                text("illegal value: $compressionMethod")
+            }
             br()
 
             text("Filter Method: ")
-            if (compressionMethod == 0) { text("adaptive filter") } else { text("illegal value: $compressionMethod") }
+            if (compressionMethod == 0) {
+                text("adaptive filter")
+            } else {
+                text("illegal value: $compressionMethod")
+            }
             br()
 
             text("Interlace Method: ")
@@ -243,7 +265,9 @@ private sealed class Chunk(val chunkDescription: String) {
             keyword = String(keywordBuffer.array(), Charsets.ISO_8859_1)
 
             val compressionMethod = buffer.get().toInt()
-            if (compressionMethod != 0) { warnings += "illegal compression method: $compressionMethod\n" }
+            if (compressionMethod != 0) {
+                warnings += "illegal compression method: $compressionMethod\n"
+            }
 
             val valueBuffer = ByteArray(length - keywordBuffer.position() - 1)
 
@@ -284,13 +308,16 @@ private sealed class Chunk(val chunkDescription: String) {
 
             val compressionMethod = buffer.get().toInt()
             if (isCompressed) {
-                if (compressionMethod != 0) { warnings += "illegal compression method: $compressionMethod\n" }
+                if (compressionMethod != 0) {
+                    warnings += "illegal compression method: $compressionMethod\n"
+                }
             }
 
             this.languageTag = readZeroTerminatedString(buffer, Charsets.ISO_8859_1)
             this.translatedKeyword = readZeroTerminatedString(buffer, Charsets.UTF_8)
 
-            val valueBuffer = ByteArray(length - (keyword.length + 1) - 2 - (languageTag.length + 1) - (translatedKeyword.length + 1))
+            val valueBuffer =
+                ByteArray(length - (keyword.length + 1) - 2 - (languageTag.length + 1) - (translatedKeyword.length + 1))
             buffer.get(valueBuffer, 0, valueBuffer.size)
 
             text = if (isCompressed) {
@@ -313,7 +340,7 @@ private sealed class Chunk(val chunkDescription: String) {
                 text("(deflate compressed): ")
             }
 
-            text(keyword )
+            text(keyword)
 
             if (languageTag.isNotEmpty() || translatedKeyword.isNotBlank()) {
                 text(" (")
@@ -379,6 +406,50 @@ private sealed class Chunk(val chunkDescription: String) {
             UNSPECIFIED, METER
         }
 
+    }
+
+    class PaletteChunk(buffer: ByteBuffer, length: Int) : Chunk("color palette") {
+        private val colors = mutableListOf<Triple<Byte, Byte, Byte>>()
+        private var warnings = ""
+
+        init {
+            if (length % 3 != 0) {
+                warnings += "corrupted chunk data: palette not divisible by three\n"
+            }
+            if (length > 3 * 256) {
+                warnings += "chunk too long. Only 256 palette entries are allowed\n"
+            }
+            if (length == 0) {
+                warnings += "chunk too short. At least one palette entry must be present\n"
+            }
+
+            for (i in 0..length / 3) {
+                val red = buffer.get()
+                val green = buffer.get()
+                val blue = buffer.get()
+                colors.add(Triple(red, green, blue))
+            }
+
+            // skip potentially broken values
+            for (i in 0..length % 3) {
+                buffer.get()
+            }
+        }
+
+        override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
+            list(true) {
+                colors.forEach {
+                    item("${it.first}, ${it.second}, ${it.third}")
+                }
+            }
+
+            if (warnings.isNotBlank()) {
+                br()
+                text("Chunk Error:")
+                br()
+                text(warnings)
+            }
+        }
     }
 
     /**
