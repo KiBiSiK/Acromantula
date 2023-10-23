@@ -6,9 +6,11 @@ import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.disassembly.MediaType
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.ByteBuffer
+import java.util.zip.InflaterInputStream
 import kotlin.experimental.and
 
 const val LENGTH = "length"
@@ -19,13 +21,11 @@ const val SAFE_TO_COPY = "safe to copy"
 const val CRC = "crc"
 const val CONTENT = "content"
 
+val CHUNK_TYPE_START = convertChunkTypeToInt("IHDR")
 val CHUNK_TYPE_PHYSICAL_PIXEL_DIM = convertChunkTypeToInt("pHYs")
 val CHUNK_TYPE_TEXT = convertChunkTypeToInt("tEXt")
 val CHUNK_TYPE_COMPRESSED_TEXT = convertChunkTypeToInt("zTXt")
 val CHUNK_TYPE_INTERNATIONAL_TEXT = convertChunkTypeToInt("iTXt")
-
-const val UNIT_UNSPECIFIED = 0
-const val UNIT_METER = 1
 
 fun convertChunkTypeToInt(type: String): Int {
     check(type.length == 4) { "chunk type must be exactly 4 bytes long" }
@@ -81,9 +81,14 @@ object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
                     val type = (typeByte1.toInt() shl 24) or (typeByte2.toInt() shl 16) or (typeByte3.toInt() shl 8) or
                             typeByte4.toInt()
 
-                    val oldPosition = fileContent.position()
-
-                    fileContent.position(oldPosition + length)
+                    val chunk = when (type) {
+                        CHUNK_TYPE_START -> Chunk.StartChunk(fileContent)
+                        CHUNK_TYPE_TEXT -> Chunk.TextChunk(fileContent, length)
+                        CHUNK_TYPE_COMPRESSED_TEXT -> Chunk.CompressedTextChunk(fileContent, length)
+                        CHUNK_TYPE_INTERNATIONAL_TEXT -> Chunk.InternationalTextChunk(fileContent, length)
+                        CHUNK_TYPE_PHYSICAL_PIXEL_DIM -> Chunk.PhysicalPixelDimensionChunk(fileContent)
+                        else -> Chunk.IgnoredChunk(fileContent, length)
+                    }
 
                     // read length bytes
                     val crc = fileContent.getInt()
@@ -129,57 +134,8 @@ object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
                             text(crc.toUInt().toString())
                         }
                         cell {
-                            when (type) {
-                                CHUNK_TYPE_PHYSICAL_PIXEL_DIM -> collapsible("physical pixel dimensions") {
-                                    fileContent.position(oldPosition)
-                                    val xAxis = fileContent.getInt()
-                                    val yAxis = fileContent.getInt()
-                                    val unit = fileContent.get().toInt()
-
-                                    fileContent.getInt() // skip crc
-
-                                    text(
-                                        "X Axis: $xAxis texels per ${
-                                            if (unit == UNIT_METER) {
-                                                "meter"
-                                            } else {
-                                                "pixel"
-                                            }
-                                        }"
-                                    )
-                                    br()
-                                    text(
-                                        "Y Axis: $yAxis texels per ${
-                                            if (unit == UNIT_METER) {
-                                                "meter"
-                                            } else {
-                                                "pixel"
-                                            }
-                                        }"
-                                    )
-                                }
-
-                                CHUNK_TYPE_TEXT -> collapsible("text chunk") {
-                                    val textArray = ByteArray(length)
-                                    fileContent.position(oldPosition)
-                                    fileContent.get(textArray, 0, length)
-                                    fileContent.getInt() // skip crc
-                                    text(String(textArray, Charsets.ISO_8859_1))
-                                }
-
-                                CHUNK_TYPE_COMPRESSED_TEXT -> collapsible("compressed text chunk") {
-                                    text("not yet decompressed")
-                                }
-
-                                CHUNK_TYPE_INTERNATIONAL_TEXT -> collapsible("international text chunk") {
-                                    val textArray = ByteArray(length)
-                                    fileContent.position(oldPosition)
-                                    fileContent.get(textArray, 0, length)
-                                    fileContent.getInt() // skip crc
-                                    text(String(textArray, Charsets.UTF_8))
-                                }
-
-                                else -> {}
+                            if (chunk !is Chunk.IgnoredChunk) {
+                                collapsible(chunk.chunkDescription, chunk.printChunk())
                             }
                         }
                     }
@@ -194,4 +150,226 @@ object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
             fileEntity, this.viewType, this.fileType, byteArrayOutputStream.toByteArray()
         )
     }
+}
+
+private sealed class Chunk(val chunkDescription: String) {
+
+    class StartChunk(buffer: ByteBuffer) : Chunk("metadata") {
+        val width: Int
+        val height: Int
+        val bitDepth: Int
+        val colorType: Int
+        val compressionMethod: Int
+        val filterMethod: Int
+        val interlaceMethod: Int
+
+        init {
+            width = buffer.getInt()
+            height = buffer.getInt()
+            bitDepth = buffer.get().toInt()
+            colorType = buffer.get().toInt()
+            compressionMethod = buffer.get().toInt()
+            filterMethod = buffer.get().toInt()
+            interlaceMethod = buffer.get().toInt()
+        }
+
+        override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
+            text("Width: $width")
+            br()
+            text("Height: $height")
+            br()
+            text("Bit Depth: $bitDepth")
+            br()
+            text("Color Type: ")
+            if (colorType and 1 > 0) { text("palette used, ") } else { text("no palette, ") }
+            if (colorType and 2 > 0) { text("color used, ") } else { text("no color, ") }
+            if (colorType and 4 > 0) { text("alpha used") } else { text("no alpha") }
+            br()
+
+            text("Compression Method: ")
+            if (compressionMethod == 0) { text("deflate") } else { text("illegal value: $compressionMethod") }
+            br()
+
+            text("Filter Method: ")
+            if (compressionMethod == 0) { text("adaptive filter") } else { text("illegal value: $compressionMethod") }
+            br()
+
+            text("Interlace Method: ")
+            when (interlaceMethod) {
+                0 -> text("no interlace")
+                1 -> text("Adam7 interlace")
+                else -> text("illegal value: $interlaceMethod")
+            }
+        }
+    }
+
+    class IgnoredChunk(buffer: ByteBuffer, length: Int) : Chunk("") {
+        init {
+            buffer.position(buffer.position() + length)
+        }
+    }
+
+    class TextChunk(buffer: ByteBuffer, length: Int) : Chunk("text chunk") {
+        val text: String
+        val keyword: String
+
+        init {
+            val textArray = ByteArray(length)
+            buffer.get(textArray, 0, length)
+            val keyValuePair = String(textArray, Charsets.ISO_8859_1).split(Char(0))
+            keyword = keyValuePair[0]
+            text = keyValuePair[1]
+        }
+
+        override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
+            text("$keyword: $text")
+        }
+    }
+
+    class CompressedTextChunk(buffer: ByteBuffer, length: Int) : Chunk("compressed text chunk") {
+        val keyword: String
+        val text: String
+
+        init {
+            val keywordBuffer = ByteBuffer.allocate(80)
+            var byte = buffer.get()
+            while (byte != 0.toByte()) {
+                keywordBuffer.put(byte)
+                byte = buffer.get()
+            }
+            keyword = String(keywordBuffer.array(), Charsets.ISO_8859_1)
+
+            val compressionMethod = buffer.get().toInt()
+            check(compressionMethod == 0) { "the only defined compression method is 0" }
+
+            val valueBuffer = ByteArray(length - keywordBuffer.position() - 1)
+
+            buffer.get(valueBuffer, 0, length - keyword.length - 1)
+            val inflater = InflaterInputStream(ByteArrayInputStream(valueBuffer))
+
+            text = String(inflater.use { it.readBytes() }, Charsets.ISO_8859_1)
+        }
+
+        override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
+            text("$keyword: $text")
+        }
+    }
+
+    class InternationalTextChunk(buffer: ByteBuffer, length: Int) : Chunk("international text chunk") {
+        val keyword: String
+        val languageTag: String
+        val translatedKeyword: String
+        val text: String
+
+        init {
+            val keywordBuffer = ByteBuffer.allocate(80)
+            var byte = buffer.get()
+            while (byte != 0.toByte()) {
+                keywordBuffer.put(byte)
+                byte = buffer.get()
+            }
+            keyword = String(keywordBuffer.array().sliceArray(0 until keywordBuffer.position()), Charsets.ISO_8859_1)
+
+            val isCompressed: Boolean = buffer.get().toInt() == 0
+
+            val compressionMethod = buffer.get().toInt()
+            if (isCompressed) {
+                check(compressionMethod == 0) { "the only defined compression method is 0" }
+            }
+
+            var languageTagBuffer = ByteBuffer.allocate(80)
+            byte = buffer.get()
+            var tagLength = 0
+            var languageTag = ""
+            while (byte != 0.toByte()) {
+                languageTagBuffer.put(byte)
+                tagLength += 1
+                if (tagLength == 80) {
+                    languageTag += String(languageTagBuffer.array(), Charsets.ISO_8859_1)
+                    languageTagBuffer = ByteBuffer.allocate(80)
+                    tagLength = 0
+                }
+
+                byte = buffer.get()
+            }
+
+            if (length > 0) {
+                languageTag += String(languageTagBuffer.array().sliceArray(0 until tagLength))
+            }
+
+            this.languageTag = languageTag
+
+            // read the last two values and decode them
+            val valueBuffer = ByteArray(length - (keyword.length + 1) - 2 - (languageTag.length + 1))
+            buffer.get(valueBuffer, 0, valueBuffer.size)
+
+            val keyValuePair = String(valueBuffer, Charsets.UTF_8).split(Char(0))
+            translatedKeyword = keyValuePair[0]
+            text = keyValuePair[1]
+        }
+
+        override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
+            text(keyword)
+
+            if (languageTag.isNotEmpty() || translatedKeyword.isNotBlank()) {
+                text(" (")
+                if (languageTag.isNotBlank()) {
+                    text(languageTag)
+                    if (translatedKeyword.isNotBlank()) {
+                        text(": ")
+                    }
+                }
+                if (translatedKeyword.isNotBlank()) {
+                    text(translatedKeyword)
+                }
+                text(" ): ")
+            }
+
+            text(text)
+        }
+    }
+
+    class PhysicalPixelDimensionChunk(buffer: ByteBuffer) : Chunk("physical pixel dimensions") {
+        val xAxis: Int
+        val yAxis: Int
+        val unit: Unit
+
+        init {
+            xAxis = buffer.getInt()
+            yAxis = buffer.getInt()
+            unit = Unit.entries[buffer.get().toInt()]
+        }
+
+        override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> kotlin.Unit = {
+            text(
+                "X Axis: $xAxis texel per ${
+                    if (unit == Unit.METER) {
+                        "meter"
+                    } else {
+                        "pixel"
+                    }
+                }"
+            )
+            br()
+            text(
+                "Y Axis: $yAxis texel per ${
+                    if (unit == Unit.METER) {
+                        "meter"
+                    } else {
+                        "pixel"
+                    }
+                }"
+            )
+        }
+
+        enum class Unit {
+            UNSPECIFIED, METER
+        }
+
+    }
+
+    /**
+     * Print the chunk into the document table
+     */
+    open fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {}
 }
