@@ -6,10 +6,12 @@ import net.cydhra.acromantula.workspace.WorkspaceService
 import net.cydhra.acromantula.workspace.disassembly.FileViewEntity
 import net.cydhra.acromantula.workspace.disassembly.MediaType
 import net.cydhra.acromantula.workspace.filesystem.FileEntity
+import org.apache.logging.log4j.LogManager
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import java.util.zip.InflaterInputStream
 import kotlin.experimental.and
 
@@ -229,6 +231,7 @@ private sealed class Chunk(val chunkDescription: String) {
     class CompressedTextChunk(buffer: ByteBuffer, length: Int) : Chunk("compressed text chunk") {
         val keyword: String
         val text: String
+        var warnings: String = ""
 
         init {
             val keywordBuffer = ByteBuffer.allocate(80)
@@ -240,18 +243,30 @@ private sealed class Chunk(val chunkDescription: String) {
             keyword = String(keywordBuffer.array(), Charsets.ISO_8859_1)
 
             val compressionMethod = buffer.get().toInt()
-            check(compressionMethod == 0) { "the only defined compression method is 0" }
+            if (compressionMethod != 0) { warnings += "illegal compression method: $compressionMethod\n" }
 
             val valueBuffer = ByteArray(length - keywordBuffer.position() - 1)
 
             buffer.get(valueBuffer, 0, length - keyword.length - 1)
-            val inflater = InflaterInputStream(ByteArrayInputStream(valueBuffer))
 
-            text = String(inflater.use { it.readBytes() }, Charsets.ISO_8859_1)
+            text = try {
+                val inflater = InflaterInputStream(ByteArrayInputStream(valueBuffer))
+                String(inflater.use { it.readBytes() }, Charsets.ISO_8859_1)
+            } catch (e: Exception) {
+                warnings += "inflate decompression failed: ${e.message}"
+                LogManager.getLogger().error("inflate decompression failed", e)
+                "compressed data corrupted"
+            }
         }
 
         override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
             text("$keyword: $text")
+            if (warnings.isNotBlank()) {
+                br()
+                text("Chunk Error:")
+                br()
+                text(warnings)
+            }
         }
     }
 
@@ -260,56 +275,45 @@ private sealed class Chunk(val chunkDescription: String) {
         val languageTag: String
         val translatedKeyword: String
         val text: String
+        var warnings: String = ""
+        val isCompressed: Boolean
 
         init {
-            val keywordBuffer = ByteBuffer.allocate(80)
-            var byte = buffer.get()
-            while (byte != 0.toByte()) {
-                keywordBuffer.put(byte)
-                byte = buffer.get()
-            }
-            keyword = String(keywordBuffer.array().sliceArray(0 until keywordBuffer.position()), Charsets.ISO_8859_1)
-
-            val isCompressed: Boolean = buffer.get().toInt() == 0
+            keyword = readZeroTerminatedString(buffer, Charsets.ISO_8859_1)
+            isCompressed = buffer.get().toInt() != 0
 
             val compressionMethod = buffer.get().toInt()
             if (isCompressed) {
-                check(compressionMethod == 0) { "the only defined compression method is 0" }
+                if (compressionMethod != 0) { warnings += "illegal compression method: $compressionMethod\n" }
             }
 
-            var languageTagBuffer = ByteBuffer.allocate(80)
-            byte = buffer.get()
-            var tagLength = 0
-            var languageTag = ""
-            while (byte != 0.toByte()) {
-                languageTagBuffer.put(byte)
-                tagLength += 1
-                if (tagLength == 80) {
-                    languageTag += String(languageTagBuffer.array(), Charsets.ISO_8859_1)
-                    languageTagBuffer = ByteBuffer.allocate(80)
-                    tagLength = 0
-                }
+            this.languageTag = readZeroTerminatedString(buffer, Charsets.ISO_8859_1)
+            this.translatedKeyword = readZeroTerminatedString(buffer, Charsets.UTF_8)
 
-                byte = buffer.get()
-            }
-
-            if (length > 0) {
-                languageTag += String(languageTagBuffer.array().sliceArray(0 until tagLength))
-            }
-
-            this.languageTag = languageTag
-
-            // read the last two values and decode them
-            val valueBuffer = ByteArray(length - (keyword.length + 1) - 2 - (languageTag.length + 1))
+            val valueBuffer = ByteArray(length - (keyword.length + 1) - 2 - (languageTag.length + 1) - (translatedKeyword.length + 1))
             buffer.get(valueBuffer, 0, valueBuffer.size)
 
-            val keyValuePair = String(valueBuffer, Charsets.UTF_8).split(Char(0))
-            translatedKeyword = keyValuePair[0]
-            text = keyValuePair[1]
+            text = if (isCompressed) {
+                try {
+                    val inflater = InflaterInputStream(ByteArrayInputStream(valueBuffer))
+                    String(inflater.use { it.readBytes() }, Charsets.UTF_8)
+                } catch (e: Exception) {
+                    warnings += "inflate decompression failed: ${e.message}"
+                    LogManager.getLogger().error("inflate decompression failed", e)
+                    "compressed data corrupted"
+                }
+            } else {
+                String(valueBuffer, Charsets.UTF_8)
+            }
         }
 
+
         override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
-            text(keyword)
+            if (isCompressed) {
+                text("(deflate compressed): ")
+            }
+
+            text(keyword )
 
             if (languageTag.isNotEmpty() || translatedKeyword.isNotBlank()) {
                 text(" (")
@@ -323,9 +327,18 @@ private sealed class Chunk(val chunkDescription: String) {
                     text(translatedKeyword)
                 }
                 text(" ): ")
+            } else {
+                text(": ")
             }
 
             text(text)
+
+            if (warnings.isNotBlank()) {
+                br()
+                text("Chunk Error:")
+                br()
+                text(warnings)
+            }
         }
     }
 
@@ -372,4 +385,28 @@ private sealed class Chunk(val chunkDescription: String) {
      * Print the chunk into the document table
      */
     open fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {}
+
+    protected fun readZeroTerminatedString(inputBuffer: ByteBuffer, charset: Charset): String {
+        var stringBuffer = ByteBuffer.allocate(80)
+        var byte = inputBuffer.get()
+        var tagLength = 0
+        var resultString = ""
+        while (byte != 0.toByte()) {
+            stringBuffer.put(byte)
+            tagLength += 1
+            if (tagLength == 80) {
+                resultString += String(stringBuffer.array(), charset)
+                stringBuffer = ByteBuffer.allocate(80)
+                tagLength = 0
+            }
+
+            byte = inputBuffer.get()
+        }
+
+        if (tagLength > 0) {
+            resultString += String(stringBuffer.array().sliceArray(0 until tagLength))
+        }
+
+        return resultString
+    }
 }
