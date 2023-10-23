@@ -10,6 +10,10 @@ const val TABLE_ROW_CLASS = "table_row"
 const val TABLE_CELL_CLASS = "table_cell"
 const val TABLE_FOOTER_CLASS = "table_footer"
 
+const val LIST_ORDERED_CLASS = "ordered_list"
+const val LIST_ELEMENT_CLASS = "list_element"
+const val LIST_UNORDERED_CLASS = "list_unordered"
+
 /**
  * Generate HTML documents with the HTML layout abstracted.
  */
@@ -62,6 +66,18 @@ class DocumentGenerator(private val buffer: StringBuffer = StringBuffer(2048)) {
                     }
                 }
                 TableGenerator(columns, this).apply(body)
+            }
+        }
+
+        fun list(ordered: Boolean, body: ListGenerator.() -> Unit) {
+            if (ordered) {
+                flowContent.ol(classes = LIST_ORDERED_CLASS) {
+                    ListGenerator(this::li).apply(body)
+                }
+            } else {
+                flowContent.ul(classes = LIST_UNORDERED_CLASS) {
+                    ListGenerator(this::li).apply(body)
+                }
             }
         }
 
@@ -129,6 +145,27 @@ class DocumentGenerator(private val buffer: StringBuffer = StringBuffer(2048)) {
                         TopLevelGenerator(this).apply(body)
                     }
                 }
+            }
+        }
+    }
+
+    inner class ListGenerator(private val liFunction: (String, LI.() -> Unit) -> Unit) {
+
+        /**
+         * Add a simple text item to the current list
+         */
+        fun item(text: String) {
+            liFunction(LIST_ELEMENT_CLASS) {
+                +text
+            }
+        }
+
+        /**
+         * Add an item to the current list
+         */
+        fun item(body: TopLevelGenerator.() -> Unit) {
+            liFunction(LIST_ELEMENT_CLASS) {
+                TopLevelGenerator(this).apply(body)
             }
         }
     }
