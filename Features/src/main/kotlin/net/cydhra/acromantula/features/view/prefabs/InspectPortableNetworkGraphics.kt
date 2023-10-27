@@ -29,6 +29,7 @@ val CHUNK_TYPE_PHYSICAL_PIXEL_DIM = convertChunkTypeToInt("pHYs")
 val CHUNK_TYPE_TEXT = convertChunkTypeToInt("tEXt")
 val CHUNK_TYPE_COMPRESSED_TEXT = convertChunkTypeToInt("zTXt")
 val CHUNK_TYPE_INTERNATIONAL_TEXT = convertChunkTypeToInt("iTXt")
+val CHUNK_TYPE_TRANSPARENCY = convertChunkTypeToInt("tRNS")
 
 fun convertChunkTypeToInt(type: String): Int {
     check(type.length == 4) { "chunk type must be exactly 4 bytes long" }
@@ -72,6 +73,8 @@ object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
         // skip magic bytes
         fileContent.getLong()
 
+        var startChunk: Chunk.StartChunk? = null
+
         document.append {
             table(LENGTH, TYPE, ANCILLARY, STANDARDIZED, SAFE_TO_COPY, CRC, CONTENT) {
                 while (fileContent.hasRemaining()) {
@@ -85,12 +88,27 @@ object InspectPortableNetworkGraphics : ViewGeneratorStrategy {
                             typeByte4.toInt()
 
                     val chunk = when (type) {
-                        CHUNK_TYPE_START -> Chunk.StartChunk(fileContent)
+                        CHUNK_TYPE_START -> {
+                            if (startChunk != null) {
+                                LogManager.getLogger().warn("multiple start chunks found")
+                            }
+                            startChunk = Chunk.StartChunk(fileContent)
+                            startChunk!!
+                        }
                         CHUNK_TYPE_PALETTE -> Chunk.PaletteChunk(fileContent, length)
                         CHUNK_TYPE_TEXT -> Chunk.TextChunk(fileContent, length)
                         CHUNK_TYPE_COMPRESSED_TEXT -> Chunk.CompressedTextChunk(fileContent, length)
                         CHUNK_TYPE_INTERNATIONAL_TEXT -> Chunk.InternationalTextChunk(fileContent, length)
                         CHUNK_TYPE_PHYSICAL_PIXEL_DIM -> Chunk.PhysicalPixelDimensionChunk(fileContent)
+                        CHUNK_TYPE_TRANSPARENCY -> {
+                            if (startChunk == null) {
+                                LogManager.getLogger().warn("transparency chunk found before start chunk")
+                                Chunk.IgnoredChunk(fileContent, length)
+                            } else {
+                                Chunk.TransparencyChunk(fileContent, length, startChunk!!.colorType)
+                            }
+                        }
+
                         else -> Chunk.IgnoredChunk(fileContent, length)
                     }
 
@@ -223,6 +241,18 @@ private sealed class Chunk(val chunkDescription: String) {
                 0 -> text("no interlace")
                 1 -> text("Adam7 interlace")
                 else -> text("illegal value: $interlaceMethod")
+            }
+        }
+
+        enum class ColorType(val flags: Int) {
+            GRAYSCALE(0), TRUE_COLOR(2), INDEXED_COLOR(3), GRAYSCALE_WITH_ALPHA(4), TRUE_COLOR_WITH_ALPHA(6);
+
+            companion object {
+                fun byFlags(flags: Int): ColorType {
+                    return entries.find { it.flags == flags } ?: throw IllegalArgumentException(
+                        "illegal color type flags: $flags"
+                    )
+                }
             }
         }
     }
@@ -442,6 +472,78 @@ private sealed class Chunk(val chunkDescription: String) {
                     item("${it.first}, ${it.second}, ${it.third}")
                 }
             }
+
+            if (warnings.isNotBlank()) {
+                br()
+                text("Chunk Error:")
+                br()
+                text(warnings)
+            }
+        }
+    }
+
+    class TransparencyChunk(buffer: ByteBuffer, length: Int, colorType: Int) : Chunk("transparency") {
+        val alphaChannels = mutableListOf<Byte>()
+        var grayScaleAlpha: Short = -1
+        var alphaColor: Triple<Short, Short, Short>? = null
+
+        private var warnings = ""
+
+
+        init {
+            when (StartChunk.ColorType.byFlags(colorType)) {
+                StartChunk.ColorType.INDEXED_COLOR -> {
+                    if (length > 256) {
+                        warnings += "chunk too long. Only 256 palette entries are allowed\n"
+                    }
+
+                    for (i in 0 until length) {
+                        alphaChannels.add(buffer.get())
+                    }
+                }
+
+                StartChunk.ColorType.GRAYSCALE -> {
+                    if (length != 2) {
+                        warnings += "corrupted chunk data: grayscale transparency must be two bytes long\n"
+                        buffer.position(buffer.position() + length)
+                    } else {
+                        grayScaleAlpha = buffer.getShort()
+                    }
+                }
+
+                StartChunk.ColorType.TRUE_COLOR -> {
+                    if (length != 6) {
+                        warnings += "corrupted chunk data: true color transparency must be six bytes long\n"
+                        buffer.position(buffer.position() + length)
+                    } else {
+                        alphaColor = Triple(buffer.getShort(), buffer.getShort(), buffer.getShort())
+                    }
+                }
+
+                else -> {
+                    warnings += "transparency chunk not allowed for color type ${StartChunk.ColorType.byFlags(colorType)}\n"
+                    buffer.position(buffer.position() + length)
+                }
+            }
+        }
+
+        override fun printChunk(): DocumentGenerator.TopLevelGenerator.() -> Unit = {
+            if (alphaChannels.isNotEmpty()) {
+                list(true) {
+                    alphaChannels.forEach {
+                        item(it.toString())
+                    }
+                }
+            }
+
+            if (grayScaleAlpha != (-1).toShort()) {
+                text("grayscale transparency: $grayScaleAlpha")
+            }
+
+            if (alphaColor != null) {
+                text("true color transparency: ${alphaColor!!.first}, ${alphaColor!!.second}, ${alphaColor!!.third}")
+            }
+
 
             if (warnings.isNotBlank()) {
                 br()
