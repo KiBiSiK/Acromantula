@@ -60,7 +60,7 @@ protobuf {
 
     plugins {
         client {
-            artifact = 'com.github.googleapis:gapic-generator-kotlin:master-SNAPSHOT:core@jar'
+            artifact = 'com.github.googleapis:gapic-generator-kotlin:main-SNAPSHOT:core@jar'
         }
         grpc {
             artifact = "io.grpc:protoc-gen-grpc-java:$grpc_version"
